@@ -47,7 +47,7 @@ if (-not (Get-Command gh -ErrorAction SilentlyContinue)) { throw "gh (GitHub CLI
 if ($NotesFile) {
   $body = [IO.File]::ReadAllText((Resolve-Path $NotesFile), [Text.Encoding]::UTF8)
 } elseif ($Notes.Count -gt 1) {
-  $body = ($Notes | Where-Object { $_.Trim() } | ForEach-Object { "- " + ($_.Trim() -replace '^[-*•]\s*', '') }) -join "`n"
+  $body = ($Notes | Where-Object { $_.Trim() } | ForEach-Object { "- " + ($_.Trim() -replace '^[-*\u2022]\s*', '') }) -join "`n"
 } elseif ($Notes.Count -eq 1 -and $Notes[0].Trim()) {
   $body = $Notes[0] -replace '\\n', "`n"
 } else { $body = "- lPerson v$newName" }
