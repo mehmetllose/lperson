@@ -17458,6 +17458,15 @@ service cloud.firestore {
         if (calNav) calNav.style.display = "none";
       }
     }
+    /** Yönetici araçları menüsü: patron menüsündeki aynı SVG simgeyi kullan. */
+    function mgrNavIconSvg(page) {
+      const svg = document.querySelector("#nav-" + page + " > svg");
+      return svg ? svg.outerHTML : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/></svg>';
+    }
+    function mgrNavActivePage() {
+      const p = typeof currentPage === "string" ? currentPage : "";
+      return p === "employee-edit" ? "employees" : p;
+    }
     function applyCalisanNavVisibility() {
       if (currentUser?.role !== "calisan") return;
       const elFor = pid =>
@@ -17482,7 +17491,7 @@ service cloud.firestore {
           ["documents", "documents", "📄", "Belgeler"],
         ].filter(([, permission]) => currentUser.managerPermissions?.[permission] === true);
         managerNav.style.display = routes.length ? "" : "none";
-        managerNav.innerHTML = routes.length ? `<div class="nav-section-label" style="margin-top:10px;">Yönetici Araçları</div>${routes.map(([page,,icon,label]) => `<button class="nav-item" type="button" onclick="navTo('${page}');closeSidebar();"><span aria-hidden="true" style="width:22px;min-width:22px;text-align:center;font-size:15px;">${icon}</span><span class="nav-item-label">${label}</span></button>`).join("")}` : "";
+        managerNav.innerHTML = routes.length ? `<div class="nav-section-label" style="margin-top:10px;">Yönetici Araçları</div>${routes.map(([page,,,label]) => `<button class="nav-item${mgrNavActivePage() === page ? " active" : ""}" type="button" data-mgr-page="${page}" onclick="navTo('${page}');closeSidebar();">${mgrNavIconSvg(page)}<span class="nav-item-label">${label}</span></button>`).join("")}` : "";
       }
     }
     const MANAGER_PERMISSION_LABELS = {
@@ -18373,6 +18382,7 @@ service cloud.firestore {
       } else {
         document.getElementById("nav-" + page)?.classList.add("active");
       }
+      document.querySelectorAll(`[data-mgr-page="${page === "employee-edit" ? "employees" : page}"]`).forEach(n => n.classList.add("active"));
       const titles = {
         dashboard: "Ana Ekran",
         wishbox: "Dilek Kutusu",
