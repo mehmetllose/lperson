@@ -1,6 +1,12 @@
 # lperson release: surum artir -> debug APK derle -> GitHub Release olustur
-# Kullanim:  powershell -ExecutionPolicy Bypass -File scripts\release.ps1 [-Notes "Degisiklikler"] [-NoPublish]
-param([string]$Notes = "", [switch]$NoPublish)
+# Kullanim:
+#   release.ps1 -Notes "Tek satir not"
+#   release.ps1 -Notes "Madde 1","Madde 2","Madde 3"      (her biri "- " madde olur)
+#   release.ps1 -NotesFile scripts\release-notes.md        (cok satirli Markdown, UTF-8)
+#   release.ps1 ... -NoPublish                             (yalnizca derle)
+# Notlar uygulamadaki "Yenilikler" penceresinde gosterilir. Kisa, kullanicinin anlayacagi
+# Turkce maddeler yazin; ornek icin scripts\RELEASE_NOTES_ORNEK.md dosyasina bakin.
+param([string[]]$Notes = @(), [string]$NotesFile = "", [switch]$NoPublish)
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 Set-Location $root
@@ -38,7 +44,15 @@ Write-Host "APK: $apk"
 if ($NoPublish) { Write-Host "Yayinlanmadi (-NoPublish)."; exit 0 }
 if ($Repo -like "OWNER/*") { throw "scripts\release.ps1 icindeki `$Repo ayarlanmamis" }
 if (-not (Get-Command gh -ErrorAction SilentlyContinue)) { throw "gh (GitHub CLI) kurulu degil: winget install GitHub.cli" }
-if (-not $Notes) { $Notes = "lPerson v$newName" }
-gh release create "v$newName" "$apk#lperson-$newName.apk" --repo $Repo --title "lPerson v$newName" --notes $Notes
+if ($NotesFile) {
+  $body = [IO.File]::ReadAllText((Resolve-Path $NotesFile), [Text.Encoding]::UTF8)
+} elseif ($Notes.Count -gt 1) {
+  $body = ($Notes | Where-Object { $_.Trim() } | ForEach-Object { "- " + ($_.Trim() -replace '^[-*•]\s*', '') }) -join "`n"
+} elseif ($Notes.Count -eq 1 -and $Notes[0].Trim()) {
+  $body = $Notes[0] -replace '\\n', "`n"
+} else { $body = "- lPerson v$newName" }
+$notesTmp = Join-Path $env:TEMP "lperson-notes-$newName.md"
+[IO.File]::WriteAllText($notesTmp, $body, (New-Object Text.UTF8Encoding $false))
+gh release create "v$newName" "$apk#lperson-$newName.apk" --repo $Repo --title "lPerson v$newName" --notes-file $notesTmp
 if ($LASTEXITCODE -ne 0) { throw "gh release create basarisiz" }
 Write-Host "Yayinlandi: v$newName"

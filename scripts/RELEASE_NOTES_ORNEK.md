@@ -1,0 +1,3 @@
+- Yönetici araçları sekmelerinde yeni simgeler ve seçili sekme işareti
+- Güncelleme bildirimi artık uygulama her açıldığında kontrol ediliyor
+- Güncellemeden sonra "Yenilikler" penceresi açılıyor (Ayarlar > Yenilikler)

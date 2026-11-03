@@ -8945,6 +8945,11 @@
               <div id="app-update-status" style="font-size:11px;color:var(--text3);margin-bottom:10px;"></div>
               <button type="button" class="btn btn-secondary btn-sm" onclick="checkAppUpdate(true)">Güncellemeleri kontrol et</button>
             </div>
+            <div class="card" id="whatsnew-card">
+              <div class="card-title">✨ Yenilikler</div>
+              <div style="font-size:12px;color:var(--text3);margin-bottom:10px;">Son sürümlerde nelerin değiştiğini görün.</div>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="openWhatsNew({ manual: true })">Yenilikleri göster</button>
+            </div>
             <!-- Profil Bilgileri -->
             <div class="card">
               <div class="card-title">
@@ -10551,6 +10556,7 @@
               void refreshOwnUserAndEnforceAccess();
             }
             void syncAppDataOnResume();
+            if (currentUser) setTimeout(() => { try { checkAppUpdate(false); } catch (e) {} }, 1500);
           });
           pack.App.addListener("backButton", () => {
             handleAppBack();
@@ -10905,6 +10911,77 @@
       openAppUpdatePanel(p.latest, p.installed, p.notes, p.url);
       startAppUpdateDownload();
     }
+    // ── Yenilikler: sürüm değişince bir kez göster ──
+    function whatsNewNotesHtml(body) {
+      const lines = String(body || "").replace(/\r/g, "").split("\n").map(x => x.trim()).filter(Boolean);
+      if (!lines.length) return '<div style="font-size:12px;color:var(--text3);">Bu sürüm için not yok.</div>';
+      let html = "", inList = false;
+      lines.forEach(t => {
+        const m = t.match(/^(?:[-*•]|\d+[.)])\s+(.*)$/);
+        const clean = escHtml((m ? m[1] : t).replace(/^#+\s*/, "").replace(/\*\*(.+?)\*\*/g, "$1"));
+        if (m) { if (!inList) { html += '<ul style="margin:4px 0 8px 18px;padding:0;">'; inList = true; } html += `<li style="margin:3px 0;">${clean}</li>`; }
+        else { if (inList) { html += "</ul>"; inList = false; } html += `<div style="margin:4px 0;${/^#/.test(t) ? "font-weight:800;" : ""}">${clean}</div>`; }
+      });
+      if (inList) html += "</ul>";
+      return html;
+    }
+    async function fetchReleaseNotesBetween(fromExcl, toIncl) {
+      const res = await fetch("https://api.github.com/repos/" + APP_UPDATE_REPO + "/releases?per_page=40", { headers: { Accept: "application/vnd.github+json" }, cache: "no-store" });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const list = await res.json();
+      return (Array.isArray(list) ? list : [])
+        .filter(r => !r.draft)
+        .map(r => ({ v: String(r.tag_name || "").replace(/^v/i, ""), body: r.body || "", date: r.published_at || "" }))
+        .filter(r => r.v && appUpdateCmp(r.v, toIncl) <= 0 && (!fromExcl || appUpdateCmp(r.v, fromExcl) > 0))
+        .sort((a, b) => appUpdateCmp(b.v, a.v))
+        .slice(0, 15);
+    }
+    async function openWhatsNew(opts) {
+      const o = opts || {};
+      const cur = APP_VERSION;
+      let items = [];
+      try { items = await fetchReleaseNotesBetween(o.since || "", cur); } catch (e) { if (o.manual) showToast("Yenilikler alınamadı", "warn"); return false; }
+      if (!o.since && items.length > 5) items = items.slice(0, 5);
+      if (!items.length) { if (o.manual) showToast("Henüz not yok"); return false; }
+      const body = items.map((r, i) => `<div style="background:var(--bg2);border:1px solid ${i === 0 ? "var(--accent)" : "var(--border)"};border-radius:12px;padding:10px 12px;margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <b style="font-family:var(--font-display);color:${i === 0 ? "var(--accent)" : "var(--text)"};">v${escHtml(r.v)}</b>
+            <span style="font-size:10px;color:var(--text3);">${r.date ? escHtml(new Date(r.date).toLocaleDateString("tr-TR")) : ""}</span>
+          </div>
+          <div style="font-size:12px;color:var(--text);line-height:1.5;">${whatsNewNotesHtml(r.body)}</div>
+        </div>`).join("");
+      document.getElementById("modal-container").innerHTML = `
+    <div class="modal-overlay">
+      <div class="modal">
+        <div class="modal-header">
+          <span class="modal-title">✨ Yenilikler</span>
+          <button class="modal-close" onclick="closeModal()">×</button>
+        </div>
+        <div class="modal-body" style="max-height:60vh;overflow:auto;">
+          <div style="font-size:12px;color:var(--text3);margin-bottom:10px;">Yüklü sürüm: <b style="color:var(--text);">v${escHtml(cur)}</b></div>
+          ${body}
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" onclick="closeModal()">Tamam</button>
+        </div>
+      </div>
+    </div>`;
+      window._modalSaveFn = null;
+      try { applyButtonTitleCase(document.getElementById("modal-container")); } catch (e) {}
+      return true;
+    }
+    async function maybeShowWhatsNew() {
+      try {
+        if (window.__inlineWidgetHost || !currentUser) return;
+        const cur = APP_VERSION;
+        if (!cur) return;
+        const seen = localStorage.getItem("ct_whatsnew_seen") || "";
+        if (seen && appUpdateCmp(cur, seen) <= 0) return;
+        if (document.querySelector("#modal-container .modal-overlay")) { setTimeout(maybeShowWhatsNew, 4000); return; }
+        const shown = await openWhatsNew({ since: seen });
+        if (shown || seen) localStorage.setItem("ct_whatsnew_seen", cur);
+      } catch (e) { console.warn("whatsnew", e); }
+    }
     function closeAppUpdatePanel(skip) {
       if (skip && _appUpdatePending?.latest) localStorage.setItem("ct_app_update_skip", _appUpdatePending.latest);
       closeModal();
@@ -10919,11 +10996,17 @@
       const card = document.getElementById("app-update-card"); if (card) card.style.display = "";
       const cur = document.getElementById("app-update-current"); if (cur) cur.textContent = AndroidUpdater.getVersionName() || "-";
     }
-    async function checkAppUpdate(manual) {
+    let _appUpdateChecking = false;
+    async function checkAppUpdate(manual, opts) {
       if (!window.AndroidUpdater || window.__inlineWidgetHost) return;
+      if (_appUpdateChecking) return;
+      if (!manual && !(opts && opts.force)) { const last = +localStorage.getItem("ct_app_update_checked") || 0; if (Date.now() - last < 30 * 60 * 1000) return; }
+      _appUpdateChecking = true;
+      try { await checkAppUpdateInner(manual); } finally { _appUpdateChecking = false; }
+    }
+    async function checkAppUpdateInner(manual) {
       if (/^OWNER\//.test(APP_UPDATE_REPO)) { if (manual) showToast("Güncelleme deposu henüz ayarlanmadı", "warn"); return; }
       const installed = AndroidUpdater.getVersionName();
-      if (!manual) { const last = +localStorage.getItem("ct_app_update_checked") || 0; if (Date.now() - last < 6 * 3600 * 1000) return; }
       if (manual) appUpdateStatus("Kontrol ediliyor...");
       try {
         const res = await fetch("https://api.github.com/repos/" + APP_UPDATE_REPO + "/releases/latest", { headers: { Accept: "application/vnd.github+json" }, cache: "no-store" });
@@ -10937,7 +11020,7 @@
           return;
         }
         if (!manual && localStorage.getItem("ct_app_update_skip") === latest) return;
-        const notes = String(rel.body || "").slice(0, 600);
+        const notes = String(rel.body || "").slice(0, 1200);
         appUpdateStatus("v" + latest + " mevcut.");
         if (manual) openAppUpdatePanel(latest, installed, notes, asset.browser_download_url);
         else showAppUpdateBar(latest, installed, notes, asset.browser_download_url);
@@ -17987,7 +18070,7 @@ service cloud.firestore {
         applyOwnerDashAppearance(pt);
       }
       if (!window.__inlineWidgetHost) maybePromptNotificationsOnLaunch();
-      if (!window.__inlineWidgetHost) { try { initAppUpdateCard(); setTimeout(() => checkAppUpdate(false), 4000); } catch (e) {} }
+      if (!window.__inlineWidgetHost) { try { initAppUpdateCard(); setTimeout(() => checkAppUpdate(false, { force: true }), 2500); setTimeout(() => maybeShowWhatsNew(), 1500); } catch (e) {} }
       if (!window.__inlineWidgetHost) initNativeCapacitorShell().then(async () => {
         await flushPendingFcmToken();
         try {
