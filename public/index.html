@@ -18338,6 +18338,7 @@ service cloud.firestore {
       }, { passive: true });
       document.addEventListener("touchmove", ev => {
         if (!armed || refreshing || !ev.touches.length) return;
+        if (typeof _dashHold !== "undefined" && _dashHold && _dashHold.armed) { armed = false; hide(); return; }
         const dy = ev.touches[0].clientY - startY, dx = Math.abs(ev.touches[0].clientX - startX);
         if (dx > 64 && dx > dy) { armed = false; hide(); return; }
         lastDy = dy;
@@ -18350,6 +18351,7 @@ service cloud.firestore {
       document.addEventListener("touchend", ev => {
         if (!armed || refreshing) return;
         armed = false;
+        if (typeof _dashHold !== "undefined" && _dashHold && _dashHold.armed) { hide(); return; }
         const dy = ev.changedTouches?.[0] ? ev.changedTouches[0].clientY - startY : lastDy;
         const dx = ev.changedTouches?.[0] ? Math.abs(ev.changedTouches[0].clientX - startX) : 0;
         if (dy < PTR_TH || dx > 64) { hide(); return; }
@@ -20403,9 +20405,21 @@ service cloud.firestore {
     let _dashHold = null;
     if (!window._dashHoldScrollBound) {
       window._dashHoldScrollBound = true;
+      // Dokunmatik sürükleme: pointer olayları WebView'da kaydırma başlayınca iptal (pointercancel) olur;
+      // bu yüzden taşıma/bırakma touch olaylarıyla da yürütülür.
       document.addEventListener("touchmove", (e) => {
-        if (_dashHold?.armed && e.cancelable) e.preventDefault();
+        const st = _dashHold;
+        if (!st || !e.touches.length) return;
+        if (st.armed && e.cancelable) e.preventDefault();
+        const t = e.touches[0];
+        dashHoldMove({ clientX: t.clientX, clientY: t.clientY, pointerId: st.pid, cancelable: false });
       }, { passive: false });
+      document.addEventListener("touchend", (e) => {
+        const st = _dashHold;
+        if (!st) return;
+        const t = e.changedTouches && e.changedTouches[0];
+        dashHoldEnd({ clientX: t ? t.clientX : st.sx, clientY: t ? t.clientY : st.sy, pointerId: st.pid });
+      }, { passive: true });
     }
     function dashHoldClear() {
       document.removeEventListener("pointermove", dashHoldMove, true);
@@ -20433,6 +20447,7 @@ service cloud.firestore {
     function dashHoldEnd(e) {
       const st = _dashHold;
       if (!st) return;
+      if (e && e.type === "pointercancel" && st.armed) return;
       if (e && e.pointerId != null && e.pointerId !== st.pid) return;
       if (st.timer) clearTimeout(st.timer);
       dashHoldClear();
@@ -20455,7 +20470,7 @@ service cloud.firestore {
       if (ev.button != null && ev.button !== 0) return;
       if (ev.target?.closest?.("button, a, input, textarea, select, label, .pdb-grip, .wsp-switch")) return;
       const cell = ev.currentTarget;
-      const isPdb = kind === "pdb";
+      const isPdb = kind === "pdb" || kind === "bdb";
       const st = {
         cell,
         pid: ev.pointerId,
@@ -20470,8 +20485,8 @@ service cloud.firestore {
         dragCls: isPdb ? "pdb-dragging" : "cdb-dragging",
         overCls: isPdb ? "pdb-drag-over" : "cdb-drag-over",
         overSel: isPdb ? ".pdb-w-cell.pdb-drag-over" : ".cdb-w-cell.cdb-drag-over",
-        under: isPdb ? pdbCellUnderPoint : cdbCellUnderPoint,
-        drop: isPdb ? pdbMoveWidget : cdbMoveWidget,
+        under: kind === "bdb" ? bdbCellUnderPoint : (isPdb ? pdbCellUnderPoint : cdbCellUnderPoint),
+        drop: kind === "bdb" ? bossCardMove : (isPdb ? pdbMoveWidget : cdbMoveWidget),
       };
       if (_dashHold?.timer) clearTimeout(_dashHold.timer);
       _dashHold = st;
@@ -20490,6 +20505,21 @@ service cloud.firestore {
       dashHoldArm(_dashHold);
     }
     function pdbCellHold(ev) { startDashCardHold(ev, "pdb"); }
+    function bdbCellHold(ev) { startDashCardHold(ev, "bdb"); }
+    function bdbCellUnderPoint(x, y, self) {
+      const c = pdbCellUnderPoint(x, y, self);
+      return c && c.closest("#db-boss-cards") ? c : null;
+    }
+    function bossCardMove(src, target) {
+      if (!src || !target || src === target) return;
+      const order = bossCardsAllowedOrdered(currentUser);
+      const i = order.indexOf(src), j = order.indexOf(target);
+      if (i < 0 || j < 0) return;
+      order.splice(i, 1); order.splice(j, 0, src);
+      const p = loadBossCardsPrefs(); p.order = order; saveBossCardsPrefs(p);
+      showToast("Kart sırası güncellendi");
+      renderCalisanBossCards(currentUser);
+    }
     function cdbCellHold(ev) { startDashCardHold(ev, "cdb"); }
     function pdbDrop(ev) {
       ev.preventDefault();
@@ -20544,7 +20574,7 @@ service cloud.firestore {
       const gCols = getPatronGridCols(cfg);
       const pdbCompactCls = cfg.compact ? " pdb-compact" : "";
       const wCellAttrs = (wid) => {
-        if (embed) return `class="pdb-w-cell" data-pdb-wid="${wid}" style="grid-column:1 / -1;min-width:0;max-width:100%;display:flex;flex-direction:column;"`;
+        if (embed) return `class="pdb-w-cell" data-pdb-wid="${wid}" style="grid-column:1 / -1;min-width:0;max-width:100%;display:flex;flex-direction:column;touch-action:pan-y;" title="Basılı tutup sürükleyerek sırayı değiştir" onpointerdown="bdbCellHold(event)"`;
         const span = getPatronWidgetSpan(cfg, wid);
         return `class="pdb-w-cell pdb-span-${span}${pdbCompactCls}" draggable="true" data-pdb-wid="${wid}" style="grid-column:span ${span};min-width:0;max-width:100%;display:flex;flex-direction:column;align-self:stretch;" onpointerdown="pdbCellHold(event)" ondragstart="pdbDragStart(event)" ondragend="pdbDragEnd(event)" ondragover="pdbDragOver(event)" ondragleave="pdbDragLeave(event)" ondrop="pdbDrop(event)"`;
       };
