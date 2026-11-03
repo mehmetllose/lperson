@@ -9515,13 +9515,22 @@
           "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"
         ];
         let i = 0;
+        let timedOut = false;
         const killer = setTimeout(() => {
+          timedOut = true;
           if (typeof firebase === "undefined") window._fbLoadErr = window._fbLoadErr || "timeout";
           resolve(typeof firebase !== "undefined");
         }, 7000);
         function next() {
           if (i >= urls.length) {
             clearTimeout(killer);
+            window.__fbSdkScriptsDone = true;
+            // Yavaş açılış: SDK 7 sn'den sonra yüklendiyse Firebase'i şimdi başlat ve uygulamaya haber ver.
+            if (timedOut && typeof firebase !== "undefined" && !_fbReady) {
+              if (window._fbLoadErr === "timeout") window._fbLoadErr = "";
+              try { initFirebase(); } catch (e) {}
+              if (_fbReady) { try { window.dispatchEvent(new Event("ct-firebase-ready")); } catch (e) {} }
+            }
             resolve(typeof firebase !== "undefined");
             return;
           }
@@ -9533,7 +9542,9 @@
         }
         next();
       }).then(ok => {
-        if (ok) initFirebase();
+        if (ok && !_fbReady) initFirebase();
+        // Başarısızsa ve tüm denemeler bittiyse sonraki çağrıda yeniden dene (kalıcı "hazır değil" durumunu önle).
+        if (!_fbReady && window.__fbSdkScriptsDone) { window.__fbSdkPromise = null; window.__fbSdkScriptsDone = false; window._fbLoadErr = ""; }
         return !!_fbReady;
       });
       return window.__fbSdkPromise;
@@ -10509,6 +10520,7 @@
           pack.App.addListener("pause", () => { try { stopQRScan(); } catch (e) {} });
           pack.App.addListener("appStateChange", ({ isActive }) => {
             _ctAppActive = !!isActive;
+            try { onCtAppVisibility(!!isActive); } catch (e) {}
             if (!isActive) { try { stopQRScan(); } catch (e) {} return; }
             if (currentUser?.role === "calisan") {
               try { scheduleShiftNotifications(); } catch (e) {}
@@ -12922,6 +12934,35 @@ service cloud.firestore {
       }
       _enforceWorkerAccountAccess();
     }
+    // ── Taze veri: soğuk açılış / uzun arka plan dönüşü / geç Firebase hazırlığı ──
+    let _freshSyncPromise = null;
+    let _ctHiddenAt = 0;
+    async function refreshAllDataFresh(reason) {
+      if (!currentUser || window.__inlineWidgetHost) return;
+      if (_freshSyncPromise) return _freshSyncPromise;
+      _freshSyncPromise = (async () => {
+        if (!_fbReady) { try { await withTimeout(loadFirebaseSdks(), 15000, "fresh-firebase"); } catch (e) {} }
+        if (!_fbReady || !currentUser) return;
+        try { await withTimeout(syncFromFirestore(), 20000, "fresh-sync"); } catch (e) { console.warn("Taze veri (" + reason + "):", e.message); }
+        _lastResumeSyncAt = Date.now();
+        if (!currentUser) return;
+        try { _refreshUIFromRemoteData(); } catch (e) {}
+        try { if (currentPage === "dashboard") renderDashboardPage(); } catch (e) {}
+        // Dinleyicileri yeniden kur: arka planda kopmuş/hiç başlamamış olabilirler.
+        try { startFirestoreLiveSync(); startPlatformConfigLiveSync(); } catch (e) {}
+      })().finally(() => { _freshSyncPromise = null; });
+      return _freshSyncPromise;
+    }
+    window.addEventListener("ct-firebase-ready", () => { void refreshAllDataFresh("firebase-late"); });
+    function onCtAppVisibility(visible) {
+      if (!visible) { if (!_ctHiddenAt) _ctHiddenAt = Date.now(); return; }
+      const away = _ctHiddenAt ? Date.now() - _ctHiddenAt : 0;
+      _ctHiddenAt = 0;
+      if (!currentUser) return;
+      if (away > 30000 || !_fbReady || !_firestoreLiveUnsubs.length) void refreshAllDataFresh("resume");
+    }
+    document.addEventListener("visibilitychange", () => onCtAppVisibility(document.visibilityState === "visible"));
+    window.addEventListener("online", () => { if (currentUser) void refreshAllDataFresh("online"); });
     let _resumeSyncPromise = null;
     let _lastResumeSyncAt = 0;
     async function syncAppDataOnResume(force = false) {
@@ -33867,6 +33908,8 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
           if (rtok) sessionStorage.setItem("ct_login_tok_" + user.id, rtok);
           console.log("✅ Otomatik giriş:", user.name);
           launchApp();
+          // Firebase geç hazırlandıysa veya önbellek eskiyse: kayıtlar dahil tam taze veri çek.
+          setTimeout(() => { void refreshAllDataFresh("cold-start"); }, 300);
         } else {
           localStorage.removeItem("ct_session");
           sessionStorage.removeItem("ct_session");
