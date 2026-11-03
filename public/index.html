@@ -5056,6 +5056,20 @@
       border-radius: 14px;
       padding: 16px 18px;
     }
+    .emp-edit-form .emp-edit-section { padding: 12px 14px; }
+    .emp-collapsible > .emp-edit-section-hd { cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; }
+    .emp-collapsible > .emp-edit-section-hd::after { content: "▾"; font-size: 13px; color: var(--text3); transition: transform .15s; }
+    .emp-collapsible.collapsed > .emp-edit-section-hd { margin-bottom: 0; }
+    .emp-collapsible.collapsed > .emp-edit-section-hd::after { transform: rotate(-90deg); }
+    .emp-collapsible.collapsed > :not(.emp-edit-section-hd) { display: none !important; }
+    .emp-tg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 6px; }
+    .emp-tg-grid-sm { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+    .emp-tg-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 7px 10px; background: var(--bg2); border: 1px solid var(--border); border-radius: 9px; min-height: 36px; }
+    .emp-tg-row .wsp-switch { flex-shrink: 0; cursor: pointer; }
+    .emp-tg-lab { flex: 1; min-width: 0; font-size: 12px; color: var(--text2); line-height: 1.3; }
+    .emp-tg-lab small { display: block; font-size: 10px; color: var(--text3); margin-top: 2px; }
+    .emp-sub-hd { font-size: 11px; font-weight: 700; color: var(--text2); margin: 0 0 6px; }
+    .emp-hint { font-size: 10px; color: var(--text3); line-height: 1.4; margin: 0 0 8px; }
     .emp-edit-section-hd {
       font-size: 11px;
       font-weight: 800;
@@ -10973,6 +10987,9 @@
         return "requests";
       }
       if (currentUser?.role === "calisan") {
+        if (t.startsWith("ct-mgr-req")) return "requests";
+        if (t.startsWith("ct-mgr-task")) return "tasks";
+        if (t.startsWith("ct-mgr-clock")) return "worker-notifications";
         if (t.startsWith("ct-myreq") || t.startsWith("ct-swap-peer") || t.startsWith("ct-req-peerok") || ct === "request_resolved") return "my-requests";
         if (t.startsWith("ct-mytask") || ct.startsWith("task")) return "jobtasks";
         if (t.startsWith("ct-myshift") || t.includes("shift") || t.includes("vardiya")) return "my-shifts";
@@ -13462,13 +13479,13 @@ service cloud.firestore {
       if (silent) return;
       if (currentUser?.role !== "calisan") return;
       if (getSettings().notifyPatronOnClockIn === false) return;
-      if (!patronNotificationAllowedForWorker(currentUser.id)) return;
       const name = (currentUser?.name || "Çalışan").trim();
       const tKey = dir === "in" ? "patron_clock_in" : "patron_clock_out";
       const title = platformNotif(tKey + "_title");
       const body = platformNotif(tKey + "_body", { name, time: time || "?" });
       const tag = (dir === "in" ? "ct-patron-in-" : "ct-patron-out-") + currentUser.id + "-" + todayKey() + "-" + String(time || "");
-      void enqueuePatronsNotif(title, body, tag, dir === "in" ? "clock_in" : "clock_out");
+      if (patronNotificationAllowedForWorker(currentUser.id)) void enqueuePatronsNotif(title, body, tag, dir === "in" ? "clock_in" : "clock_out");
+      void enqueueManagersNotif("attendance", title, body, "ct-clock-" + tag.slice(3), "mgr_clock");
     }
     async function enqueueWorkerShiftNotifs(payloads) {
       if (!payloads || !payloads.length) return;
@@ -13494,9 +13511,11 @@ service cloud.firestore {
         kind: "task_new",
       }]);
     }
-    async function notifyPatronsTaskPending(workerName, taskText, uid, dateKey, taskId) {
-      if (!patronNotificationAllowedForWorker(uid)) return;
+    async function notifyPatronsTaskPending(workerName, taskText, uid, dateKey, taskId, assignedBy) {
       const task = String(taskText || "").slice(0, 60);
+      void enqueueManagersNotif("tasks", platformNotif("task_pending_title"), platformNotif("task_pending_body", { name: workerName, task }),
+        "ct-task-" + uid + "-" + dateKey + "-" + String(taskId || ""), "mgr_task", { extraIds: assignedBy ? [assignedBy] : [], excludeIds: [uid] });
+      if (!patronNotificationAllowedForWorker(uid)) return;
       const id = "taskpend-" + String(taskId || "") + "-" + Date.now();
       await enqueueUserNotifs(getCompanyPatrons().map(p => ({
         userId: p.id,
@@ -13700,6 +13719,7 @@ service cloud.firestore {
       const n = buildPatronRequestNotif(r);
       if (!n) return;
       void enqueuePatronsNotif(n.title, n.body, "ct-req-" + r.id, "request");
+      void enqueueManagersNotif(managerNotifKeyForRequest(r), n.title, n.body, "ct-req-" + r.id, "mgr_req", { excludeIds: [r.userId] });
       if (r.type === "shift_swap" && r.peerId) {
         const worker = DB.users.find(u => u.id === r.userId);
         void enqueueUserNotifs([{
@@ -17450,6 +17470,53 @@ service cloud.firestore {
       requests: "İzin, avans ve diğer talep sonuçları",
       attendance: "Giriş ve çıkış bildirimleri",
     };
+    /** Yönetici yetkili personele giden patron tarafı bildirimler (yetkiye göre). */
+    const MANAGER_NOTIF_TYPES = {
+      tasks: { perm: "tasks", label: "Onay bekleyen görevler", hint: "Görev onaya gönderilince", def: true },
+      requests: { perm: "requests", label: "Yeni izin / saat talepleri", hint: "İzin, saat ve diğer talepler", def: true },
+      advances: { perm: ["requests", "advances"], label: "Yeni avans talepleri", hint: "Avans talebi gelince", def: true },
+      shifts: { perm: ["requests", "shifts"], label: "Vardiya takas talepleri", hint: "Takas isteği / onayı", def: true },
+      attendance: { perm: "employees", label: "Personel giriş / çıkışları", hint: "Mesai başlangıç ve bitişleri", def: false },
+    };
+    function managerNotifPermList(key) {
+      const p = MANAGER_NOTIF_TYPES[key]?.perm;
+      return Array.isArray(p) ? p : (p ? [p] : []);
+    }
+    function userHoldsManagerNotifPerm(u, key) {
+      return !!u && managerNotifPermList(key).some(p => u.managerPermissions?.[p] === true);
+    }
+    function managerNotifEnabledFor(u, key) {
+      if (!u || u.role !== "calisan" || u.terminatedAt) return false;
+      const def = MANAGER_NOTIF_TYPES[key]?.def !== false;
+      const pref = u.managerNotifPrefs?.[key];
+      return pref === undefined ? def : pref === true;
+    }
+    /** key: MANAGER_NOTIF_TYPES; extraIds: ögeyi oluşturan/atayan personel (yetkisi devam ediyorsa). */
+    function enqueueManagersNotif(key, title, body, tag, kind, opts) {
+      try {
+        const o = opts || {};
+        const cid = currentUser?.companyId;
+        const exclude = new Set([currentUser?.id, ...(o.excludeIds || [])].filter(Boolean).map(String));
+        const extra = new Set((o.extraIds || []).filter(Boolean).map(String));
+        const recips = (DB.users || []).filter(u => u.companyId === cid && u.role === "calisan" && !u.terminatedAt
+          && !exclude.has(String(u.id))
+          && (userHoldsManagerNotifPerm(u, key) || (extra.has(String(u.id)) && managerNotifPermList(key).some(p => u.managerPermissions?.[p] === true)))
+          && managerNotifEnabledFor(u, key));
+        if (!recips.length) return Promise.resolve();
+        const base = String(tag || "n").replace(/^ct-/, "");
+        const idBase = "mgr-" + base + "-" + Date.now().toString(36);
+        return enqueueUserNotifs(recips.map(u => ({
+          userId: u.id, id: idBase + "-" + u.id, title, body,
+          tag: "ct-mgr-" + base, kind: kind || "mgr_info", t: Date.now(),
+        })));
+      } catch (e) { return Promise.resolve(); }
+    }
+    function managerNotifKeyForRequest(r) {
+      const typ = String(r?.type || "").toLowerCase();
+      if (typ === "adv") return "advances";
+      if (typ === "shift_swap") return "shifts";
+      return "requests";
+    }
     const WORKER_NOTIFICATION_PREF_LABELS = {
       attendance: "Mesai giriş / çıkış bildirimleri",
       requests: "Avans, izin ve saat taleplerinin sonucu",
@@ -24187,51 +24254,62 @@ service cloud.firestore {
         { id: "wishbox", lab: "Dilek Kutusu" },
       ].map(m => {
         const hidden = (w.hiddenMenuIds || []).includes(m.id);
-        return `<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;">
-          <span style="font-size:13px;color:var(--text2);">${m.lab}</span>
-          <div id="emp-nav-${m.id}" class="wsp-switch pdb-switch-sm${hidden ? "" : " on"}" onclick="this.classList.toggle('on')" role="switch" style="flex-shrink:0;cursor:pointer;" title="Göster / gizle"><div class="wsp-switch-knob"></div></div>
+        return `<div class="emp-tg-row">
+          <span class="emp-tg-lab">${m.lab}</span>
+          <div id="emp-nav-${m.id}" class="wsp-switch pdb-switch-sm${hidden ? "" : " on"}" onclick="this.classList.toggle('on')" role="switch" title="Göster / gizle"><div class="wsp-switch-knob"></div></div>
         </div>`;
       }).join("");
       const managerPermissionsHtml = currentUser?.role === "patron" ? `
-    <div class="emp-edit-section">
-      <div class="emp-edit-section-hd">Yönetici Yetkileri</div>
-      <p style="font-size:12px;color:var(--text3);line-height:1.5;margin:0 0 12px;">Bu personele hangi yönetim araçlarını kullanabileceğini açıp kapatın.</p>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px;">
+    <div class="emp-edit-section emp-collapsible collapsed">
+      <div class="emp-edit-section-hd" onclick="this.parentElement.classList.toggle('collapsed')">Yönetici Yetkileri</div>
+      <p class="emp-hint">Hangi yönetim araçlarını kullanabileceğini seçin.</p>
+      <div class="emp-tg-grid">
         ${Object.entries(MANAGER_PERMISSION_LABELS).map(([key, label]) => {
           const on = w.managerPermissions?.[key] === true;
-          return `<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;">
-            <span style="font-size:13px;color:var(--text2);">${label}</span>
-            <div class="wsp-switch${on ? " on" : ""}" role="switch" aria-checked="${on}" data-manager-permission="${key}" onclick="this.classList.toggle('on');this.setAttribute('aria-checked',this.classList.contains('on'))" style="flex-shrink:0;cursor:pointer;" title="Aç / kapat"><div class="wsp-switch-knob"></div></div>
+          return `<div class="emp-tg-row">
+            <span class="emp-tg-lab">${label}</span>
+            <div class="wsp-switch pdb-switch-sm${on ? " on" : ""}" role="switch" aria-checked="${on}" data-manager-permission="${key}" onclick="this.classList.toggle('on');this.setAttribute('aria-checked',this.classList.contains('on'));refreshEmpMgrNotifRows()" title="Aç / kapat"><div class="wsp-switch-knob"></div></div>
           </div>`;
         }).join("")}
       </div>
     </div>` : "";
+      const mgrNotifRows = Object.entries(MANAGER_NOTIF_TYPES).map(([key, d]) => {
+        const on = (w.managerNotifPrefs?.[key] === undefined ? d.def : w.managerNotifPrefs[key] === true);
+        const show = userHoldsManagerNotifPerm(w, key);
+        return `<div class="emp-tg-row" data-mgr-notif-row="${key}" data-mgr-notif-perms="${managerNotifPermList(key).join(",")}" style="${show ? "" : "display:none;"}">
+            <span class="emp-tg-lab">${d.label}<small>${d.hint}</small></span>
+            <div class="wsp-switch pdb-switch-sm${on ? " on" : ""}" role="switch" aria-checked="${on}" data-mgr-notif="${key}" onclick="this.classList.toggle('on');this.setAttribute('aria-checked',this.classList.contains('on'))" title="Aç / kapat"><div class="wsp-switch-knob"></div></div>
+          </div>`;
+      }).join("");
       const workerNotificationPermissionsHtml = currentUser?.role === "patron" ? `
-    <div class="emp-edit-section">
-      <div class="emp-edit-section-hd">Personel Bildirim İzinleri</div>
-      <p style="font-size:12px;color:var(--text3);line-height:1.5;margin:0 0 12px;">Bu personele gönderilecek bildirim türlerini ayrı ayrı seçin. Cihazın kendi bildirim izni de açık olmalıdır.</p>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px;">
+    <div class="emp-edit-section emp-collapsible collapsed">
+      <div class="emp-edit-section-hd" onclick="this.parentElement.classList.toggle('collapsed')">Bildirimler</div>
+      <div class="emp-sub-hd">Yönetici bildirimleri</div>
+      <p class="emp-hint">Yalnızca açık olan yönetici yetkilerine ait bildirimler gösterilir. Görevi atayan yetkili personel de bildirim alır.</p>
+      <div class="emp-tg-grid" id="emp-mgr-notif-grid">${mgrNotifRows}</div>
+      <div id="emp-mgr-notif-empty" class="emp-hint" style="${Object.keys(MANAGER_NOTIF_TYPES).some(k => userHoldsManagerNotifPerm(w, k)) ? "display:none;" : ""}">Bu personelin yönetici yetkisi yok.</div>
+      <div class="emp-sub-hd" style="margin-top:12px;">Kendi bildirimleri</div>
+      <div class="emp-tg-grid">
         ${Object.entries(WORKER_NOTIFICATION_PERMISSION_LABELS).map(([key, label]) => {
           const on = w.workerNotificationPermissions?.[key] !== false;
-          return `<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;">
-            <span style="font-size:13px;color:var(--text2);">${label}</span>
-            <div class="wsp-switch${on ? " on" : ""}" role="switch" aria-checked="${on}" data-worker-notification-permission="${key}" onclick="this.classList.toggle('on');this.setAttribute('aria-checked',this.classList.contains('on'))" style="flex-shrink:0;cursor:pointer;" title="Aç / kapat"><div class="wsp-switch-knob"></div></div>
+          return `<div class="emp-tg-row">
+            <span class="emp-tg-lab">${label}</span>
+            <div class="wsp-switch pdb-switch-sm${on ? " on" : ""}" role="switch" aria-checked="${on}" data-worker-notification-permission="${key}" onclick="this.classList.toggle('on');this.setAttribute('aria-checked',this.classList.contains('on'))" title="Aç / kapat"><div class="wsp-switch-knob"></div></div>
           </div>`;
         }).join("")}
       </div>
     </div>` : "";
       const patronNotificationPermissionHtml = currentUser?.role === "patron" ? `
-    <div class="emp-edit-section">
-      <div class="emp-edit-section-hd">Patron Bildirimleri</div>
-      <p style="font-size:12px;color:var(--text3);line-height:1.5;margin:0 0 12px;">Bu personelle ilgili giriş/çıkış ve görev bildirimlerini patron cihazında açıp kapatın.</p>
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;">
-        <span style="font-size:13px;color:var(--text2);">Bu personelden bildirim al</span>
+    <div class="emp-edit-section emp-collapsible collapsed">
+      <div class="emp-edit-section-hd" onclick="this.parentElement.classList.toggle('collapsed')">Patron Bildirimleri</div>
+      <div class="emp-tg-row">
+        <span class="emp-tg-lab">Bu personelden bildirim al<small>Giriş/çıkış ve görev bildirimleri patron cihazına gelir</small></span>
         <div class="wsp-switch${w.patronNotificationsEnabled === false ? "" : " on"}" role="switch" aria-checked="${w.patronNotificationsEnabled !== false}" data-patron-notifications-enabled onclick="this.classList.toggle('on');this.setAttribute('aria-checked',this.classList.contains('on'))" style="flex-shrink:0;cursor:pointer;" title="Aç / kapat"><div class="wsp-switch-knob"></div></div>
       </div>
     </div>` : "";
       return `
-    <div class="emp-edit-section">
-      <div class="emp-edit-section-hd">Temel bilgiler</div>
+    <div class="emp-edit-section emp-collapsible">
+      <div class="emp-edit-section-hd" onclick="this.parentElement.classList.toggle('collapsed')">Temel bilgiler</div>
       <div class="emp-edit-grid-2">
         <div class="field"><label>Ad Soyad</label><input type="text" id="emp-name" value="${escHtml(w.name)}"/></div>
         <div class="field"><label>Ünvan</label><input type="text" id="emp-jobtitle" value="${escHtml(w.jobTitle || "")}" placeholder="Örn: Stajyer, Müdür"/></div>
@@ -24252,8 +24330,8 @@ service cloud.firestore {
       </div>
       <div class="field" style="margin-top:12px;margin-bottom:0;"><label>Adres (İsteğe Bağlı)</label><textarea id="emp-address" placeholder="Çalışanın adresi...">${escHtml(w.address || '')}</textarea></div>
     </div>
-    <div class="emp-edit-section">
-      <div class="emp-edit-section-hd">Ücret &amp; mesai</div>
+    <div class="emp-edit-section emp-collapsible collapsed">
+      <div class="emp-edit-section-hd" onclick="this.parentElement.classList.toggle('collapsed')">Ücret &amp; mesai</div>
       <div class="field"><label>Saatlik Ücret (${cur})</label><input type="number" id="emp-rate" min="0" step="0.01" value="${w.hourlyRate || getSettings().hourlyRate}" data-prev-rate="${w.hourlyRate != null ? w.hourlyRate : getSettings().hourlyRate}" oninput="empRateScopeUpdate()"/></div>
       <div id="emp-rate-scope" style="display:none;margin:10px 0 0;padding:12px 14px;background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.28);border-radius:12px;">
         <div style="font-size:12px;font-weight:800;color:var(--accent);margin-bottom:10px;">Ücret değişikliği &amp; planlama</div>
@@ -24306,8 +24384,8 @@ service cloud.firestore {
         </div>
       </div>
     </div>
-    <div class="emp-edit-section">
-      <div class="emp-edit-section-hd">İzin &amp; hafta tatili</div>
+    <div class="emp-edit-section emp-collapsible collapsed">
+      <div class="emp-edit-section-hd" onclick="this.parentElement.classList.toggle('collapsed')">İzin &amp; hafta tatili</div>
       <div class="field">
         <label>Yıllık izin hakkı (gün)</label>
         <input type="number" id="emp-annual-leave-days" min="0" max="365" value="${w.annualLeaveDays != null ? w.annualLeaveDays : 14}"/>
@@ -24330,8 +24408,8 @@ service cloud.firestore {
       </div>
       ${buildPayWoffScopeHtml(w, false)}
     </div>
-    <div class="emp-edit-section">
-      <div class="emp-edit-section-hd">Avans kuralları</div>
+    <div class="emp-edit-section emp-collapsible collapsed">
+      <div class="emp-edit-section-hd" onclick="this.parentElement.classList.toggle('collapsed')">Avans kuralları</div>
       <div style="font-size:10px;color:var(--text3);margin-bottom:10px;line-height:1.45;">Bu personel için avans talebi ve limitleri. Patron manuel eklerken limit aşımında onay sorulur.</div>
       ${(() => {
         const ap = normalizeAdvancePolicy(w);
@@ -24362,8 +24440,8 @@ service cloud.firestore {
       </div>`;
       })()}
     </div>
-    <div class="emp-edit-section">
-      <div class="emp-edit-section-hd">İş kaydı</div>
+    <div class="emp-edit-section emp-collapsible collapsed">
+      <div class="emp-edit-section-hd" onclick="this.parentElement.classList.toggle('collapsed')">İş kaydı</div>
       <div class="emp-edit-grid-2">
         <div class="field" style="margin-bottom:0;">
           <label>İşe başlangıç tarihi</label>
@@ -24377,11 +24455,12 @@ service cloud.firestore {
       </div>
       ${w.terminatedAt ? `<div class="field" style="margin-top:12px;margin-bottom:0;"><label>Ayrılış notu</label><textarea id="emp-term-note" rows="3" placeholder="Neden ayrıldı / çıkarıldı…">${escHtml(w.terminationNote || "")}</textarea></div>` : ""}
     </div>
-    <div class="emp-edit-section">
-      <div class="emp-edit-section-hd">Çalışan menüsü (sol panel)</div>
-      <div style="font-size:10px;color:var(--text3);margin-bottom:10px;line-height:1.4;">Açık öğeler bu çalışan giriş yaptığında görünür.</div>
+    <div class="emp-edit-section emp-collapsible collapsed">
+      <div class="emp-edit-section-hd" onclick="this.parentElement.classList.toggle('collapsed')">Çalışan menüsü (sol panel)</div>
+      <div class="emp-hint">Açık öğeler bu çalışan giriş yaptığında görünür.</div>
+      <div class="emp-tg-grid emp-tg-grid-sm">${navMenuHtml}</div>
+      <div class="emp-sub-hd" style="margin-top:12px;">Ek seçenekler</div>
       <div style="display:flex;flex-direction:column;gap:6px;">
-        ${navMenuHtml}
         <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:8px;padding:12px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;border-top:2px solid var(--border);">
           <span style="flex:1;min-width:0;font-size:13px;color:var(--text2);line-height:1.4;"><b>Bugün</b> ekranında kazanç satırını gizle (yalnızca kendi hesabında).</span>
           <div id="emp-hide-today-earn" class="wsp-switch pdb-switch-sm${w.hideTodayEarn ? " on" : ""}" onclick="this.classList.toggle('on')" role="switch" style="flex-shrink:0;cursor:pointer;" title="Aç / kapat"><div class="wsp-switch-knob"></div></div>
@@ -24396,11 +24475,22 @@ service cloud.firestore {
         </div>
       </div>
     </div>
+    ${managerPermissionsHtml}
     ${workerNotificationPermissionsHtml}
-    ${patronNotificationPermissionHtml}
-    ${managerPermissionsHtml}`;
+    ${patronNotificationPermissionHtml}`;
     }
 
+    function refreshEmpMgrNotifRows() {
+      const held = new Set([...document.querySelectorAll("[data-manager-permission]")].filter(el => el.classList.contains("on")).map(el => el.dataset.managerPermission));
+      let any = false;
+      document.querySelectorAll("[data-mgr-notif-row]").forEach(row => {
+        const show = String(row.dataset.mgrNotifPerms || "").split(",").some(p => held.has(p));
+        row.style.display = show ? "" : "none";
+        if (show) any = true;
+      });
+      const empty = document.getElementById("emp-mgr-notif-empty");
+      if (empty) empty.style.display = any ? "none" : "";
+    }
     async function saveEmployeeFromForm(uid) {
       const w = DB.users.find(u => u.id === uid);
       if (!w) return false;
@@ -24429,6 +24519,9 @@ service cloud.firestore {
       const workerNotificationPermissions = currentUser?.role === "patron"
         ? Object.fromEntries(Object.keys(WORKER_NOTIFICATION_PERMISSION_LABELS).map(key => [key, !!document.querySelector(`[data-worker-notification-permission="${key}"]`)?.classList.contains("on")]))
         : (w.workerNotificationPermissions || {});
+      const managerNotifPrefs = currentUser?.role === "patron" && document.querySelector("[data-mgr-notif]")
+        ? Object.fromEntries(Object.keys(MANAGER_NOTIF_TYPES).map(key => [key, !!document.querySelector(`[data-mgr-notif="${key}"]`)?.classList.contains("on")]))
+        : (w.managerNotifPrefs || {});
       const patronNotificationsEnabled = currentUser?.role === "patron"
         ? !!document.querySelector("[data-patron-notifications-enabled]")?.classList.contains("on")
         : w.patronNotificationsEnabled !== false;
@@ -24479,7 +24572,7 @@ service cloud.firestore {
       if (String(w.username || "").toLowerCase() !== uname) {
         previousUsernames.push({ username: w.username, at: new Date().toISOString() });
       }
-      const updated = { ...w, name, jobTitle, username: uname, previousUsernames: previousUsernames.slice(-20), password: pass, hourlyRate, rateHistory, rateEffectiveFrom, wageChangeLog, phone, tcNo: tcNo || null, address, weeklyOff, color, hiddenMenuIds, managerPermissions, workerNotificationPermissions, patronNotificationsEnabled, annualLeaveDays, hideTodayEarn: !!document.getElementById("emp-hide-today-earn")?.classList.contains("on"), allowSwapPrivacy: !!document.getElementById("emp-allow-swap-privacy")?.classList.contains("on"), showWorkHoursAnalysis: !!document.getElementById("emp-show-hours-analysis")?.classList.contains("on"), overtimePayBoostMode, overtimePayBoostValue, weeklyOffPayBoostMode, weeklyOffPayBoostValue, payWeeklyOffDays, payWeeklyOffFrom, hiredAt: hiredRaw || null, terminatedAt, terminationNote, advancePolicy: readAdvancePolicyFromEmpForm(), branchId: document.getElementById("emp-branch-id")?.value || normalizeUserBranchId(w) };
+      const updated = { ...w, name, jobTitle, username: uname, previousUsernames: previousUsernames.slice(-20), password: pass, hourlyRate, rateHistory, rateEffectiveFrom, wageChangeLog, phone, tcNo: tcNo || null, address, weeklyOff, color, hiddenMenuIds, managerPermissions, managerNotifPrefs, workerNotificationPermissions, patronNotificationsEnabled, annualLeaveDays, hideTodayEarn: !!document.getElementById("emp-hide-today-earn")?.classList.contains("on"), allowSwapPrivacy: !!document.getElementById("emp-allow-swap-privacy")?.classList.contains("on"), showWorkHoursAnalysis: !!document.getElementById("emp-show-hours-analysis")?.classList.contains("on"), overtimePayBoostMode, overtimePayBoostValue, weeklyOffPayBoostMode, weeklyOffPayBoostValue, payWeeklyOffDays, payWeeklyOffFrom, hiredAt: hiredRaw || null, terminatedAt, terminationNote, advancePolicy: readAdvancePolicyFromEmpForm(), branchId: document.getElementById("emp-branch-id")?.value || normalizeUserBranchId(w) };
       DB.users[idx] = updated;
       if (currentUser?.id === uid) currentUser = updated;
       localCacheSave();
@@ -31081,6 +31174,10 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
         "ct-req-peerok-" + r.id,
         "request_shift_swap"
       );
+      if (approve) void enqueueManagersNotif("shifts",
+        platformNotif("req_shift_swap_peer_ok_title"),
+        platformNotif("req_shift_swap_peer_ok_body", { name: (DB.users.find(u => u.id === r.userId)?.name) || "Çalışan", peer: currentUser?.name || "İş arkadaşı" }),
+        "ct-req-peerok-" + r.id, "mgr_req", { excludeIds: [r.userId] });
       updateReqNotifDot();
       if (currentPage === "my-requests") renderMyRequestsPage();
       if (currentPage === "requests") renderRequestsPage();
@@ -31333,6 +31430,7 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
         rangeId: t.rangeId || null,
         rangeStart: t.rangeStart || null,
         rangeEnd: t.rangeEnd || null,
+        ...(t.assignedBy ? { assignedBy: String(t.assignedBy) } : {}),
       };
     }
     function jobTaskStatusLabel(t) {
@@ -31505,7 +31603,7 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
       lines.forEach(text => {
         const taskId = "t" + genId();
         const rangeId = "r" + genId();
-        const base = { id: taskId, rangeId, rangeStart: startDate, rangeEnd: endDate, text, done: false, needsApproval: na, pendingApproval: false, approved: false, rejected: false };
+        const base = { id: taskId, rangeId, rangeStart: startDate, rangeEnd: endDate, assignedBy: currentUser?.id || "", text, done: false, needsApproval: na, pendingApproval: false, approved: false, rejected: false };
         eachDateKeyInRange(startDate, endDate, dk => {
           const arr = Array.isArray(ensureJobTasks(wid)[dk]) ? [...ensureJobTasks(wid)[dk]] : [];
           arr.push(normalizeJobTask({ ...base }, na));
@@ -32064,7 +32162,7 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
       localCacheSave();
       await saveUserTasklists(uid);
       if (turningOn) {
-        void notifyPatronsTaskPending(currentUser.name || "Personel", current.text, uid, dateKey, taskId);
+        void notifyPatronsTaskPending(currentUser.name || "Personel", current.text, uid, dateKey, taskId, current.assignedBy || "");
         showToast("Onaya gönderildi");
       }
       renderJobTasksWorkerPage();
