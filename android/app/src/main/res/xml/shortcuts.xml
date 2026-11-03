@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="qr_scan"
+        android:enabled="true"
+        android:icon="@drawable/ic_stat_lperson"
+        android:shortcutShortLabel="@string/shortcut_qr_short"
+        android:shortcutLongLabel="@string/shortcut_qr_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.calismatakip.app"
+            android:targetClass="com.calismatakip.app.MainActivity"
+            android:data="https://lperson.web.app/?action=qr" />
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+</shortcuts>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF9800</color>
+    <!-- FCM / yerel bildirim ikon rengi (turuncu marka) -->
+    <color name="notification_icon_color">#F97316</color>
+    <!-- Adaptive ikon: logo tam dolsun (siyah çerçeve / minik önizleme olmasın) -->
+    <color name="ic_launcher_adaptive_bg">#FFFFFFFF</color>
+</resources>

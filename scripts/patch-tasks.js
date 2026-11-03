@@ -1,0 +1,115 @@
+const fs = require("fs");
+const p = "c:/Users/PC/Desktop/yv/public/index.html";
+let c = fs.readFileSync(p, "utf8");
+const start = c.indexOf("      const needsDefault = list.some(t => t.needsApproval);");
+const end = c.indexOf("    function renderJobTasksWorkerPage()", start);
+if (start < 0 || end < 0) {
+  console.error("markers not found", start, end);
+  process.exit(1);
+}
+const replacement = `      const pendingBlock = pending.length
+        ? \`<div class="card" style="margin-bottom:12px;border-color:var(--accent);">
+            <motion.div class="section-hd" style="margin-bottom:8px;color:var(--accent);">Onay bekleyen görevler</div>
+            \${pending.map(p => \`
+              <div style="display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;">
+                <span style="font-size:12px;"><b>\${escHtml(p.worker.name)}</b> · \${escHtml(p.task.text || "")}</span>
+                <div style="display:flex;gap:6px;">
+                  <button type="button" class="btn btn-primary btn-sm" onclick="patronApproveJobTask('\${escHtml(p.worker.id)}','\${escHtml(p.locKey)}','\${escHtml(p.task.id)}','\${escHtml(p.locType)}')">Onayla</button>
+                  <button type="button" class="btn btn-danger btn-sm" onclick="patronRejectJobTask('\${escHtml(p.worker.id)}','\${escHtml(p.locKey)}','\${escHtml(p.task.id)}','\${escHtml(p.locType)}')">Reddet</button>
+                </div>
+              </div>\`).join("")}
+          </div>\`
+        : "";
+      const headCells = TASK_WEEK_DAYS.map(d => \`<th class="tasks-paper-th">\${d.label}</th>\`).join("");
+      const bodyRows = workers.map(w => {
+        const cells = TASK_WEEK_DAYS.map(d => {
+          const list = getWeeklyTasks(w.id, d.key);
+          const lines = list.map(t => t.text || "").join("\\n");
+          const needsNa = list.some(t => t.needsApproval);
+          return \`<td class="tasks-paper-cell" data-wid="\${escHtml(w.id)}" data-wday="\${d.key}">
+            <div class="tasks-paper-cell-hd">
+              <span class="tasks-paper-day">\${d.label}</span>
+              <div class="tasks-paper-na-row">
+                <span style="font-size:10px;color:var(--text3);">Onay</span>
+                <div class="wsp-switch tasks-week-na \${needsNa ? "on" : ""}" onclick="toggleTasksWeekNeedsApproval(this)" style="cursor:pointer;transform:scale(0.85);"><div class="wsp-switch-knob"></div></motion.div>
+              </div>
+            </div>
+            <textarea class="tasks-week-ta" rows="4" placeholder="Her satır bir görev…">\${escHtml(lines)}</textarea>
+          </td>\`;
+        }).join("");
+        return \`<tr><td class="tasks-paper-name">\${escHtml(w.name)}</td>\${cells}</tr>\`;
+      }).join("");
+      root.innerHTML = \`\${pendingBlock}
+        <div class="card tasks-week-card">
+          <div class="section-hd" style="margin-bottom:6px;">Haftalık görev planı</div>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:12px;">Tüm personel ve günler tek tabloda. Her hücrede satır başına bir görev; haftanın her günü otomatik tekrarlanır.</div>
+          <div class="tasks-paper-scroll">
+            <table class="tasks-paper-table"><thead><tr><th class="tasks-paper-th tasks-paper-th-name">Personel</th>\${headCells}</tr></thead><tbody>\${bodyRows}</tbody></table>
+          </div>
+          <button type="button" class="btn btn-primary btn-sm" style="margin-top:14px;width:100%;" onclick="patronSaveAllWeeklyTasks()">Tüm görevleri kaydet</button>
+        </div>\`;
+    }
+    function toggleTasksWeekNeedsApproval(el) {
+      if (!el || currentUser?.role !== "patron") return;
+      el.classList.toggle("on");
+    }
+    function parseTasksFromTextarea(text, prevList, needsApproval) {
+      const lines = String(text || "").split(/\\n/).map(s => s.trim()).filter(Boolean);
+      return lines.map((line, idx) => {
+        const old = (prevList || [])[idx];
+        if (old && old.id) return { ...old, text: line, needsApproval: !!needsApproval };
+        return { id: "t" + genId(), text: line, done: false, needsApproval: !!needsApproval, pendingApproval: false, approved: false, rejected: false };
+      });
+    }
+    async function patronSaveAllWeeklyTasks() {
+      if (currentUser?.role !== "patron") return;
+      const cells = [...document.querySelectorAll(".tasks-paper-cell")];
+      for (const cell of cells) {
+        const wid = cell.getAttribute("data-wid");
+        const wday = cell.getAttribute("data-wday");
+        if (!wid || !wday) continue;
+        const ta = cell.querySelector(".tasks-week-ta");
+        const sw = cell.querySelector(".tasks-week-na");
+        const needsApproval = !!(sw && sw.classList.contains("on"));
+        const prev = getWeeklyTasks(wid, wday);
+        setWeeklyTasks(wid, wday, parseTasksFromTextarea(ta?.value || "", prev, needsApproval));
+      }
+      localCacheSave();
+      await Promise.all(getWorkers().map(w => saveUserTasklists(w.id)));
+      showToast("Haftalık görevler kaydedildi ✓");
+      renderTasksPatronPage();
+    }
+    function _updateTaskInStore(uid, locKey, locType, taskId, updater) {
+      if (locType === "weekly") {
+        setWeeklyTasks(uid, locKey, getWeeklyTasks(uid, locKey).map(t => String(t.id) === String(taskId) ? updater(t) : t));
+      } else {
+        const arr = (Array.isArray(ensureJobTasks(uid)[locKey]) ? ensureJobTasks(uid)[locKey] : []).map(t =>
+          String(t.id) === String(taskId) ? updater(t) : t
+        );
+        setJobTasksForDay(uid, locKey, arr);
+      }
+    }
+    async function patronApproveJobTask(wid, wday, taskId, locType) {
+      if (currentUser?.role !== "patron") return;
+      _updateTaskInStore(wid, wday, locType || "weekly", taskId, t => ({ ...t, done: true, approved: true, pendingApproval: false, rejected: false }));
+      localCacheSave();
+      await saveUserTasklists(wid);
+      showToast("Görev onaylandı ✓");
+      renderTasksPatronPage();
+    }
+    async function patronRejectJobTask(wid, wday, taskId, locType) {
+      if (currentUser?.role !== "patron") return;
+      _updateTaskInStore(wid, wday, locType || "weekly", taskId, t => ({ ...t, done: false, approved: false, pendingApproval: false, rejected: true }));
+      localCacheSave();
+      await saveUserTasklists(wid);
+      showToast("Görev reddedildi");
+      renderTasksPatronPage();
+    }
+
+`;
+let out = replacement.replace(/<\/?motion\.div>/g, tag => tag.startsWith("</") ? "</div>" : "<motion.div");
+out = out.replace(/<\/?motion\.motion\.div>/g, tag => tag.startsWith("</") ? "</div>" : "<div>");
+out = out.replace(/motion\.div/g, "div");
+c = c.slice(0, start) + out + c.slice(end);
+fs.writeFileSync(p, c);
+console.log("patched ok");

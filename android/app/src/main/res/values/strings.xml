@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">lPerson</string>
+    <string name="title_activity_main">lPerson</string>
+    <string name="package_name">com.calismatakip.app</string>
+    <string name="custom_url_scheme">com.calismatakip.app</string>
+    <string name="shortcut_qr_short">QR Tara</string>
+    <string name="shortcut_qr_long">İşyeri QR kodunu tara</string>
+    <string name="widget_qr_short">QR Tara</string>
+    <string name="widget_qr_hint">Dokun, kamerayı aç</string>
+    <string name="widget_qr_desc">Ana ekrandan işyeri QR kodunu tara</string>
+    <string name="widget_inline_short">QR Tara</string>
+    <string name="widget_inline_hint">QR kodunu tara</string>
+    <string name="widget_inline_action">TARA</string>
+    <string name="widget_inline_desc">Dokunarak QR kodunu tara</string>
+    <string name="widget_inline_assistant_desc">QR kodunu tara</string>
+</resources>

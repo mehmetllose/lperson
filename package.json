@@ -1,0 +1,42 @@
+{
+  "name": "yv-mobile",
+  "version": "1.0.46",
+  "description": "Mobile version of Calisma Takip",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:cap": "node scripts/build-cap-plugins.mjs",
+    "favicon": "node scripts/make-favicon.mjs",
+    "postinstall": "node scripts/build-cap-plugins.mjs && node scripts/patch-capacitor-android-icons.mjs",
+    "functions:install": "npm --prefix functions install",
+    "deploy:functions": "npm --prefix functions install && firebase deploy --only functions",
+    "android:owner": "node scripts/prep-owner-build.mjs && npx cap sync android",
+    "android:clean": "node scripts/android-clean-build.mjs",
+    "android:sync": "node scripts/sync-android-public.mjs && npx cap sync android && node scripts/materialize-node-modules.mjs && node scripts/materialize-android-assets.mjs",
+    "android:copy-apk": "node scripts/copy-debug-apk.mjs",
+    "android:rebuild": "node scripts/sync-android-public.mjs && node scripts/materialize-node-modules.mjs && node scripts/android-clean-build.mjs && npx cap sync android && node scripts/materialize-node-modules.mjs && node scripts/materialize-android-assets.mjs",
+    "android:materialize": "node scripts/materialize-node-modules.mjs && node scripts/materialize-android-assets.mjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@capacitor-community/barcode-scanner": "^4.0.1",
+    "@capacitor/android": "^5.0.0",
+    "@capacitor/app": "^5.0.8",
+    "@capacitor/cli": "^5.7.8",
+    "@capacitor/core": "^5.7.8",
+    "@capacitor/geolocation": "^5.0.8",
+    "@capacitor/ios": "^5.0.0",
+    "@capacitor/local-notifications": "^5.0.7",
+    "@capacitor/push-notifications": "^5.0.0",
+    "@capacitor/status-bar": "^5.0.0",
+    "qrcode": "^1.5.3"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "firebase-tools": "^13.30.0",
+    "sharp": "^0.34.5",
+    "typescript": "^6.0.3"
+  }
+}

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Durum çubuğu bildirim ikonu: yalnızca beyaz + şeffaf (Android kuralı).
+  Iperson markası: kalın dikey çubuk + P kasası + içte insan silüeti (metin “lP” değil).
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Dikey çubuk (I / P gövdesi), hafif yuvarlatılmış üst-alt -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M4.35,5.1C4.35,4.42 4.9,3.85 5.58,3.85H6.92C7.6,3.85 8.15,4.42 8.15,5.1V18.9C8.15,19.58 7.6,20.15 6.92,20.15H5.58C4.9,20.15 4.35,19.58 4.35,18.9V5.1Z" />
+    <!-- P üst köprüsü -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M8.15,5.1H16.35C17.05,5.1 17.62,5.65 17.62,6.32V7.58H8.15V5.1Z" />
+    <!-- P kasası (sağa açılan kalın yay) -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M8.15,7.58H9.55C13.85,7.58 17.05,9.45 17.05,12.02C17.05,14.58 13.85,16.45 9.55,16.45H8.15V14.78H9.35C12.55,14.78 14.95,13.62 14.95,12.02C14.95,10.42 12.55,9.25 9.35,9.25H8.15V7.58Z" />
+    <!-- İnsan: baş -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M12.55,9.35m-1.25,0a1.25,1.25 0 1,1 2.5,0a1.25,1.25 0 1,1 -2.5,0" />
+    <!-- İnsan: omuz / gövde -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M11.15,10.85h4.1l0.55,2.55h-5.2z" />
+</vector>

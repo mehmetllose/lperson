@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "301930076769",
+    "project_id": "lperson",
+    "storage_bucket": "lperson.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:301930076769:android:81656d9ce9639ed1332820",
+        "android_client_info": {
+          "package_name": "com.calismatakip.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCOMJvmxDsFqNEsP4ylxCpDnOHK-wSluNk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

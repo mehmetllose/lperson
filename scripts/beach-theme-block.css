@@ -1,0 +1,388 @@
+  /* Sahil: kum, deniz, yukarı/aşağı dalgalar */
+  .dash-themed-root.dash-theme-beach {
+    position: relative;
+    isolation: isolate;
+  }
+  .beach-theme-deco {
+    display: none;
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .dash-themed-root.dash-theme-beach > .beach-dash-deco {
+    display: block;
+  }
+  #app-screen.dash-theme-app-wide.dash-theme-beach > .beach-app-deco {
+    display: block;
+  }
+  #app-screen.dash-theme-app-wide.dash-theme-beach .dash-themed-root.dash-theme-beach > .beach-dash-deco {
+    display: none;
+  }
+  .beach-theme-deco::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 85% 38% at 50% 0%, rgba(125, 211, 252, 0.28) 0%, transparent 58%),
+      linear-gradient(180deg,
+        #6eb8d9 0%,
+        #38bdf8 18%,
+        #0891b2 38%,
+        #0e7490 48%,
+        transparent 48%);
+    animation: dash-beach-shimmer 7s ease-in-out infinite;
+    pointer-events: none;
+  }
+  .beach-theme-deco::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 42%;
+    background:
+      linear-gradient(180deg, transparent 0%, rgba(212, 184, 150, 0.35) 8%, #d4b896 28%, #e8d5b5 58%, #f0e6d2 100%);
+    pointer-events: none;
+  }
+  .beach-wave-layer {
+    position: absolute;
+    left: 0;
+    width: 200%;
+    height: 64px;
+    background-repeat: repeat-x;
+    background-size: 50% 100%;
+    will-change: transform;
+    pointer-events: none;
+  }
+  .beach-wave-layer--bottom {
+    bottom: 38%;
+    animation: dash-beach-wave-drift linear infinite, dash-beach-surf 5s ease-in-out infinite;
+  }
+  .beach-wave-layer--bottom.beach-wave-layer--b1 {
+    height: 72px;
+    opacity: 0.92;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 72'%3E%3Cpath d='M0 36 C200 62 400 10 600 36 C800 62 1000 10 1200 36 V72 H0 Z' fill='%230e7490'/%3E%3C/svg%3E");
+    animation-duration: 16s, 5s;
+    animation-delay: 0s, 0s;
+  }
+  .beach-wave-layer--bottom.beach-wave-layer--b2 {
+    height: 58px;
+    bottom: calc(38% - 6px);
+    opacity: 0.78;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 58'%3E%3Cpath d='M0 30 C150 6 350 54 600 30 C850 6 1050 54 1200 30 V58 H0 Z' fill='%230891b2'/%3E%3C/svg%3E");
+    animation-duration: 11s, 4.2s;
+    animation-delay: -3s, -1s;
+  }
+  .beach-wave-layer--bottom.beach-wave-layer--b3 {
+    height: 44px;
+    bottom: calc(38% + 10px);
+    opacity: 0.55;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 44'%3E%3Cpath d='M0 22 C180 40 420 4 600 22 C780 40 1020 4 1200 22 V44 H0 Z' fill='%2322d3ee' fill-opacity='0.9'/%3E%3C/svg%3E");
+    animation-duration: 8s, 3.5s;
+    animation-delay: -5s, -2s;
+  }
+  .beach-wave-layer--top {
+    top: 0;
+    height: 48px;
+    opacity: 0.38;
+    animation: dash-beach-wave-drift-rev linear infinite;
+  }
+  .beach-wave-layer--top.beach-wave-layer--t1 {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 48'%3E%3Cpath d='M0 24 C200 8 400 40 600 24 C800 8 1000 40 1200 24 V48 H0 Z' fill='%237dd3fc' fill-opacity='0.65'/%3E%3C/svg%3E");
+    animation-duration: 20s;
+  }
+  .beach-wave-layer--top.beach-wave-layer--t2 {
+    top: 18px;
+    height: 36px;
+    opacity: 0.22;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 36'%3E%3Cpath d='M0 18 C150 32 350 4 600 18 C850 32 1050 4 1200 18 V36 H0 Z' fill='%23bae6fd' fill-opacity='0.55'/%3E%3C/svg%3E");
+    animation-duration: 14s;
+    animation-delay: -6s;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .beach-wave-layer { animation: none !important; }
+    .dash-themed-root.dash-theme-beach .calisan-dash-profile,
+    .dash-themed-root.dash-theme-beach .cdb-w-cell .card,
+    .dash-themed-root.dash-theme-beach .pdb-w-cell > .card,
+    .dash-themed-root.dash-theme-beach .pdb-early-late-grid > .card,
+    .beach-theme-deco::before { animation: none; }
+  }
+  .dash-themed-root.dash-theme-beach > *:not(.beach-theme-deco) {
+    position: relative;
+    z-index: 1;
+  }
+  .dash-themed-root.dash-theme-beach .cdb-w-cell,
+  .dash-themed-root.dash-theme-beach .pdb-w-cell,
+  .dash-themed-root.dash-theme-beach .pdb-early-late-grid > * {
+    overflow: hidden !important;
+    padding-bottom: 0 !important;
+    border-radius: 20px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    filter: none !important;
+    contain: layout style paint;
+  }
+  .dash-themed-root.dash-theme-beach .calisan-dash-profile,
+  .dash-themed-root.dash-theme-beach .cdb-w-cell .card,
+  .dash-themed-root.dash-theme-beach .pdb-w-cell > .card,
+  .dash-themed-root.dash-theme-beach .pdb-early-late-grid > .card {
+    position: relative;
+    overflow: hidden !important;
+    z-index: 0;
+    border-radius: 20px !important;
+    border: 1px solid rgba(212, 184, 150, 0.38) !important;
+    background:
+      linear-gradient(168deg,
+        rgba(8, 116, 144, 0.86) 0%,
+        rgba(14, 116, 144, 0.82) 42%,
+        rgba(180, 140, 90, 0.32) 72%,
+        rgba(212, 184, 150, 0.28) 100%) !important;
+    animation: none !important;
+    filter: none !important;
+    color: #fef9e7;
+    box-shadow: inset 0 1px 0 rgba(254, 243, 199, 0.18), inset 0 -4px 14px rgba(8, 116, 144, 0.28) !important;
+    clip-path: none !important;
+    -webkit-clip-path: none !important;
+    background-clip: padding-box !important;
+    contain: layout style paint;
+  }
+  .dash-themed-root.dash-theme-beach .calisan-dash-profile::before,
+  .dash-themed-root.dash-theme-beach .cdb-w-cell .card::before,
+  .dash-themed-root.dash-theme-beach .pdb-w-cell > .card::before,
+  .dash-themed-root.dash-theme-beach .pdb-early-late-grid > .card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit !important;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 0%, rgba(186, 230, 253, 0.18), transparent 55%),
+      radial-gradient(ellipse 60% 40% at 85% 100%, rgba(212, 184, 150, 0.16), transparent 50%),
+      repeating-linear-gradient(105deg, transparent 0%, transparent 42%, rgba(254, 243, 199, 0.05) 48%, transparent 54%);
+    animation: none !important;
+    transform: none !important;
+    opacity: 0.5;
+  }
+  .dash-themed-root.dash-theme-beach .cdb-w-cell::after,
+  .dash-themed-root.dash-theme-beach .pdb-w-cell::after {
+    display: none !important;
+    content: none !important;
+  }
+  .dash-themed-root.dash-theme-beach .cdb-card-title {
+    color: #fde68a !important;
+    text-shadow: 0 1px 4px rgba(8, 116, 144, 0.75), 0 0 12px rgba(56, 189, 248, 0.2);
+  }
+  .dash-themed-root.dash-theme-beach .calisan-dash-profile [style*="--bg3"],
+  .dash-themed-root.dash-theme-beach .cdb-w-cell .card [style*="--bg3"],
+  .dash-themed-root.dash-theme-beach .pdb-w-cell > .card [style*="--bg3"],
+  .dash-themed-root.dash-theme-beach .pdb-early-late-grid > .card [style*="--bg3"] {
+    background: linear-gradient(155deg, rgba(8, 116, 144, 0.9) 0%, rgba(14, 116, 144, 0.85) 55%, rgba(180, 140, 90, 0.35) 100%) !important;
+    border-color: rgba(212, 184, 150, 0.32) !important;
+    border-radius: 14px !important;
+  }
+  .dash-themed-root.dash-theme-beach .cdb-w-cell .card [style*="color:var(--text3)"],
+  .dash-themed-root.dash-theme-beach .cdb-w-cell .card [style*="color: var(--text3)"],
+  .dash-themed-root.dash-theme-beach .calisan-dash-profile [style*="color:var(--text3)"],
+  .dash-themed-root.dash-theme-beach .calisan-dash-profile [style*="color: var(--text3)"] {
+    color: #7dd3fc !important;
+    text-shadow: 0 1px 2px rgba(8, 47, 73, 0.6);
+  }
+  .dash-themed-root.dash-theme-beach .cdb-w-cell .card [style*="color:var(--text2)"],
+  .dash-themed-root.dash-theme-beach .cdb-w-cell .card [style*="color: var(--text2)"],
+  .dash-themed-root.dash-theme-beach .cdb-w-cell .card [style*="color:var(--text)"],
+  .dash-themed-root.dash-theme-beach .cdb-w-cell .card [style*="color: var(--text)"] {
+    color: #e0f2fe !important;
+    text-shadow: 0 1px 3px rgba(8, 47, 73, 0.5);
+  }
+  .dash-themed-root.dash-theme-beach .cdb-w-cell .card [style*="color:var(--accent)"],
+  .dash-themed-root.dash-theme-beach .cdb-w-cell .card [style*="color: var(--accent)"] {
+    color: #67e8f9 !important;
+    text-shadow: 0 0 10px rgba(34, 211, 238, 0.35);
+  }
+  html.ct-light .dash-themed-root.dash-theme-beach .calisan-dash-profile,
+  html.ct-light .dash-themed-root.dash-theme-beach .cdb-w-cell .card,
+  html.ct-light .dash-themed-root.dash-theme-beach .pdb-w-cell > .card,
+  html.ct-light .dash-themed-root.dash-theme-beach .pdb-early-late-grid > .card {
+    border-color: rgba(180, 140, 90, 0.42) !important;
+    background:
+      linear-gradient(168deg,
+        rgba(254, 249, 231, 0.96) 0%,
+        rgba(253, 230, 138, 0.88) 42%,
+        rgba(186, 230, 253, 0.82) 100%) !important;
+    color: #0c4a6e;
+  }
+  html.ct-light .dash-themed-root.dash-theme-beach .cdb-card-title {
+    color: #b45309 !important;
+    text-shadow: none;
+  }
+  .dash-themed-root.dash-cards-transparent.dash-theme-beach .calisan-dash-profile,
+  .dash-themed-root.dash-cards-transparent.dash-theme-beach .cdb-w-cell .card,
+  .dash-themed-root.dash-cards-transparent.dash-theme-beach .pdb-w-cell > .card,
+  .dash-themed-root.dash-cards-transparent.dash-theme-beach .pdb-early-late-grid > .card {
+    background:
+      linear-gradient(168deg,
+        rgba(8, 116, 144, 0.52) 0%,
+        rgba(14, 116, 144, 0.48) 50%,
+        rgba(212, 184, 150, 0.32) 100%) !important;
+    backdrop-filter: blur(18px) saturate(1.2) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(1.2) !important;
+    border-color: rgba(212, 184, 150, 0.35) !important;
+  }
+  .dash-themed-root.dash-theme-beach .calisan-dash-profile > *,
+  .dash-themed-root.dash-theme-beach .cdb-w-cell .card > *,
+  .dash-themed-root.dash-theme-beach .pdb-w-cell > .card > *,
+  .dash-themed-root.dash-theme-beach .pdb-early-late-grid > .card > * {
+    position: relative;
+    z-index: 1;
+  }
+  .dash-themed-root.dash-theme-beach:not(.beach-waves-on) .beach-wave-layer,
+  html:not(.beach-waves-on) #app-screen:not(.beach-app-waves-on) > .beach-app-deco .beach-wave-layer {
+    display: none !important;
+    animation: none !important;
+  }
+  .dash-themed-root.dash-theme-beach.beach-waves-on .beach-wave-layer,
+  #app-screen.dash-theme-app-wide.dash-theme-beach.beach-app-waves-on > .beach-app-deco .beach-wave-layer {
+    display: block !important;
+    visibility: visible !important;
+  }
+  html.beach-waves-on .dash-themed-root.dash-theme-beach,
+  .dash-themed-root.dash-theme-beach.beach-waves-on {
+    min-height: min(100dvh, 100vh);
+  }
+  html.beach-mobile-ctx .dash-themed-root.dash-theme-beach.beach-waves-on > .beach-dash-deco,
+  html.beach-mobile-ctx #app-screen.beach-app-waves-on > .beach-app-deco {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 50;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  html.beach-mobile-ctx .dash-themed-root.dash-theme-beach.beach-waves-on > *:not(.beach-theme-deco) {
+    position: relative;
+    z-index: 3;
+  }
+  html.beach-mobile-ctx .dash-themed-root.dash-theme-beach .beach-theme-deco::before,
+  html.beach-mobile-ctx #app-screen.dash-theme-beach > .beach-app-deco::before {
+    animation: none;
+    background:
+      radial-gradient(ellipse 80% 36% at 50% 0%, rgba(125, 211, 252, 0.22) 0%, transparent 55%),
+      linear-gradient(180deg, #6eb8d9 0%, #38bdf8 20%, #0891b2 40%, #0e7490 50%, transparent 50%);
+  }
+  html.beach-mobile-ctx .dash-themed-root.dash-theme-beach .calisan-dash-profile,
+  html.beach-mobile-ctx .dash-themed-root.dash-theme-beach .cdb-w-cell .card,
+  html.beach-mobile-ctx .dash-themed-root.dash-theme-beach .pdb-w-cell > .card,
+  html.beach-mobile-ctx .dash-themed-root.dash-theme-beach .pdb-early-late-grid > .card {
+    animation: none !important;
+    isolation: isolate;
+  }
+  html.beach-mobile-ctx .dash-themed-root.dash-theme-beach .calisan-dash-profile::before,
+  html.beach-mobile-ctx .dash-themed-root.dash-theme-beach .cdb-w-cell .card::before,
+  html.beach-mobile-ctx .dash-themed-root.dash-theme-beach .pdb-w-cell > .card::before,
+  html.beach-mobile-ctx .dash-themed-root.dash-theme-beach .pdb-early-late-grid > .card::before {
+    animation: none;
+    background: radial-gradient(ellipse 80% 50% at 20% 0%, rgba(186, 230, 253, 0.16), transparent 55%);
+  }
+  html.beach-mobile-ctx .dash-themed-root.dash-theme-beach .cdb-w-cell,
+  html.beach-mobile-ctx .dash-themed-root.dash-theme-beach .pdb-w-cell {
+    filter: none;
+  }
+  html.beach-mobile-ctx .dash-themed-root.dash-theme-beach .cdb-w-cell::after,
+  html.beach-mobile-ctx .dash-themed-root.dash-theme-beach .pdb-w-cell::after {
+    display: none;
+  }
+  html.beach-mobile-ctx .dash-themed-root.dash-theme-beach .cdb-card-title {
+    text-shadow: 0 1px 2px rgba(8, 47, 73, 0.65);
+  }
+  html.beach-mobile-ctx .dash-themed-root.dash-cards-transparent.dash-theme-beach .calisan-dash-profile,
+  html.beach-mobile-ctx .dash-themed-root.dash-cards-transparent.dash-theme-beach .cdb-w-cell .card,
+  html.beach-mobile-ctx .dash-themed-root.dash-cards-transparent.dash-theme-beach .pdb-w-cell > .card,
+  html.beach-mobile-ctx .dash-themed-root.dash-cards-transparent.dash-theme-beach .pdb-early-late-grid > .card {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background:
+      linear-gradient(168deg,
+        rgba(8, 116, 144, 0.9) 0%,
+        rgba(14, 116, 144, 0.86) 50%,
+        rgba(212, 184, 150, 0.35) 100%) !important;
+  }
+  html.beach-mobile-ctx #app-screen.dash-theme-app-wide.dash-theme-beach {
+    background:
+      radial-gradient(ellipse 80% 38% at 50% 0%, rgba(125, 211, 252, 0.2) 0%, transparent 55%),
+      linear-gradient(180deg, #6eb8d9 0%, #38bdf8 22%, #0891b2 42%, #0e7490 52%, #d4b896 52%, #e8d5b5 72%, #f0e6d2 100%);
+  }
+  html.beach-mobile-ctx.beach-waves-on .beach-wave-layer--b3,
+  html.beach-mobile-ctx.beach-waves-on .beach-wave-layer--t2 {
+    display: none !important;
+  }
+  .dash-themed-root.dash-theme-beach .calisan-dash-profile {
+    border-radius: 22px !important;
+    overflow: hidden !important;
+  }
+  .dash-themed-root.dash-theme-beach .calisan-dash-profile::before {
+    border-radius: 22px !important;
+  }
+  #app-screen.dash-active-theme-beach .top-bar,
+  #app-screen.dash-theme-app-wide.dash-theme-beach .top-bar {
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-top: max(6px, env(safe-area-inset-top, 0px));
+    width: calc(100% - 20px);
+    align-self: center;
+    border-radius: 18px !important;
+    border: 1px solid rgba(212, 184, 150, 0.32) !important;
+    box-shadow: inset 0 1px 0 rgba(254, 243, 199, 0.12) !important;
+    overflow: hidden !important;
+    background-clip: padding-box !important;
+  }
+  #app-screen.dash-active-theme-beach .main-header,
+  #app-screen.dash-theme-app-wide.dash-theme-beach .main-header {
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-top: max(6px, env(safe-area-inset-top, 0px));
+    width: calc(100% - 20px);
+    border-radius: 18px !important;
+    border: 1px solid rgba(212, 184, 150, 0.28) !important;
+    box-shadow: inset 0 1px 0 rgba(254, 243, 199, 0.1) !important;
+    overflow: hidden !important;
+    background-clip: padding-box !important;
+  }
+  #app-screen.dash-theme-app-wide.dash-theme-beach .app-body,
+  #app-screen.dash-theme-app-wide.dash-theme-beach .main-content,
+  #app-screen.dash-theme-app-wide.dash-theme-beach .main-content > .page,
+  #app-screen.dash-active-theme-beach .app-body,
+  #app-screen.dash-active-theme-beach .main-content,
+  #app-screen.dash-active-theme-beach .main-content > .page {
+    background: transparent !important;
+  }
+  .dash-themed-root.dash-theme-beach .pdb-stat-row > div,
+  .dash-themed-root.dash-theme-beach .pdb-metric-grid4 > div,
+  .dash-themed-root.dash-theme-beach .cdb-w-cell .card > div[style*="background:var(--bg3)"],
+  .dash-themed-root.dash-theme-beach .cdb-w-cell .card > div[style*="background: var(--bg3)"],
+  .dash-themed-root.dash-theme-beach .pdb-w-cell .card > div[style*="background:var(--bg3)"],
+  .dash-themed-root.dash-theme-beach .pdb-w-cell .card > div[style*="background: var(--bg3)"] {
+    border-radius: 14px !important;
+    overflow: hidden !important;
+    clip-path: none !important;
+    -webkit-clip-path: none !important;
+    background:
+      linear-gradient(155deg, rgba(8, 116, 144, 0.9) 0%, rgba(14, 116, 144, 0.85) 55%, rgba(180, 140, 90, 0.35) 100%) !important;
+    border: 1px solid rgba(212, 184, 150, 0.32) !important;
+    box-shadow: inset 0 1px 0 rgba(254, 243, 199, 0.12) !important;
+    contain: layout style paint;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html.beach-mobile-ctx .dash-themed-root.dash-theme-beach .calisan-dash-profile,
+    html.beach-mobile-ctx .dash-themed-root.dash-theme-beach .cdb-w-cell .card,
+    html.beach-mobile-ctx .dash-themed-root.dash-theme-beach .pdb-w-cell > .card,
+    html.beach-mobile-ctx .dash-themed-root.dash-theme-beach .pdb-early-late-grid > .card {
+      animation: none !important;
+    }
+    html.beach-mobile-ctx.beach-waves-on .beach-wave-layer { animation: none !important; opacity: 0.55; }
+  }

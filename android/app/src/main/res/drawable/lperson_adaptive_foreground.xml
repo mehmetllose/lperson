@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Eski referanslar için: tam alan, inset yok (Riot Mobile tarzı dolgun ikon) -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <bitmap
+            android:gravity="fill"
+            android:src="@drawable/lperson_launcher" />
+    </item>
+</layer-list>
