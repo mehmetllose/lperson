@@ -29,6 +29,7 @@ import com.getcapacitor.BridgeActivity;
 public class MainActivity extends BridgeActivity {
 
     public static final int REQ_POST_NOTIFICATIONS = 9911;
+    public static final int REQ_CAMERA = 9912;
     public static final String EXTRA_WIDGET_QR = "lperson_widget_qr";
 
     private boolean openedFromWidgetQr = false;
@@ -193,6 +194,35 @@ public class MainActivity extends BridgeActivity {
         if (requestCode == REQ_POST_NOTIFICATIONS) {
             runWebNotifPermissionContinuation();
         }
+        if (requestCode == REQ_CAMERA) {
+            boolean granted = grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED;
+            String res = granted ? "granted"
+                    : (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA) ? "denied" : "blocked");
+            deliverCameraPermResult(res);
+        }
+    }
+
+    void requestCameraPermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            deliverCameraPermResult("granted");
+            return;
+        }
+        ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, REQ_CAMERA);
+    }
+
+    void deliverCameraPermResult(String res) {
+        WebView wv = getBridge().getWebView();
+        if (wv == null) return;
+        wv.post(() -> wv.evaluateJavascript(
+                "(function(){try{var f=window.__onAndroidCameraPerm;window.__onAndroidCameraPerm=null;if(typeof f==='function')f('" + res + "');}catch(e){}})()", null));
+    }
+
+    void openAppSettings() {
+        try {
+            Intent i = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName()));
+            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(i);
+        } catch (Exception ignored) {}
     }
 
     static class PermBridge {
@@ -205,6 +235,16 @@ public class MainActivity extends BridgeActivity {
         @JavascriptInterface
         public void requestPostNotifications() {
             activity.runOnUiThread(() -> activity.promptPostNotificationsIfNeeded());
+        }
+
+        @JavascriptInterface
+        public void requestCamera() {
+            activity.runOnUiThread(() -> activity.requestCameraPermission());
+        }
+
+        @JavascriptInterface
+        public void openAppSettings() {
+            activity.runOnUiThread(() -> activity.openAppSettings());
         }
     }
 

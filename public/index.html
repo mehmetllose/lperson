@@ -10810,7 +10810,61 @@
       return 0;
     }
     function appUpdateStatus(t) { const el = document.getElementById("app-update-status"); if (el) el.textContent = t; }
-    window.onAppUpdateProgress = function (pct) { appUpdateStatus(pct < 0 ? "İndirme başarısız oldu." : pct >= 100 ? "İndirildi, yükleyici açılıyor..." : "İndiriliyor... %" + pct); };
+    window.onAppUpdateProgress = function (pct) {
+      const txt = pct < 0 ? "İndirme başarısız oldu. Tekrar deneyin." : pct >= 100 ? "İndirildi, yükleyici açılıyor..." : "İndiriliyor... %" + pct;
+      appUpdateStatus(txt);
+      const bar = document.getElementById("app-update-bar"), lbl = document.getElementById("app-update-progress-text");
+      const wrap = document.getElementById("app-update-progress"), btn = document.getElementById("app-update-go");
+      if (wrap) wrap.style.display = "";
+      if (bar && pct >= 0) bar.style.width = Math.min(100, pct) + "%";
+      if (lbl) lbl.textContent = txt;
+      if (btn) { btn.disabled = pct >= 0 && pct < 100; btn.textContent = pct < 0 ? "Tekrar dene" : pct >= 100 ? "Yükle" : "İndiriliyor..."; }
+    };
+    let _appUpdatePending = null;
+    function openAppUpdatePanel(latest, installed, notes, url) {
+      _appUpdatePending = { latest, url };
+      const notesHtml = notes ? `<div style="font-size:12px;font-weight:700;color:var(--text2);margin:12px 0 6px;">Yenilikler</div>
+        <div style="font-size:12px;color:var(--text);line-height:1.55;white-space:pre-wrap;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:10px 12px;max-height:180px;overflow:auto;">${escHtml(notes)}</div>` : "";
+      document.getElementById("modal-container").innerHTML = `
+    <div class="modal-overlay">
+      <div class="modal">
+        <div class="modal-header">
+          <span class="modal-title">⬆️ Yeni sürüm mevcut</span>
+          <button class="modal-close" onclick="closeAppUpdatePanel()">×</button>
+        </div>
+        <div class="modal-body">
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <span style="font-size:12px;color:var(--text3);">Yüklü: <b style="color:var(--text);">v${escHtml(installed)}</b></span>
+            <span style="color:var(--text3);">→</span>
+            <span style="font-size:12px;color:var(--text3);">Yeni: <b style="color:var(--accent);">v${escHtml(latest)}</b></span>
+          </div>
+          ${notesHtml}
+          <div id="app-update-progress" style="display:none;margin-top:14px;">
+            <div style="height:8px;background:var(--bg3);border:1px solid var(--border);border-radius:99px;overflow:hidden;">
+              <div id="app-update-bar" style="height:100%;width:0%;background:var(--accent);border-radius:99px;transition:width .25s;"></div>
+            </div>
+            <div id="app-update-progress-text" style="font-size:11px;color:var(--text3);margin-top:6px;">İndiriliyor...</div>
+          </div>
+          <div style="font-size:10px;color:var(--text3);margin-top:12px;line-height:1.5;">İndirme bitince Android yükleme onayı isteyecek. İlk seferde "Bilinmeyen uygulamaları yükle" iznini vermeniz gerekebilir.</div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeAppUpdatePanel(true)">Sonra</button>
+          <button class="btn btn-primary" id="app-update-go" onclick="startAppUpdateDownload()">Şimdi güncelle</button>
+        </div>
+      </div>
+    </div>`;
+      window._modalSaveFn = null;
+      try { applyButtonTitleCase(document.getElementById("modal-container")); } catch (e) {}
+    }
+    function closeAppUpdatePanel(skip) {
+      if (skip && _appUpdatePending?.latest) localStorage.setItem("ct_app_update_skip", _appUpdatePending.latest);
+      closeModal();
+    }
+    function startAppUpdateDownload() {
+      if (!_appUpdatePending?.url || !window.AndroidUpdater) return;
+      window.onAppUpdateProgress(0);
+      AndroidUpdater.downloadAndInstall(_appUpdatePending.url);
+    }
     function initAppUpdateCard() {
       if (!window.AndroidUpdater) return;
       const card = document.getElementById("app-update-card"); if (card) card.style.display = "";
@@ -10835,10 +10889,8 @@
         }
         if (!manual && localStorage.getItem("ct_app_update_skip") === latest) return;
         const notes = String(rel.body || "").slice(0, 600);
-        const ok = confirm("Yeni sürüm mevcut: v" + latest + " (yüklü: v" + installed + ")" + (notes ? "\n\n" + notes : "") + "\n\nŞimdi indirip yüklemek ister misiniz?");
-        if (!ok) { localStorage.setItem("ct_app_update_skip", latest); appUpdateStatus("v" + latest + " mevcut."); return; }
-        appUpdateStatus("İndiriliyor...");
-        AndroidUpdater.downloadAndInstall(asset.browser_download_url);
+        appUpdateStatus("v" + latest + " mevcut.");
+        openAppUpdatePanel(latest, installed, notes, asset.browser_download_url);
       } catch (e) {
         console.warn("update check", e);
         if (manual) { appUpdateStatus("Kontrol edilemedi: " + (e.message || e)); showToast("Güncelleme kontrol edilemedi", "warn"); }
@@ -17672,6 +17724,13 @@ service cloud.firestore {
           void Notification.requestPermission();
         }
       } catch (e) {}
+    }
+    function ctRequestNativeCameraPerm() {
+      return new Promise(resolve => {
+        const t = setTimeout(() => { window.__onAndroidCameraPerm = null; resolve("denied"); }, 60000);
+        window.__onAndroidCameraPerm = (res) => { clearTimeout(t); resolve(String(res || "denied")); };
+        try { window.AndroidPerm.requestCamera(); } catch (e) { clearTimeout(t); resolve(""); }
+      });
     }
     async function prepareNativeQrCamera() {
       const pack = ctCapPlugins();
@@ -28991,10 +29050,23 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
         _nativeQrStopping = false;
         try {
           await initNativeCapacitorShell();
-          const perm = await pack.BarcodeScanner.checkPermission({ force: !_qrNativePermGranted });
+          let camRes = "";
+          if (!_qrNativePermGranted && window.AndroidPerm && typeof window.AndroidPerm.requestCamera === "function") {
+            camRes = await ctRequestNativeCameraPerm();
+            if (camRes === "granted") _qrNativePermGranted = true;
+          }
+          const perm = (camRes && camRes !== "granted") ? { denied: true } : await pack.BarcodeScanner.checkPermission({ force: !_qrNativePermGranted });
           if (perm?.granted === true || perm?.denied === false) _qrNativePermGranted = true;
+          if (perm?.denied === true && camRes) {
+            if (camRes === "blocked") {
+              showQRScanResult("error", "📷 Kamera izni kalıcı olarak kapatılmış. Açılan ayarlarda İzinler > Kamera'ya izin verin.");
+              try { window.AndroidPerm.openAppSettings(); } catch (e) {}
+            } else {
+              showQRScanResult("error", "📷 QR okutmak için kamera iznine izin vermeniz gerekiyor. Tekrar deneyin.");
+            }
+          }
           if (perm?.denied === true) {
-            showQRScanResult("error", "📷 Kamera izni kapalı. Android Ayarlar → Uygulamalar → lPerson → İzinler’den kamerayı açın.");
+            if (!camRes) showQRScanResult("error", "📷 Kamera izni kapalı. Android Ayarlar → Uygulamalar → lPerson → İzinler’den kamerayı açın.");
             if (status) status.style.display = "none";
             if (btn) btn.style.display = "";
             if (stopBtn) stopBtn.style.display = "none";

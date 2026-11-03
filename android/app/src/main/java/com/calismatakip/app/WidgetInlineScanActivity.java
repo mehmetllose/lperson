@@ -2,7 +2,9 @@ package com.calismatakip.app;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.provider.Settings;
 import android.net.Uri;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -56,6 +58,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class WidgetInlineScanActivity extends AppCompatActivity {
 
     private static final int REQ_PERMS = 7721;
+    private boolean waitingCameraSettings = false;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final AtomicBoolean scanned = new AtomicBoolean(false);
@@ -450,8 +453,28 @@ public class WidgetInlineScanActivity extends AppCompatActivity {
                 cam = grantResults.length > i && grantResults[i] == PackageManager.PERMISSION_GRANTED;
             }
         }
-        if (cam) startCamera();
-        else setStatus("Kamera izni gerekli.");
+        if (cam) { startCamera(); return; }
+        if (!ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)) {
+            // "Bir daha sorma" seçilmiş: sistem penceresi artık açılmaz, uygulama ayarlarını aç.
+            setStatus("Kamera izni kapalı. Ayarlar > İzinler > Kamera'yı açın.");
+            waitingCameraSettings = true;
+            try {
+                Intent i = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName()));
+                startActivity(i);
+            } catch (Exception ignored) {}
+        } else {
+            setStatus("Kamera izni gerekli.");
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (waitingCameraSettings && ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            waitingCameraSettings = false;
+            setStatus("");
+            startCamera();
+        }
     }
 
     @Override
