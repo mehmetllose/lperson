@@ -16,6 +16,11 @@ $txt = [regex]::Replace($txt, 'versionCode\s+\d+', "versionCode $newCode")
 $txt = [regex]::Replace($txt, 'versionName\s+"[^"]+"', "versionName `"$newName`"")
 [IO.File]::WriteAllText($gradle, $txt, (New-Object Text.UTF8Encoding $false))
 Write-Host "Surum: $name ($code) -> $newName ($newCode)"
+# index.html icindeki yedek surum etiketini guncelle (web / eski APK icin)
+$idx = Join-Path $root "public\index.html"
+$h = [IO.File]::ReadAllText($idx)
+$h = [regex]::Replace($h, 'const APP_VERSION_FALLBACK = "[^"]+"', "const APP_VERSION_FALLBACK = `"$newName`"")
+[IO.File]::WriteAllText($idx, $h, (New-Object Text.UTF8Encoding($false)))
 
 npm run android:sync
 if ($LASTEXITCODE -ne 0) { throw "android:sync basarisiz" }
