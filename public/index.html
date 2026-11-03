@@ -16,6 +16,10 @@
   <meta name="theme-color" content="#0f0f0f" />
   <meta name="color-scheme" content="dark" />
   <style>html,body{background:#0f0f0f;margin:0;}body.ct-native #refresh-btn, body.ct-native #pdb-refresh-btn, body.ct-native #notif-refresh-btn { display: none !important; }
+#ptr-ind { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 4px); left: 50%; width: 40px; height: 40px; margin-left: -20px; border-radius: 50%; background: var(--bg2); border: 2px solid var(--accent); color: var(--accent); display: flex; align-items: center; justify-content: center; z-index: 10050; pointer-events: none; opacity: 0; transform: translateY(-60px); box-shadow: 0 4px 14px rgba(0,0,0,.35); }
+#ptr-ind.ptr-spin svg { animation: spin .7s linear infinite; }
+#app-update-slim { position: fixed; left: 10px; right: 10px; top: calc(env(safe-area-inset-top, 0px) + 8px); z-index: 10040; display: flex; align-items: center; gap: 8px; padding: 7px 8px 7px 14px; background: var(--bg2); border: 1px solid var(--accent); border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,.35); font-size: 12px; color: var(--text); max-width: 520px; margin: 0 auto; }
+.app-update-slim-x { background: none; border: none; color: var(--text3); font-size: 20px; line-height: 1; padding: 2px 6px; cursor: pointer; }
 </style>
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -8294,6 +8298,7 @@
                   </button>
                 </div>
               </div>
+              <div id="db-boss-cards"></div>
               <div id="db-cards"></div>
             </div>
           </div>
@@ -10875,6 +10880,31 @@
       window._modalSaveFn = null;
       try { applyButtonTitleCase(document.getElementById("modal-container")); } catch (e) {}
     }
+    function showAppUpdateBar(latest, installed, notes, url) {
+      try {
+        const sn = JSON.parse(localStorage.getItem("ct_app_update_snooze") || "null");
+        if (sn && sn.v === latest && Date.now() < sn.until) return;
+      } catch (e) {}
+      _appUpdatePending = { latest, url, installed, notes };
+      let bar = document.getElementById("app-update-slim");
+      if (!bar) { bar = document.createElement("div"); bar.id = "app-update-slim"; document.body.appendChild(bar); }
+      bar.innerHTML = `<span style="flex:1;min-width:0;">Yeni sürüm <b style="color:var(--accent);">v${escHtml(latest)}</b> mevcut</span>
+        <button type="button" class="btn btn-primary btn-sm" onclick="appUpdateBarGo()">Güncelle</button>
+        <button type="button" class="app-update-slim-x" aria-label="Kapat" onclick="appUpdateBarClose()">×</button>`;
+    }
+    function hideAppUpdateBar() { document.getElementById("app-update-slim")?.remove(); }
+    /** X: bu sürüm için 1 gün sessiz kal; Ayarlar'dan elle kontrol her zaman çalışır. */
+    function appUpdateBarClose() {
+      if (_appUpdatePending?.latest) localStorage.setItem("ct_app_update_snooze", JSON.stringify({ v: _appUpdatePending.latest, until: Date.now() + 24 * 3600 * 1000 }));
+      hideAppUpdateBar();
+    }
+    function appUpdateBarGo() {
+      const p = _appUpdatePending;
+      hideAppUpdateBar();
+      if (!p) return;
+      openAppUpdatePanel(p.latest, p.installed, p.notes, p.url);
+      startAppUpdateDownload();
+    }
     function closeAppUpdatePanel(skip) {
       if (skip && _appUpdatePending?.latest) localStorage.setItem("ct_app_update_skip", _appUpdatePending.latest);
       closeModal();
@@ -10909,7 +10939,8 @@
         if (!manual && localStorage.getItem("ct_app_update_skip") === latest) return;
         const notes = String(rel.body || "").slice(0, 600);
         appUpdateStatus("v" + latest + " mevcut.");
-        openAppUpdatePanel(latest, installed, notes, asset.browser_download_url);
+        if (manual) openAppUpdatePanel(latest, installed, notes, asset.browser_download_url);
+        else showAppUpdateBar(latest, installed, notes, asset.browser_download_url);
       } catch (e) {
         console.warn("update check", e);
         if (manual) { appUpdateStatus("Kontrol edilemedi: " + (e.message || e)); showToast("Güncelleme kontrol edilemedi", "warn"); }
@@ -18189,26 +18220,54 @@ service cloud.firestore {
       }
     }
     (() => {
-      let startY = 0, startX = 0, armed = false, refreshing = false;
+      let startY = 0, startX = 0, armed = false, refreshing = false, lastDy = 0;
+      const PTR_TH = 88;
+      const ARROW = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="4" x2="12" y2="19"/><polyline points="6 13 12 19 18 13"/></svg>';
+      const SPIN = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.2-8.56"/></svg>';
+      const ind = () => {
+        let el = document.getElementById("ptr-ind");
+        if (!el) { el = document.createElement("div"); el.id = "ptr-ind"; el.innerHTML = ARROW; document.body.appendChild(el); }
+        return el;
+      };
+      const hide = () => {
+        const el = document.getElementById("ptr-ind"); if (!el) return;
+        el.style.transition = "transform .25s ease, opacity .25s ease";
+        el.style.transform = "translateY(-60px)"; el.style.opacity = "0";
+        setTimeout(() => { if (!refreshing) { el.classList.remove("ptr-spin"); el.innerHTML = ARROW; } }, 260);
+      };
       document.addEventListener("touchstart", ev => {
-        if (!currentUser || !isCapacitorNative() || ev.touches.length !== 1) { armed = false; return; }
-        if (document.querySelector(".modal-overlay.open, .modal-overlay.show, .modal.open")) { armed = false; return; }
-        let atTop = (window.scrollY || document.documentElement.scrollTop || 0) <= 0;
-        for (let n = ev.target; n && n !== document.body; n = n.parentElement) { if (n.scrollTop > 0) { atTop = false; break; } }
-        if (!atTop || ev.target.closest("input,textarea,select,button,[contenteditable='true']")) { armed = false; return; }
+        armed = false; lastDy = 0;
+        if (refreshing || !currentUser || !isCapacitorNative() || ev.touches.length !== 1) return;
+        if (document.querySelector("#modal-container .modal-overlay")) return;
+        if ((window.scrollY || document.documentElement.scrollTop || 0) > 0) return;
+        for (let n = ev.target; n && n !== document.body; n = n.parentElement) { if (n.scrollTop > 0) return; }
+        if (ev.target.closest("input,textarea,select,[contenteditable='true']")) return;
         startY = ev.touches[0].clientY; startX = ev.touches[0].clientX; armed = true;
       }, { passive: true });
-      document.addEventListener("touchend", ev => {
-        if (!armed || refreshing || !ev.changedTouches.length) return;
-        armed = false;
-        const dy = ev.changedTouches[0].clientY - startY;
-        const dx = Math.abs(ev.changedTouches[0].clientX - startX);
-        if (dy < 88 || dx > 64) return;
-        refreshing = true;
-        showToast("Yenileniyor...");
-        Promise.resolve(manualRefresh()).finally(() => { refreshing = false; });
+      document.addEventListener("touchmove", ev => {
+        if (!armed || refreshing || !ev.touches.length) return;
+        const dy = ev.touches[0].clientY - startY, dx = Math.abs(ev.touches[0].clientX - startX);
+        if (dx > 64 && dx > dy) { armed = false; hide(); return; }
+        lastDy = dy;
+        if (dy <= 4) return;
+        const el = ind(), p = Math.min(dy, 150);
+        el.style.transition = "none";
+        el.style.opacity = String(Math.min(1, dy / 60));
+        el.style.transform = `translateY(${Math.round(p * 0.55)}px) rotate(${dy >= PTR_TH ? 180 : Math.round(dy / PTR_TH * 150)}deg)`;
       }, { passive: true });
-      document.addEventListener("touchcancel", () => { armed = false; }, { passive: true });
+      document.addEventListener("touchend", ev => {
+        if (!armed || refreshing) return;
+        armed = false;
+        const dy = ev.changedTouches?.[0] ? ev.changedTouches[0].clientY - startY : lastDy;
+        const dx = ev.changedTouches?.[0] ? Math.abs(ev.changedTouches[0].clientX - startX) : 0;
+        if (dy < PTR_TH || dx > 64) { hide(); return; }
+        refreshing = true;
+        const el = ind();
+        el.innerHTML = SPIN; el.classList.add("ptr-spin");
+        el.style.transition = "transform .2s ease"; el.style.opacity = "1"; el.style.transform = "translateY(48px)";
+        Promise.resolve(manualRefresh()).catch(() => {}).finally(() => { refreshing = false; hide(); });
+      }, { passive: true });
+      document.addEventListener("touchcancel", () => { if (armed && !refreshing) hide(); armed = false; }, { passive: true });
     })();
 
     function syncMobilePageActions() {
@@ -20344,7 +20403,8 @@ service cloud.firestore {
       pdbMoveWidget(src, targetWid);
     }
 
-    function renderPatronDashboard() {
+    function renderPatronDashboard(opts) {
+      const embed = !!(opts && opts.wrap);
       const u = currentUser;
       const comp = getCompany();
       const workers = getWorkers();
@@ -20358,12 +20418,12 @@ service cloud.firestore {
       // Greeting
       const hour = now.getHours();
       const greet = hour < 12 ? "Günaydın" : hour < 18 ? "İyi Günler" : "İyi Akşamlar";
-      document.getElementById("pdb-greeting").textContent = `${greet}, ${u.name.split(" ")[0]} 👋`;
-      document.getElementById("pdb-date").textContent = `${DAYS[now.getDay()]}, ${now.getDate()} ${MONTHS[now.getMonth()]} ${now.getFullYear()}`;
+      if (!embed) document.getElementById("pdb-greeting").textContent = `${greet}, ${u.name.split(" ")[0]} 👋`;
+      if (!embed) document.getElementById("pdb-date").textContent = `${DAYS[now.getDay()]}, ${now.getDate()} ${MONTHS[now.getMonth()]} ${now.getFullYear()}`;
 
       const cfg = loadPatronWidgets();
-      const order = getPatronWidgetDisplayOrder(cfg);
-      const wrap = document.getElementById("pdb-widgets");
+      const order = embed ? (opts.order || []) : getPatronWidgetDisplayOrder(cfg);
+      const wrap = embed ? opts.wrap : document.getElementById("pdb-widgets");
       if (!wrap) return;
 
       const fmtMoney = n => `${cur}${Number(n).toLocaleString("tr-TR",{minimumFractionDigits:2,maximumFractionDigits:2})}`;
@@ -20385,6 +20445,7 @@ service cloud.firestore {
       const gCols = getPatronGridCols(cfg);
       const pdbCompactCls = cfg.compact ? " pdb-compact" : "";
       const wCellAttrs = (wid) => {
+        if (embed) return `class="pdb-w-cell" data-pdb-wid="${wid}" style="grid-column:1 / -1;min-width:0;max-width:100%;display:flex;flex-direction:column;"`;
         const span = getPatronWidgetSpan(cfg, wid);
         return `class="pdb-w-cell pdb-span-${span}${pdbCompactCls}" draggable="true" data-pdb-wid="${wid}" style="grid-column:span ${span};min-width:0;max-width:100%;display:flex;flex-direction:column;align-self:stretch;" onpointerdown="pdbCellHold(event)" ondragstart="pdbDragStart(event)" ondragend="pdbDragEnd(event)" ondragover="pdbDragOver(event)" ondragleave="pdbDragLeave(event)" ondrop="pdbDrop(event)"`;
       };
@@ -20395,7 +20456,7 @@ service cloud.firestore {
       order.forEach(wid => {
 
         if (wid === "subscription") {
-          if (!getSettings().showPatronSubscriptionCountdown) return;
+          if (embed || !getSettings().showPatronSubscriptionCountdown) return;
           pushW("subscription", subscriptionPremiumCardHtml(getCompany()));
           return;
         }
@@ -20689,6 +20750,10 @@ service cloud.firestore {
         }
       });
 
+      if (embed) {
+        wrap.innerHTML = pdbChunks.length ? `<div class="pdb-widget-grid pdb-cols-1" style="margin-bottom:12px;">${pdbChunks.join("")}</div>` : "";
+        return;
+      }
       wrap.innerHTML = pdbChunks.length
         ? `<div class="pdb-widget-grid pdb-cols-${gCols}">${pdbChunks.join("")}</div>`
         : `<div style="text-align:center;padding:40px 0;color:var(--text3);">
@@ -20699,6 +20764,34 @@ service cloud.firestore {
       const pTheme = loadOwnerFunPrefs();
       applyOwnerDashTheme(pTheme.dashTheme || "default");
       applyOwnerDashAppearance(pTheme);
+    }
+
+    /** Patronun personel için açtığı yönetici ana ekran kartları (aynı canlı veri, şirket kapsamında). */
+    function bossDashCardDefs() { return PATRON_WIDGET_DEFS.filter(d => d.id !== "subscription"); }
+    function renderCalisanBossCards(u) {
+      const bw = document.getElementById("db-boss-cards");
+      if (!bw) return;
+      try {
+        const ids = bossDashCardDefs().map(d => d.id).filter(id => u?.bossDashCards?.[id] === true);
+        if (!ids.length) { bw.innerHTML = ""; return; }
+        renderPatronDashboard({ wrap: bw, order: ids });
+      } catch (e) { console.warn("boss cards", e); bw.innerHTML = ""; }
+    }
+    function empBossCardsHtml(w) {
+      if (currentUser?.role !== "patron") return "";
+      const rows = bossDashCardDefs().map(d => {
+        const on = w.bossDashCards?.[d.id] === true;
+        return `<div class="emp-tg-row">
+            <span class="emp-tg-lab">${d.icon} ${d.label}<small>${d.desc}</small></span>
+            <div class="wsp-switch pdb-switch-sm${on ? " on" : ""}" role="switch" aria-checked="${on}" data-boss-card="${d.id}" onclick="this.classList.toggle('on');this.setAttribute('aria-checked',this.classList.contains('on'))" title="Aç / kapat"><div class="wsp-switch-knob"></div></div>
+          </div>`;
+      }).join("");
+      return `
+    <div class="emp-edit-section emp-collapsible collapsed">
+      <div class="emp-edit-section-hd" onclick="this.parentElement.classList.toggle('collapsed')">Yönetici ana ekran kartları</div>
+      <p class="emp-hint">Açık kartlar bu personelin ana ekranında, sizin ana ekranınızdaki gibi canlı verilerle gösterilir.</p>
+      <div class="emp-tg-grid">${rows}</div>
+    </div>`;
     }
 
     function renderDashboardPage() {
@@ -20757,6 +20850,7 @@ service cloud.firestore {
       const dashPrefs = loadCalisanDashPrefs();
       const wrap = document.getElementById("db-cards");
       if (!wrap) return;
+      renderCalisanBossCards(u);
 
       const today = todayKey();
       const records = DB.records[u.id] || {};
@@ -24486,6 +24580,7 @@ service cloud.firestore {
       </div>
     </div>
     ${managerPermissionsHtml}
+    ${empBossCardsHtml(w)}
     ${workerNotificationPermissionsHtml}
     ${patronNotificationPermissionHtml}`;
     }
@@ -24527,6 +24622,9 @@ service cloud.firestore {
       const workerNotificationPermissions = currentUser?.role === "patron"
         ? Object.fromEntries(Object.keys(WORKER_NOTIFICATION_PERMISSION_LABELS).map(key => [key, !!document.querySelector(`[data-worker-notification-permission="${key}"]`)?.classList.contains("on")]))
         : (w.workerNotificationPermissions || {});
+      const bossDashCards = currentUser?.role === "patron" && document.querySelector("[data-boss-card]")
+        ? Object.fromEntries([...document.querySelectorAll("[data-boss-card]")].map(el => [el.dataset.bossCard, el.classList.contains("on")]))
+        : (w.bossDashCards || {});
       const managerNotifPrefs = currentUser?.role === "patron" && document.querySelector("[data-mgr-notif]")
         ? { ...Object.fromEntries(Object.keys(MANAGER_NOTIF_TYPES).map(key => [key, !!document.querySelector(`[data-mgr-notif="${key}"]`)?.classList.contains("on")])), _v: 2 }
         : (w.managerNotifPrefs || {});
@@ -24580,7 +24678,7 @@ service cloud.firestore {
       if (String(w.username || "").toLowerCase() !== uname) {
         previousUsernames.push({ username: w.username, at: new Date().toISOString() });
       }
-      const updated = { ...w, name, jobTitle, username: uname, previousUsernames: previousUsernames.slice(-20), password: pass, hourlyRate, rateHistory, rateEffectiveFrom, wageChangeLog, phone, tcNo: tcNo || null, address, weeklyOff, color, hiddenMenuIds, managerPermissions, managerNotifPrefs, workerNotificationPermissions, patronNotificationsEnabled, annualLeaveDays, hideTodayEarn: !!document.getElementById("emp-hide-today-earn")?.classList.contains("on"), allowSwapPrivacy: !!document.getElementById("emp-allow-swap-privacy")?.classList.contains("on"), showWorkHoursAnalysis: !!document.getElementById("emp-show-hours-analysis")?.classList.contains("on"), overtimePayBoostMode, overtimePayBoostValue, weeklyOffPayBoostMode, weeklyOffPayBoostValue, payWeeklyOffDays, payWeeklyOffFrom, hiredAt: hiredRaw || null, terminatedAt, terminationNote, advancePolicy: readAdvancePolicyFromEmpForm(), branchId: document.getElementById("emp-branch-id")?.value || normalizeUserBranchId(w) };
+      const updated = { ...w, name, jobTitle, username: uname, previousUsernames: previousUsernames.slice(-20), password: pass, hourlyRate, rateHistory, rateEffectiveFrom, wageChangeLog, phone, tcNo: tcNo || null, address, weeklyOff, color, hiddenMenuIds, managerPermissions, managerNotifPrefs, bossDashCards, workerNotificationPermissions, patronNotificationsEnabled, annualLeaveDays, hideTodayEarn: !!document.getElementById("emp-hide-today-earn")?.classList.contains("on"), allowSwapPrivacy: !!document.getElementById("emp-allow-swap-privacy")?.classList.contains("on"), showWorkHoursAnalysis: !!document.getElementById("emp-show-hours-analysis")?.classList.contains("on"), overtimePayBoostMode, overtimePayBoostValue, weeklyOffPayBoostMode, weeklyOffPayBoostValue, payWeeklyOffDays, payWeeklyOffFrom, hiredAt: hiredRaw || null, terminatedAt, terminationNote, advancePolicy: readAdvancePolicyFromEmpForm(), branchId: document.getElementById("emp-branch-id")?.value || normalizeUserBranchId(w) };
       DB.users[idx] = updated;
       if (currentUser?.id === uid) currentUser = updated;
       localCacheSave();
