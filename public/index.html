@@ -15,7 +15,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#0f0f0f" />
   <meta name="color-scheme" content="dark" />
-  <style>html,body{background:#0f0f0f;margin:0;}</style>
+  <style>html,body{background:#0f0f0f;margin:0;}body.ct-native #refresh-btn, body.ct-native #pdb-refresh-btn, body.ct-native #notif-refresh-btn { display: none !important; }
+</style>
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -17488,7 +17489,12 @@ service cloud.firestore {
     function managerNotifEnabledFor(u, key) {
       if (!u || u.role !== "calisan" || u.terminatedAt) return false;
       const def = MANAGER_NOTIF_TYPES[key]?.def !== false;
-      const pref = u.managerNotifPrefs?.[key];
+      const prefs = u.managerNotifPrefs || {};
+      const pref = prefs[key];
+      const held = userHoldsManagerNotifPerm(u, key);
+      // v2: patron her türü açıkça seçer (yetki gerekmez). Eski kayıtlarda yetkisiz türler gizliydi, yok sayılır.
+      if (prefs._v >= 2) return pref === undefined ? (held && def) : pref === true;
+      if (!held) return false;
       return pref === undefined ? def : pref === true;
     }
     /** key: MANAGER_NOTIF_TYPES; extraIds: ögeyi oluşturan/atayan personel (yetkisi devam ediyorsa). */
@@ -17500,7 +17506,6 @@ service cloud.firestore {
         const extra = new Set((o.extraIds || []).filter(Boolean).map(String));
         const recips = (DB.users || []).filter(u => u.companyId === cid && u.role === "calisan" && !u.terminatedAt
           && !exclude.has(String(u.id))
-          && (userHoldsManagerNotifPerm(u, key) || (extra.has(String(u.id)) && managerNotifPermList(key).some(p => u.managerPermissions?.[p] === true)))
           && managerNotifEnabledFor(u, key));
         if (!recips.length) return Promise.resolve();
         const base = String(tag || "n").replace(/^ct-/, "");
@@ -18186,9 +18191,11 @@ service cloud.firestore {
     (() => {
       let startY = 0, startX = 0, armed = false, refreshing = false;
       document.addEventListener("touchstart", ev => {
-        if (!currentUser || !window.matchMedia("(max-width: 900px)").matches || ev.touches.length !== 1) { armed = false; return; }
-        const scroller = document.getElementById("main-content");
-        if (!scroller || scroller.scrollTop > 0 || ev.target.closest("input,textarea,select,button,[contenteditable='true']")) { armed = false; return; }
+        if (!currentUser || !isCapacitorNative() || ev.touches.length !== 1) { armed = false; return; }
+        if (document.querySelector(".modal-overlay.open, .modal-overlay.show, .modal.open")) { armed = false; return; }
+        let atTop = (window.scrollY || document.documentElement.scrollTop || 0) <= 0;
+        for (let n = ev.target; n && n !== document.body; n = n.parentElement) { if (n.scrollTop > 0) { atTop = false; break; } }
+        if (!atTop || ev.target.closest("input,textarea,select,button,[contenteditable='true']")) { armed = false; return; }
         startY = ev.touches[0].clientY; startX = ev.touches[0].clientX; armed = true;
       }, { passive: true });
       document.addEventListener("touchend", ev => {
@@ -18198,6 +18205,7 @@ service cloud.firestore {
         const dx = Math.abs(ev.changedTouches[0].clientX - startX);
         if (dy < 88 || dx > 64) return;
         refreshing = true;
+        showToast("Yenileniyor...");
         Promise.resolve(manualRefresh()).finally(() => { refreshing = false; });
       }, { passive: true });
       document.addEventListener("touchcancel", () => { armed = false; }, { passive: true });
@@ -18237,8 +18245,10 @@ service cloud.firestore {
         return `<button type="button" class="btn btn-secondary btn-sm page-actions-gear-btn" onclick="onCalisanSettingsGear(event)" title="Ana ekran teması ve düzeni" aria-label="Ana ekran teması ve düzeni">${_PAGE_ACTIONS_GEAR_SVG}</button>`;
       }
       if (page === "dashboard" && currentUser?.role === "patron") {
-        return `<button type="button" class="btn btn-secondary btn-sm" onclick="openPatronThemePicker()" title="Ana ekran teması">🎨 Tema</button> <button id="refresh-btn" class="btn btn-secondary btn-sm" onclick="manualRefresh()" title="Firebase'den son verileri çek">↻ Yenile</button>`;
+        if (isCapacitorNative()) return "";
+        return `<button type="button" style="display:none" class="btn btn-secondary btn-sm" onclick="openPatronThemePicker()" title="Ana ekran teması">🎨 Tema</button> <button id="refresh-btn" class="btn btn-secondary btn-sm" onclick="manualRefresh()" title="Firebase'den son verileri çek">↻ Yenile</button>`;
       }
+      if (isCapacitorNative()) return "";
       return `<button id="refresh-btn" class="btn btn-secondary btn-sm" onclick="manualRefresh()" title="Firebase'den son verileri çek">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <polyline points="23 4 23 10 17 10"/>
@@ -19809,10 +19819,10 @@ service cloud.firestore {
         _navAvatarThemeMenuInit = true;
         el.addEventListener("click", (e) => {
           if (currentUser?.role !== "patron") return;
-          handleSecretFastTap("nav-user-avatar", () => openPatronThemePicker(), e);
+          openPatronThemePicker();
         });
       }
-      el.title = currentUser?.role === "patron" ? "Tema menüsü: simgeye 5 kez hızlı dokunun" : "";
+      el.title = currentUser?.role === "patron" ? "Tema" : "";
       el.style.cursor = currentUser?.role === "patron" ? "pointer" : "";
     }
 
@@ -24274,10 +24284,10 @@ service cloud.firestore {
       </div>
     </div>` : "";
       const mgrNotifRows = Object.entries(MANAGER_NOTIF_TYPES).map(([key, d]) => {
-        const on = (w.managerNotifPrefs?.[key] === undefined ? d.def : w.managerNotifPrefs[key] === true);
-        const show = userHoldsManagerNotifPerm(w, key);
-        return `<div class="emp-tg-row" data-mgr-notif-row="${key}" data-mgr-notif-perms="${managerNotifPermList(key).join(",")}" style="${show ? "" : "display:none;"}">
-            <span class="emp-tg-lab">${d.label}<small>${d.hint}</small></span>
+        const on = managerNotifEnabledFor({ ...w, role: "calisan", terminatedAt: null }, key);
+        const held = userHoldsManagerNotifPerm(w, key);
+        return `<div class="emp-tg-row" data-mgr-notif-row="${key}" data-mgr-notif-perms="${managerNotifPermList(key).join(",")}">
+            <span class="emp-tg-lab">${d.label}<small>${d.hint}</small><small class="emp-mgr-nop" style="color:var(--accent);${held ? "display:none;" : ""}">İlgili yetki kapalı; açarsanız bildirim yine de gelir.</small></span>
             <div class="wsp-switch pdb-switch-sm${on ? " on" : ""}" role="switch" aria-checked="${on}" data-mgr-notif="${key}" onclick="this.classList.toggle('on');this.setAttribute('aria-checked',this.classList.contains('on'))" title="Aç / kapat"><div class="wsp-switch-knob"></div></div>
           </div>`;
       }).join("");
@@ -24285,9 +24295,9 @@ service cloud.firestore {
     <div class="emp-edit-section emp-collapsible collapsed">
       <div class="emp-edit-section-hd" onclick="this.parentElement.classList.toggle('collapsed')">Bildirimler</div>
       <div class="emp-sub-hd">Yönetici bildirimleri</div>
-      <p class="emp-hint">Yalnızca açık olan yönetici yetkilerine ait bildirimler gösterilir. Görevi atayan yetkili personel de bildirim alır.</p>
+      <p class="emp-hint">Tüm yönetici bildirimleri açılabilir; ilgili yetki kapalı olsa da açık olan bildirim gelir.</p>
       <div class="emp-tg-grid" id="emp-mgr-notif-grid">${mgrNotifRows}</div>
-      <div id="emp-mgr-notif-empty" class="emp-hint" style="${Object.keys(MANAGER_NOTIF_TYPES).some(k => userHoldsManagerNotifPerm(w, k)) ? "display:none;" : ""}">Bu personelin yönetici yetkisi yok.</div>
+      <div id="emp-mgr-notif-empty" class="emp-hint" style="display:none;">Bu personelin yönetici yetkisi yok.</div>
       <div class="emp-sub-hd" style="margin-top:12px;">Kendi bildirimleri</div>
       <div class="emp-tg-grid">
         ${Object.entries(WORKER_NOTIFICATION_PERMISSION_LABELS).map(([key, label]) => {
@@ -24484,12 +24494,10 @@ service cloud.firestore {
       const held = new Set([...document.querySelectorAll("[data-manager-permission]")].filter(el => el.classList.contains("on")).map(el => el.dataset.managerPermission));
       let any = false;
       document.querySelectorAll("[data-mgr-notif-row]").forEach(row => {
-        const show = String(row.dataset.mgrNotifPerms || "").split(",").some(p => held.has(p));
-        row.style.display = show ? "" : "none";
-        if (show) any = true;
+        const has = String(row.dataset.mgrNotifPerms || "").split(",").some(p => held.has(p));
+        const nop = row.querySelector(".emp-mgr-nop");
+        if (nop) nop.style.display = has ? "none" : "";
       });
-      const empty = document.getElementById("emp-mgr-notif-empty");
-      if (empty) empty.style.display = any ? "none" : "";
     }
     async function saveEmployeeFromForm(uid) {
       const w = DB.users.find(u => u.id === uid);
@@ -24520,7 +24528,7 @@ service cloud.firestore {
         ? Object.fromEntries(Object.keys(WORKER_NOTIFICATION_PERMISSION_LABELS).map(key => [key, !!document.querySelector(`[data-worker-notification-permission="${key}"]`)?.classList.contains("on")]))
         : (w.workerNotificationPermissions || {});
       const managerNotifPrefs = currentUser?.role === "patron" && document.querySelector("[data-mgr-notif]")
-        ? Object.fromEntries(Object.keys(MANAGER_NOTIF_TYPES).map(key => [key, !!document.querySelector(`[data-mgr-notif="${key}"]`)?.classList.contains("on")]))
+        ? { ...Object.fromEntries(Object.keys(MANAGER_NOTIF_TYPES).map(key => [key, !!document.querySelector(`[data-mgr-notif="${key}"]`)?.classList.contains("on")])), _v: 2 }
         : (w.managerNotifPrefs || {});
       const patronNotificationsEnabled = currentUser?.role === "patron"
         ? !!document.querySelector("[data-patron-notifications-enabled]")?.classList.contains("on")
