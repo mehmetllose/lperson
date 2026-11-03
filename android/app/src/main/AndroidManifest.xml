@@ -74,6 +74,7 @@
             android:taskAffinity="com.calismatakip.app.widgetscan"
             android:theme="@style/AppTheme.WidgetQrLaunch" />
 
+        <service android:name=".LocShareService" android:exported="false" android:foregroundServiceType="location" />
         <service
             android:name=".NotifyWatchService"
             android:exported="false"
@@ -112,5 +113,7 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 </manifest>

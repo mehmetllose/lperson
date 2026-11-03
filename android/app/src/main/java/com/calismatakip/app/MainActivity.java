@@ -72,6 +72,7 @@ public class MainActivity extends BridgeActivity {
                 wv.addJavascriptInterface(new WidgetSessionBridge(this), "AndroidInlineStore");
                 wv.addJavascriptInterface(new NotifyWatchBridge(this), "AndroidNotifyWatch");
                 wv.addJavascriptInterface(new AppUpdater(this, wv), "AndroidUpdater");
+            wv.addJavascriptInterface(new LocShareBridge(this), "AndroidLocShare");
                 if (openedFromWidgetQr) {
                     wv.post(() -> deliverWidgetQr(wv));
                 }

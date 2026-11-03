@@ -55,4 +55,8 @@ $notesTmp = Join-Path $env:TEMP "lperson-notes-$newName.md"
 [IO.File]::WriteAllText($notesTmp, $body, (New-Object Text.UTF8Encoding $false))
 gh release create "v$newName" "$apk#lperson-$newName.apk" --repo $Repo --title "lPerson v$newName" --notes-file $notesTmp
 if ($LASTEXITCODE -ne 0) { throw "gh release create basarisiz" }
+# version.json: uygulama once bunu kontrol eder (GitHub API hiz siniri yedegi). Hosting deploy ile yayinlanir.
+$verJson = [ordered]@{ version = $newName; apkUrl = "https://github.com/$Repo/releases/download/v$newName/lperson-$newName.apk"; notes = $body; publishedAt = (Get-Date).ToUniversalTime().ToString("o") } | ConvertTo-Json
+[IO.File]::WriteAllText((Join-Path $PSScriptRoot "..\public\version.json"), $verJson, (New-Object Text.UTF8Encoding $false))
+Write-Host "public/version.json guncellendi (v$newName) - git add + firebase deploy --only hosting unutmayin"
 Write-Host "Yayinlandi: v$newName"

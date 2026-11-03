@@ -51,7 +51,7 @@ public class NotifyWatchService extends Service {
     private static final int ONGOING_ID = 71001;
     private static final int KICK_REQ = 7701;
     private static final long POLL_MS = 8000L;
-    private static final String API_KEY = "AIzaSyDjWLbIB00JTBjvcq1sZtFVeT7JbsWAF6c";
+    static final String API_KEY = "AIzaSyDjWLbIB00JTBjvcq1sZtFVeT7JbsWAF6c";
     private static final String DOC_ROOT =
             "https://firestore.googleapis.com/v1/projects/lperson/databases/(default)/documents/";
     private static final String RUN_QUERY =
