@@ -10087,6 +10087,34 @@
     function userWorkplace(u) {
       try { return getWorkplaceCoords(u?.role === "calisan" ? normalizeUserBranchId(u) : getEffectiveBranchId()); } catch (e) { return null; }
     }
+    /** lpadmin şirket bazında açar (companies.locTrackingOn). */
+    function locTrackingOn(u) {
+      const c = getCompanyForUser(u || currentUser);
+      return !!(c && c.locTrackingOn === true);
+    }
+    /** Personel Mesafe ekranı: patron her zaman; personel yalnızca lpadmin izin verdiyse (users.locTrackView). */
+    function canViewStaffDistance() {
+      const u = currentUser;
+      if (!u || u.terminatedAt || !locTrackingOn(u)) return false;
+      return u.role === "patron" || (u.role === "calisan" && u.locTrackView === true);
+    }
+    async function locAutoEnsure() {
+      const u = currentUser;
+      if (!u || u.role !== "calisan" || window.__inlineWidgetHost) return;
+      if (!locTrackingOn(u)) { syncLocShareNative(); return; }
+      const n = locShareNative();
+      if (n) {
+        const k = "ct_locperm_prompt_at";
+        const last = +localStorage.getItem(k) || 0;
+        const need = !n.hasFine() || !n.hasBackground();
+        if (need && Date.now() - last > 6 * 3600 * 1000) {
+          localStorage.setItem(k, String(Date.now()));
+          showToast("İşyeriniz konum takibini açtı: konum iznini “Her zaman izin ver” olarak ayarlayın", "warn");
+          await locEnsurePermissions(true);
+        }
+      }
+      syncLocShareNative();
+    }
     function locShareNative() { return (isCapacitorNative() && window.AndroidLocShare) ? window.AndroidLocShare : null; }
     async function locSetUserFields(uid, fields) {
       const ix = (DB.users || []).findIndex(x => x.id === uid);
@@ -10151,9 +10179,18 @@
     function syncLocShareNative() {
       const u = currentUser;
       if (!u || u.role !== "calisan" || window.__inlineWidgetHost) return;
-      const commute = !!u.commuteActive, bg = !!u.locBgOn && !!u.locConsentAt;
-      const wp = userWorkplace(u);
       const n = locShareNative();
+      if (!locTrackingOn(u)) {
+        if (n) { try { n.stop(); } catch (e) {} }
+        locStopWebWatch();
+        if (u.locBgOn || u.commuteActive) void locSetUserFields(u.id, { locBgOn: false, commuteActive: false });
+        return;
+      }
+      const commute = !!u.commuteActive;
+      let bg = false;
+      try { bg = !!(n && n.hasFine()); } catch (e) {}
+      if (n && !!u.locBgOn !== bg) void locSetUserFields(u.id, { locBgOn: bg });
+      const wp = userWorkplace(u);
       if (n) {
         try {
           if (commute || bg) n.start(u.id, commute, bg, wp ? wp.lat : 0, wp ? wp.lng : 0, !!wp, COMMUTE_ARRIVE_KM);
@@ -10177,7 +10214,7 @@
       const u = currentUser; if (!u) return;
       const wp = userWorkplace(u);
       if (!wp) { showToast("\u0130\u015fyeri konumu hen\u00fcz ayarlanmad\u0131; y\u00f6neticinize bildirin", "warn"); return; }
-      if (!(await locAskConsent())) return;
+      if (!locTrackingOn(u)) { showToast("Konum takibi bu işyerinde kapalı", "warn"); return; }
       if (!(await locEnsurePermissions(false))) return;
       await locSetUserFields(u.id, { commuteActive: true, commuteStartedAt: new Date().toISOString(), commuteArrivedAt: null });
       syncLocShareNative();
@@ -10191,17 +10228,6 @@
       showToast("Konum payla\u015f\u0131m\u0131 durduruldu");
       renderCommuteStripNow();
     }
-    async function setBgLocSharing(on) {
-      const u = currentUser; if (!u) return;
-      if (on) {
-        if (!(await locAskConsent())) return;
-        if (!(await locEnsurePermissions(true))) return;
-      }
-      await locSetUserFields(u.id, on ? { locBgOn: true, locBgDeclinedAt: null } : { locBgOn: false, locBgDeclinedAt: u.locBgRequested ? new Date().toISOString() : (u.locBgDeclinedAt || null) });
-      syncLocShareNative();
-      showToast(on ? "Arka plan konum payla\u015f\u0131m\u0131 a\u00e7\u0131ld\u0131" : "Arka plan konum payla\u015f\u0131m\u0131 kapat\u0131ld\u0131");
-      renderCommuteStripNow();
-    }
     function renderCommuteStripNow() {
       const wrap = document.getElementById("db-cards") || null;
       renderCommuteStrip(currentUser, wrap);
@@ -10211,15 +10237,16 @@
       let el = document.getElementById("commute-strip");
       const host = wrap || el?.nextElementSibling;
       const wp = userWorkplace(u);
-      if (!wp && !u.commuteActive && !u.locBgOn) { if (el) el.remove(); return; }
+      if (!locTrackingOn(u)) { if (el) el.remove(); return; }
       if (!el && host?.parentNode) { el = document.createElement("div"); el.id = "commute-strip"; host.parentNode.insertBefore(el, host); }
       if (!el) return;
       const row = (bg, html) => `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;margin-bottom:8px;border-radius:12px;background:${bg};border:1px solid var(--border);font-size:12px;color:var(--text);">${html}</div>`;
       let h = "";
       if (u.commuteActive) h += row("rgba(91,156,246,.14)", `<span style="font-size:18px;">\ud83d\ude97</span><div style="flex:1;min-width:0;"><b>Yoldas\u0131n\u0131z</b> \u00b7 konum y\u00f6neticinizle payla\u015f\u0131l\u0131yor<div style="font-size:10px;color:var(--text3);">\u0130\u015fyerine ~150 m yakla\u015f\u0131nca kendili\u011finden durur</div></div><button type="button" class="btn btn-secondary btn-sm" onclick="stopCommute()">Durdur</button>`);
       else if (wp) h += row("var(--bg2)", `<span style="font-size:18px;">\ud83d\ude97</span><div style="flex:1;min-width:0;">\u0130\u015fe geliyorsan\u0131z y\u00f6neticiniz var\u0131\u015f s\u00fcrenizi g\u00f6rs\u00fcn</div><button type="button" class="btn btn-primary btn-sm" onclick="startCommute()">Yolday\u0131m</button>`);
-      if (u.locBgOn) h += row("rgba(34,197,94,.12)", `<span style="font-size:18px;">\ud83d\udccd</span><div style="flex:1;min-width:0;"><b>Arka plan konum payla\u015f\u0131m\u0131 a\u00e7\u0131k</b><div style="font-size:10px;color:var(--text3);">Birka\u00e7 dakikada bir konumunuz y\u00f6neticinize g\u00f6nderilir</div></div><button type="button" class="btn btn-secondary btn-sm" onclick="setBgLocSharing(false)">Kapat</button>`);
-      else if (u.locBgRequested && !u.locBgDeclinedAt) h += row("rgba(245,166,35,.12)", `<span style="font-size:18px;">\ud83d\udccd</span><div style="flex:1;min-width:0;">Y\u00f6neticiniz arka plan konum payla\u015f\u0131m\u0131 istiyor</div><button type="button" class="btn btn-secondary btn-sm" onclick="setBgLocSharing(false)">Hay\u0131r</button><button type="button" class="btn btn-primary btn-sm" onclick="setBgLocSharing(true)">A\u00e7</button>`);
+      if (u.locBgOn) h += row("rgba(34,197,94,.12)", `<span style="font-size:18px;">\ud83d\udccd</span><div style="flex:1;min-width:0;"><b>Konum payla\u015f\u0131m\u0131 a\u00e7\u0131k</b><div style="font-size:10px;color:var(--text3);">\u0130\u015fyeri ayar\u0131 gere\u011fi birka\u00e7 dakikada bir konumunuz y\u00f6neticinizle payla\u015f\u0131l\u0131r (bildirimde \u201cKonum payla\u015f\u0131l\u0131yor\u201d)</div></div>`);
+      else if (locShareNative()) h += row("rgba(245,166,35,.12)", `<span style="font-size:18px;">\ud83d\udccd</span><div style="flex:1;min-width:0;">\u0130\u015fyeriniz konum takibini a\u00e7t\u0131; konum izni gerekiyor</div><button type="button" class="btn btn-primary btn-sm" onclick="localStorage.removeItem('ct_locperm_prompt_at');locAutoEnsure()">\u0130zin ver</button>`);
+      if (canViewStaffDistance()) h += row("var(--bg2)", `<span style="font-size:18px;">\ud83d\udccd</span><div style="flex:1;min-width:0;"><b>Personel mesafe</b> \u00b7 di\u011fer personelin konum ve var\u0131\u015f s\u00fcreleri</div><button type="button" class="btn btn-secondary btn-sm" onclick="openStaffDistancePanel()">A\u00e7</button>`);
       el.innerHTML = h;
     }
 
@@ -10260,11 +10287,11 @@
     }
     function staffDistanceUsers() {
       const cid = currentUser?.companyId;
-      return (DB.users || []).filter(u => u.companyId === cid && u.role === "calisan" && !u.terminatedAt);
+      return (DB.users || []).filter(u => u.companyId === cid && u.role === "calisan" && !u.terminatedAt && u.id !== currentUser?.id);
     }
     let _sdMap = null, _sdLayer = null, _sdTimer = null, _sdFit = false;
     function openStaffDistancePanel() {
-      if (currentUser?.role !== "patron") return;
+      if (!canViewStaffDistance()) { showToast("Konum takibi kapal\u0131 veya yetkiniz yok", "warn"); return; }
       _sdMap = null; _sdFit = false;
       document.getElementById("modal-container").innerHTML = `
     <div class="modal-overlay">
@@ -10284,19 +10311,12 @@
       if (_sdTimer) clearInterval(_sdTimer);
       _sdTimer = setInterval(() => { if (!document.getElementById("sd-list")) { clearInterval(_sdTimer); _sdTimer = null; _sdMap = null; return; } renderStaffDistancePanel(); }, 15000);
     }
-    async function bossToggleLocRequest(uid) {
-      const u = (DB.users || []).find(x => x.id === uid); if (!u) return;
-      const on = !u.locBgRequested;
-      await locSetUserFields(uid, on ? { locBgRequested: true, locBgDeclinedAt: null } : { locBgRequested: false });
-      showToast(on ? "Personelden arka plan konum payla\u015f\u0131m\u0131 istendi" : "\u0130stek kald\u0131r\u0131ld\u0131");
-      renderStaffDistancePanel();
-    }
     function renderStaffDistancePanel() {
       const list = document.getElementById("sd-list"); if (!list) return;
       const staff = staffDistanceUsers();
       const hint = document.getElementById("sd-hint");
       const anyWp = staff.some(u => getWorkplaceCoords(normalizeUserBranchId(u))) || getWorkplaceCoords(getEffectiveBranchId());
-      if (hint) hint.innerHTML = anyWp ? "Personel <b>Yolday\u0131m</b>'a bast\u0131\u011f\u0131nda veya arka plan payla\u015f\u0131m\u0131n\u0131 a\u00e7t\u0131\u011f\u0131nda burada g\u00f6r\u00fcn\u00fcr. Konum payla\u015f\u0131m\u0131 her zaman personelin onay\u0131yla \u00e7al\u0131\u015f\u0131r." : "\u26a0\ufe0f \u0130\u015fyeri konumu ayarlanmam\u0131\u015f. <a href=\"#\" onclick=\"openWorkplaceMapPicker();return false;\">Haritadan se\u00e7</a> veya Ayarlar &gt; QR konum kilidi &gt; \u201cBu cihaz\u0131n konumunu i\u015fyeri merkezi yap\u201d.";
+      if (hint) hint.innerHTML = anyWp ? "Konum takibi bu i\u015fyerinde a\u00e7\u0131k: personel uygulamas\u0131 konumu otomatik payla\u015f\u0131r (izin verildiyse). S\u00fcreler tahminidir." : "\u26a0\ufe0f \u0130\u015fyeri konumu ayarlanmam\u0131\u015f. <a href=\"#\" onclick=\"openWorkplaceMapPicker();return false;\">Haritadan se\u00e7</a> veya Ayarlar &gt; QR konum kilidi &gt; \u201cBu cihaz\u0131n konumunu i\u015fyeri merkezi yap\u201d.";
       const infos = staff.map(u => ({ u, i: staffDistInfo(u) }));
       const rank = x => x.i.st === "Yolda" ? 0 : x.i.st === "Payla\u015f\u0131yor" ? 1 : x.i.st === "\u0130\u015fte" ? 2 : x.i.st === "Konum bekleniyor" ? 3 : 4;
       infos.sort((a, b) => rank(a) - rank(b) || String(a.u.name || "").localeCompare(String(b.u.name || ""), "tr"));
@@ -10307,7 +10327,6 @@
             <div style="font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(u.name || "-")} <span style="font-size:11px;font-weight:700;color:${i.color};">\u00b7 ${i.st}</span></div>
             <div style="font-size:11px;color:var(--text3);">${i.has ? "Son g\u00fcncelleme: " + fmtLiveLocAge(u.liveUpdatedAt) : "Hen\u00fcz konum yok"}${i.km != null ? " \u00b7 " + (i.km < 1 ? Math.round(i.km * 1000) + " m" : i.km.toFixed(1) + " km") + " (ku\u015f u\u00e7u\u015fu)" : ""}<span data-sd-eta="${u.id}"></span></div>
           </div>
-          <button type="button" class="btn btn-secondary btn-sm" style="font-size:10px;padding:5px 8px;" onclick="bossToggleLocRequest('${u.id}')" title="Personelden arka plan konum payla\u015f\u0131m\u0131 iste">${u.locBgOn ? "Arka plan: a\u00e7\u0131k" : u.locBgRequested ? (u.locBgDeclinedAt ? "\u0130stek reddedildi" : "\u0130stendi \u2715") : "Arka plan iste"}</button>
         </div>`).join("") : `<div style="font-size:12px;color:var(--text3);padding:14px;text-align:center;">Personel yok.</div>`;
       infos.forEach(({ u, i }) => {
         if (!i.fresh || !i.wp || i.km == null || i.st === "\u0130\u015fte") return;
@@ -10351,8 +10370,8 @@
     }
     function renderBossDistanceStrip() {
       const root = document.getElementById("patron-dashboard");
-      if (!root || currentUser?.role !== "patron") return;
       let el = document.getElementById("boss-dist-strip");
+      if (!root || currentUser?.role !== "patron" || !canViewStaffDistance()) { if (el) el.remove(); return; }
       if (!el) { el = document.createElement("div"); el.id = "boss-dist-strip"; const deco = root.querySelector(".wukong-dash-deco"); root.insertBefore(el, deco ? deco.nextSibling : root.firstChild); }
       const infos = staffDistanceUsers().map(u => staffDistInfo(u));
       const yolda = infos.filter(i => i.st === "Yolda").length, iste = infos.filter(i => i.st === "\u0130\u015fte").length, pay = infos.filter(i => i.fresh).length;
@@ -10546,7 +10565,7 @@
       return all;
     }
     function syncLiveLocationNavVisibility() {
-      try { const sd = document.getElementById("nav-staff-distance"); if (sd) sd.style.display = currentUser?.role === "patron" ? "" : "none"; } catch (e) {}
+      try { const sd = document.getElementById("nav-staff-distance"); if (sd) sd.style.display = canViewStaffDistance() ? "" : "none"; } catch (e) {}
       const el = document.getElementById("nav-live-location");
       if (!el) return;
       const show = canAccessLiveLocationPage();
@@ -15525,6 +15544,8 @@ service cloud.firestore {
             <span style="font-size:11px;color:var(--text2);">Konum</span>
             <div id="pa-mclock-${sidU}" class="wsp-switch ${u.manualClock === true ? "on" : ""}" onclick="paToggleManualClock('${encUid}')" style="cursor:pointer;flex-shrink:0;"><div class="wsp-switch-knob"></div></div>
             <span style="font-size:11px;color:var(--text2);">QR'siz</span>
+            <div id="pa-ltv-${sidU}" class="wsp-switch ${u.locTrackView === true ? "on" : ""}" onclick="paToggleLocTrackView('${encUid}')" style="cursor:pointer;flex-shrink:0;" title="Personel Mesafe ekran\u0131n\u0131 g\u00f6rs\u00fcn (di\u011fer personelin konumu)"><div class="wsp-switch-knob"></div></div>
+            <span style="font-size:11px;color:var(--text2);">Mesafe g\u00f6r</span>
           </div>
           <details style="margin-top:8px;">
             <summary style="cursor:pointer;font-size:11px;color:var(--text3);">Ücret geçmişi${lastWage ? " · " + escHtml(lastWage) : ""}</summary>
@@ -15544,6 +15565,7 @@ service cloud.firestore {
           <div class="pa-section-title" style="margin:0;">Kullanıcılar</div>
           <button type="button" class="btn btn-primary btn-sm" onclick="openPaAddUserModal('${encCid}')">+ Kullanıcı</button>
         </div>
+        <div style="margin-top:10px;">${paSwitchRow("pa-loctrk-" + paSafeDomId(c.id), c.locTrackingOn === true, "paToggleLocTracking('" + encCid + "')", "\ud83d\udccd Konum takibi (Yolday\u0131m + arka plan)", "A\u00e7\u0131kken personel uygulamas\u0131 konumu otomatik payla\u015f\u0131r; patron Personel Mesafe ekran\u0131n\u0131 g\u00f6r\u00fcr.")}</div>
         <div style="font-size:11px;font-weight:800;color:var(--text3);margin:12px 0 4px;">Patronlar</div>
         ${patronLines}
         <div style="font-size:11px;font-weight:800;color:var(--text3);margin:14px 0 4px;">Personeller</div>
@@ -16281,6 +16303,36 @@ service cloud.firestore {
         return;
       }
       paOpenAdvancedEditionFeatures(encUid);
+    }
+    async function paToggleLocTracking(encCid) {
+      if (currentUser?.role !== "platformAdmin") return;
+      const cid = decodeURIComponent(encCid || "");
+      const c = (DB.companies || []).find(x => x.id === cid); if (!c) return;
+      const next = c.locTrackingOn !== true;
+      const prev = c.locTrackingOn;
+      c.locTrackingOn = next;
+      try {
+        if (!_fbReady) throw new Error("Firebase haz\u0131r de\u011fil");
+        await fsSetDoc("companies", cid, { locTrackingOn: next });
+        showToast(next ? "Konum takibi a\u00e7\u0131ld\u0131 \u2705" : "Konum takibi kapat\u0131ld\u0131");
+      } catch (e) { c.locTrackingOn = prev; showToast("Kay\u0131t hatas\u0131: " + (e._friendlyMsg || e.message), "warn"); }
+      try { localCacheSave(); } catch (e2) {}
+      renderPlatformAdminPage();
+    }
+    async function paToggleLocTrackView(encUid) {
+      if (currentUser?.role !== "platformAdmin") return;
+      const uid = decodeURIComponent(encUid || "");
+      const u = (DB.users || []).find(x => x.id === uid); if (!u || u.role !== "calisan") return;
+      const next = u.locTrackView !== true;
+      const prev = u.locTrackView;
+      u.locTrackView = next;
+      try {
+        if (!_fbReady) throw new Error("Firebase haz\u0131r de\u011fil");
+        await fsSetDoc("users", uid, { locTrackView: next });
+        showToast(next ? "Personel mesafe g\u00f6r\u00fcnt\u00fcleme izni verildi" : "\u0130zin kald\u0131r\u0131ld\u0131");
+      } catch (e) { u.locTrackView = prev; showToast("Kay\u0131t hatas\u0131: " + (e._friendlyMsg || e.message), "warn"); }
+      try { localCacheSave(); } catch (e2) {}
+      renderPlatformAdminPage();
     }
     async function paToggleLiveLocation(encUid) {
       if (currentUser?.role !== "platformAdmin") return;
@@ -18447,7 +18499,7 @@ service cloud.firestore {
         applyOwnerDashAppearance(pt);
       }
       if (!window.__inlineWidgetHost) maybePromptNotificationsOnLaunch();
-      if (!window.__inlineWidgetHost) { try { initAppUpdateCard(); setTimeout(() => checkAppUpdate(false, { force: true }), 2500); setTimeout(() => { try { syncLocShareNative(); } catch (e) {} }, 3000); setTimeout(() => maybeShowWhatsNew(), 1500); } catch (e) {} }
+      if (!window.__inlineWidgetHost) { try { initAppUpdateCard(); setTimeout(() => checkAppUpdate(false, { force: true }), 2500); setTimeout(() => { try { locAutoEnsure(); syncLiveLocationNavVisibility(); } catch (e) {} }, 3000); setTimeout(() => maybeShowWhatsNew(), 1500); } catch (e) {} }
       if (!window.__inlineWidgetHost) initNativeCapacitorShell().then(async () => {
         await flushPendingFcmToken();
         try {
@@ -34884,6 +34936,8 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
     window.paToggleAccessBlock = paToggleAccessBlock;
     window.paToggleAdvancedEdition = paToggleAdvancedEdition;
     window.paToggleLiveLocation = paToggleLiveLocation;
+    window.paToggleLocTracking = paToggleLocTracking;
+    window.paToggleLocTrackView = paToggleLocTrackView;
     window.paOpenLoginLog = paOpenLoginLog;
     window.paOpenCompanyLoginLog = paOpenCompanyLoginLog;
     window.paOpenAdvancedEditionFeatures = paOpenAdvancedEditionFeatures;

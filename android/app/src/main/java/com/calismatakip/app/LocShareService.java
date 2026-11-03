@@ -250,17 +250,19 @@ public class LocShareService extends Service implements LocationListener {
         Intent open = new Intent(this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent openPi = PendingIntent.getActivity(this, 4713, open, piFlags);
         boolean commute = prefs().getBoolean("commute", false);
-        String text = commute ? "Yolday\u0131m \u00b7 i\u015fyerine var\u0131nca kendili\u011finden durur" : "Arka plan payla\u015f\u0131m\u0131 \u00b7 konumunuz y\u00f6neticinizle payla\u015f\u0131l\u0131yor";
-        return new NotificationCompat.Builder(this, CH)
+        boolean bgOn = prefs().getBoolean("bg", false);
+        String text = commute ? "Yolday\u0131m \u00b7 i\u015fyerine var\u0131nca kendili\u011finden durur" : "\u0130\u015fyeri ayar\u0131 \u00b7 konumunuz y\u00f6neticinizle payla\u015f\u0131l\u0131yor";
+        NotificationCompat.Builder b = new NotificationCompat.Builder(this, CH)
                 .setSmallIcon(R.drawable.ic_stat_lperson)
                 .setContentTitle("Konum payla\u015f\u0131l\u0131yor")
                 .setContentText(text)
                 .setOngoing(true)
                 .setOnlyAlertOnce(true)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
-                .setContentIntent(openPi)
-                .addAction(0, "Durdur", stopPi)
-                .build();
+                .setContentIntent(openPi);
+        // Arka plan takibi isyeri (lpadmin) ayaridir; Durdur yalnizca Yoldayim modunda.
+        if (!bgOn) b.addAction(0, "Durdur", stopPi);
+        return b.build();
     }
 
     @Override
