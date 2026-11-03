@@ -18601,7 +18601,9 @@ service cloud.firestore {
 
     function getCalisanDashDefaultOrder() {
       const rest = DASHBOARD_CARD_DEFS.map(c => c.id).filter(id => !CALISAN_DASH_DEFAULT_CARD_IDS.includes(id));
-      return [...CALISAN_DASH_DEFAULT_CARD_IDS, ...rest];
+      let boss = [];
+      try { if (currentUser && currentUser.role !== "patron") boss = bossCardsAllowedOrdered(currentUser).map(id => "boss_" + id); } catch (e) {}
+      return [...CALISAN_DASH_DEFAULT_CARD_IDS, ...rest, ...boss];
     }
 
     function applyCalisanDashDefaults() {
@@ -18759,10 +18761,13 @@ service cloud.firestore {
         <span style="font-size:12px;color:var(--text2);">Kompakt kart görünümü</span>
         <div class="wsp-switch pdb-switch-sm ${prefs.compact ? "on" : ""}" onclick="calisanDashToggleCompact(this)" role="switch"><div class="wsp-switch-knob"></div></div>
       </div>`;
+      const bossHid = loadBossCardsPrefs().hidden;
       order.forEach((id, idx) => {
-        const c = calisanDashCardDef(id);
+        const isBoss = id.startsWith("boss_");
+        const bd = isBoss ? bossDashCardDefs().find(x => x.id === id.slice(5)) : null;
+        const c = isBoss ? (bd && { icon: bd.icon, label: bd.label + " · Yönetici", desc: bd.desc || "" }) : calisanDashCardDef(id);
         if (!c) return;
-        const on = cfg[id] !== false;
+        const on = isBoss ? bossHid[id.slice(5)] !== true : cfg[id] !== false;
         html += `<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid var(--border);">
           <div style="flex:1;min-width:0;">
             <div style="font-size:13px;font-weight:700;color:var(--text);">${c.icon || ""} ${c.label}</div>
@@ -18772,10 +18777,9 @@ service cloud.firestore {
               <button type="button" class="btn btn-secondary btn-sm" style="padding:3px 10px;" onclick="calisanDashReorder('${id}',1)" ${idx >= order.length - 1 ? "disabled" : ""}>↓</button>
             </div>
           </div>
-          <div class="wsp-switch pdb-switch-sm ${on ? "on" : ""}" onclick="calisanDashToggleCard('${id}',this)" role="switch" title="Kartı göster/gizle"><div class="wsp-switch-knob"></div></div>
+          <div class="wsp-switch pdb-switch-sm ${on ? "on" : ""}" onclick="${isBoss ? `calisanBossCardToggle('${id.slice(5)}',this)` : `calisanDashToggleCard('${id}',this)`}" role="switch" title="Kartı göster/gizle"><div class="wsp-switch-knob"></div></div>
         </div>`;
       });
-      html += buildCalisanBossCardsSettingsHtml();
       html += `<button type="button" class="btn btn-secondary btn-sm btn-full" style="margin-top:12px;" onclick="calisanDashResetLayout()">Varsayılana Sıfırla</button>`;
       return html;
     }
@@ -20457,6 +20461,7 @@ service cloud.firestore {
       const over = moved ? st.under(e.clientX, e.clientY, st.cell) : null;
       _dashHold = null;
       if (moved && over) st.drop(st.wid, over.dataset[st.widKey]);
+      else if (_dashRenderPending) setTimeout(() => renderDashboardPage(), 0);
     }
     function dashHoldArm(st) {
       if (_dashHold !== st || st.armed) return;
@@ -20574,7 +20579,7 @@ service cloud.firestore {
       const gCols = getPatronGridCols(cfg);
       const pdbCompactCls = cfg.compact ? " pdb-compact" : "";
       const wCellAttrs = (wid) => {
-        if (embed) return `class="pdb-w-cell" data-pdb-wid="${wid}" style="grid-column:1 / -1;min-width:0;max-width:100%;display:flex;flex-direction:column;touch-action:pan-y;" title="Basılı tutup sürükleyerek sırayı değiştir" onpointerdown="bdbCellHold(event)"`;
+        if (embed) return `class="pdb-w-cell" data-pdb-wid="${wid}" style="grid-column:1 / -1;min-width:0;max-width:100%;display:flex;flex-direction:column;touch-action:pan-y;"`;
         const span = getPatronWidgetSpan(cfg, wid);
         return `class="pdb-w-cell pdb-span-${span}${pdbCompactCls}" draggable="true" data-pdb-wid="${wid}" style="grid-column:span ${span};min-width:0;max-width:100%;display:flex;flex-direction:column;align-self:stretch;" onpointerdown="pdbCellHold(event)" ondragstart="pdbDragStart(event)" ondragend="pdbDragEnd(event)" ondragover="pdbDragOver(event)" ondragleave="pdbDragLeave(event)" ondrop="pdbDrop(event)"`;
       };
@@ -20939,7 +20944,7 @@ service cloud.firestore {
       const p = loadBossCardsPrefs();
       if (el.classList.contains("on")) delete p.hidden[id]; else p.hidden[id] = true;
       saveBossCardsPrefs(p);
-      renderCalisanBossCards(currentUser);
+      renderDashboardPage();
     }
     function calisanBossCardReorder(id, dir) {
       const order = bossCardsAllowedOrdered(currentUser);
@@ -20950,14 +20955,25 @@ service cloud.firestore {
       renderCalisanBossCards(currentUser);
       openCalisanDashSettings();
     }
+    function calisanVisibleBossIds(u) {
+      const hid = loadBossCardsPrefs().hidden;
+      return bossCardsAllowedOrdered(u).filter(id => hid[id] !== true);
+    }
+    /** Yönetici kartları gizli alanda çizilir, sonra personel kart ızgarasındaki yerlerine taşınır (tek sıra, tek sürükleme). */
     function renderCalisanBossCards(u) {
       const bw = document.getElementById("db-boss-cards");
       if (!bw) return;
+      bw.style.display = "none";
       try {
-        const hid = loadBossCardsPrefs().hidden;
-        const ids = bossCardsAllowedOrdered(u).filter(id => hid[id] !== true);
-        if (!ids.length) { bw.innerHTML = ""; return; }
+        const slots = document.querySelectorAll("#db-cards [data-boss-slot]");
+        if (!slots.length) { bw.innerHTML = ""; return; }
+        const ids = Array.from(slots).map(s => s.dataset.bossSlot);
         renderPatronDashboard({ wrap: bw, order: ids });
+        slots.forEach(slot => {
+          const cell = bw.querySelector('[data-pdb-wid="' + slot.dataset.bossSlot + '"]');
+          if (cell) slot.replaceWith(cell); else slot.closest(".cdb-w-cell")?.remove();
+        });
+        bw.innerHTML = "";
       } catch (e) { console.warn("boss cards", e); bw.innerHTML = ""; }
     }
     function empBossCardsHtml(w) {
@@ -20977,7 +20993,10 @@ service cloud.firestore {
     </div>`;
     }
 
+    let _dashRenderPending = false;
     function renderDashboardPage() {
+      if (typeof _dashHold !== "undefined" && _dashHold) { _dashRenderPending = true; return; }
+      _dashRenderPending = false;
       const u = currentUser;
       const isPatron = u.role === "patron";
       document.getElementById("patron-dashboard").style.display = isPatron ? "" : "none";
@@ -21033,7 +21052,6 @@ service cloud.firestore {
       const dashPrefs = loadCalisanDashPrefs();
       const wrap = document.getElementById("db-cards");
       if (!wrap) return;
-      renderCalisanBossCards(u);
 
       const today = todayKey();
       const records = DB.records[u.id] || {};
@@ -21320,6 +21338,7 @@ service cloud.firestore {
       }
 
       const order = loadCalisanDashOrder();
+      try { calisanVisibleBossIds(u).forEach(id => { chunks["boss_" + id] = '<div data-boss-slot="' + id + '"></div>'; }); } catch (e) {}
       const compactCls = dashPrefs.compact ? " cdb-compact" : "";
       let orderedHtml = "";
       try {
@@ -21331,13 +21350,14 @@ service cloud.firestore {
             if (id === "fun_goal" && !hasAdvFeature(u, "goalCard")) return "";
           }
           if (!chunks[id]) return "";
-          if (!isFun && !cfg[id]) return "";
+          if (!isFun && !id.startsWith("boss_") && !cfg[id]) return "";
           return `<div class="cdb-w-cell${compactCls}" draggable="true" data-cdb-wid="${id}" title="Basılı tutup sürükleyerek sırayı değiştir" onpointerdown="cdbCellHold(event)" ondragstart="cdbDragStart(event)" ondragend="cdbDragEnd(event)" ondragover="cdbDragOver(event)" ondragleave="cdbDragLeave(event)" ondrop="cdbDrop(event)">${chunks[id]}</div>`;
         }).filter(Boolean).join("");
       } catch (e) {
         console.warn("renderDashboardPage cards", e);
       }
       wrap.innerHTML = orderedHtml || `<div style="text-align:center;padding:30px 0;color:var(--text3);font-size:13px;">Hiçbir kart aktif değil.<br><span style="font-size:11px;">Üstteki dişli simgesinden kart ekleyebilirsiniz.</span></div>`;
+      renderCalisanBossCards(u);
       try {
         const pf = loadOwnerFunPrefs();
         syncBeachThemeOptions(pf, resolveOwnerDashThemeId(pf.dashTheme));
