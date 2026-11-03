@@ -272,6 +272,11 @@ public class MainActivity extends BridgeActivity {
         }
 
         @JavascriptInterface
+        public void setQrFrames(String framesJson) {
+            QrInlineWidgetProvider.saveVideoFrames(activity, framesJson);
+        }
+
+        @JavascriptInterface
         public void returnToHome() {
             activity.runOnUiThread(() -> {
                 activity.openedFromWidgetQr = false;

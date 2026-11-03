@@ -41,6 +41,24 @@ public class QrInlineWidgetProvider extends AppWidgetProvider {
         Bitmap image = imageFile.isFile() ? BitmapFactory.decodeFile(imageFile.getAbsolutePath()) : null;
         views.setViewVisibility(R.id.widget_media_background, image == null ? View.GONE : View.VISIBLE);
         if (image != null) views.setImageViewBitmap(R.id.widget_media_background, image);
+        views.removeAllViews(R.id.widget_media_flipper);
+        int frames = 0;
+        try {
+            for (int i = 0; i < MAX_FRAMES; i++) {
+                File ff = frameFile(context, i);
+                if (!ff.isFile()) break;
+                Bitmap fb = BitmapFactory.decodeFile(ff.getAbsolutePath());
+                if (fb == null) break;
+                RemoteViews fv = new RemoteViews(context.getPackageName(), R.layout.widget_qr_frame);
+                fv.setImageViewBitmap(R.id.widget_frame_image, fb);
+                views.addView(R.id.widget_media_flipper, fv);
+                frames++;
+            }
+        } catch (Throwable ignored) {
+            views.removeAllViews(R.id.widget_media_flipper);
+            frames = 0;
+        }
+        views.setViewVisibility(R.id.widget_media_flipper, frames >= 2 ? View.VISIBLE : View.GONE);
         views.setInt(R.id.widget_qr_badge, "setBackgroundResource", colorBackground(color));
         views.setTextViewText(R.id.widget_qr_label, safeLabel(label));
         views.setViewVisibility(R.id.widget_qr_image, View.VISIBLE);
@@ -60,6 +78,41 @@ public class QrInlineWidgetProvider extends AppWidgetProvider {
                 .putString("qr_widget_color", safeColor(color))
                 .putString("qr_widget_label", safeLabel(label))
                 .apply();
+        AppWidgetManager manager = AppWidgetManager.getInstance(app);
+        int[] ids = manager.getAppWidgetIds(new ComponentName(app, QrInlineWidgetProvider.class));
+        for (int id : ids) updateWidget(app, manager, id);
+    }
+
+    static final int MAX_FRAMES = 10;
+
+    static File frameFile(Context context, int i) {
+        return new File(context.getApplicationContext().getFilesDir(), "qr_widget_frame_" + i + ".jpg");
+    }
+
+    /** Video kareleri (JSON dizi, data:image/jpeg). Boş dizi = kareleri sil (tek görsel kullanılır). */
+    static void saveVideoFrames(Context context, String framesJson) {
+        Context app = context.getApplicationContext();
+        for (int i = 0; i < 32; i++) { File f = frameFile(app, i); if (f.exists()) f.delete(); }
+        try {
+            org.json.JSONArray arr = new org.json.JSONArray(framesJson == null ? "[]" : framesJson);
+            int n = Math.min(arr.length(), MAX_FRAMES), saved = 0;
+            for (int i = 0; i < n; i++) {
+                String d = arr.optString(i, "");
+                int comma = d.indexOf(',');
+                if (!d.startsWith("data:image/") || comma < 0 || d.length() > 60_000) break;
+                byte[] bytes = Base64.decode(d.substring(comma + 1), Base64.DEFAULT);
+                Bitmap b = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                if (b == null) break;
+                boolean ok = b.getWidth() <= 400 && b.getHeight() <= 200;
+                b.recycle();
+                if (!ok) break;
+                try (FileOutputStream out = new FileOutputStream(frameFile(app, saved))) { out.write(bytes); }
+                saved++;
+            }
+            if (saved < 2) for (int i = 0; i < 32; i++) { File f = frameFile(app, i); if (f.exists()) f.delete(); }
+        } catch (Exception e) {
+            for (int i = 0; i < 32; i++) { File f = frameFile(app, i); if (f.exists()) f.delete(); }
+        }
         AppWidgetManager manager = AppWidgetManager.getInstance(app);
         int[] ids = manager.getAppWidgetIds(new ComponentName(app, QrInlineWidgetProvider.class));
         for (int id : ids) updateWidget(app, manager, id);
