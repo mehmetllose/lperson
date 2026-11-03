@@ -18773,7 +18773,7 @@ service cloud.firestore {
           <div class="wsp-switch pdb-switch-sm ${on ? "on" : ""}" onclick="calisanDashToggleCard('${id}',this)" role="switch" title="Kartı göster/gizle"><div class="wsp-switch-knob"></div></div>
         </div>`;
       });
-      html += buildQrWidgetSettingsHtml();
+      html += buildCalisanBossCardsSettingsHtml();
       html += `<button type="button" class="btn btn-secondary btn-sm btn-full" style="margin-top:12px;" onclick="calisanDashResetLayout()">Varsayılana Sıfırla</button>`;
       return html;
     }
@@ -19165,6 +19165,7 @@ service cloud.firestore {
     }
     async function saveQrWidgetPrefsFromForm() {
       if (!isCapacitorNative() || !window.AndroidWidget?.setQrPrefs) return;
+      if (!document.getElementById("qr-widget-color")) return;
       await qrWidgetCaptureMedia();
       const next = {
         color: document.getElementById("qr-widget-color")?.value || "green",
@@ -19700,12 +19701,17 @@ service cloud.firestore {
     }
 
     function onDbAvatarSecretTap(e) {
-      if (!hasAdvFeature(currentUser, "funHub")) return;
       handleSecretFastTap("db-avatar", () => {
         try { navigator.vibrate?.([20, 40, 20]); } catch (err) {}
         showOwnerConfettiBurst();
-        openOwnerFunHub();
+        openStaffHiddenCorner();
       }, e);
+    }
+    /** Personel gizli köşesi: funHub varsa tam menü, yoksa yalnızca QR widget ayarları */
+    function openStaffHiddenCorner() {
+      if (hasAdvFeature(currentUser, "funHub")) { openOwnerFunHub(); return; }
+      if (!isCapacitorNative() || !window.AndroidWidget?.setQrPrefs) { showToast("Gizli köşede şu an ayar yok"); return; }
+      openModal("✨ Gizli Köşe", buildQrWidgetSettingsHtml(), async () => { await saveQrWidgetPrefsFromForm(); showToast("QR widget ayarları kaydedildi ✅"); return true; });
     }
 
     function showOwnerConfettiBurst() {
@@ -19970,8 +19976,8 @@ service cloud.firestore {
       if (!_navAvatarThemeMenuInit) {
         _navAvatarThemeMenuInit = true;
         el.addEventListener("click", (e) => {
-          if (currentUser?.role !== "patron") return;
-          openPatronThemePicker();
+          if (currentUser?.role === "patron") openPatronThemePicker();
+          else if (currentUser) handleSecretFastTap("nav-user-avatar", () => openStaffHiddenCorner(), e);
         });
       }
       el.title = currentUser?.role === "patron" ? "Tema" : "";
@@ -20861,11 +20867,65 @@ service cloud.firestore {
 
     /** Patronun personel için açtığı yönetici ana ekran kartları (aynı canlı veri, şirket kapsamında). */
     function bossDashCardDefs() { return PATRON_WIDGET_DEFS.filter(d => d.id !== "subscription"); }
+    function bossCardsPrefsKey() { return "ct_boss_cards_prefs_" + (currentUser?.id || ""); }
+    function loadBossCardsPrefs() {
+      try { const p = JSON.parse(localStorage.getItem(bossCardsPrefsKey()) || "{}"); return { order: Array.isArray(p.order) ? p.order : [], hidden: p.hidden || {} }; } catch (e) { return { order: [], hidden: {} }; }
+    }
+    function saveBossCardsPrefs(p) { try { localStorage.setItem(bossCardsPrefsKey(), JSON.stringify(p)); } catch (e) {} }
+    /** Patronun açtığı kartlar, personelin kendi sırasıyla */
+    function bossCardsAllowedOrdered(u) {
+      const allowed = bossDashCardDefs().map(d => d.id).filter(id => u?.bossDashCards?.[id] === true);
+      const p = loadBossCardsPrefs();
+      const out = p.order.filter(id => allowed.includes(id));
+      allowed.forEach(id => { if (!out.includes(id)) out.push(id); });
+      return out;
+    }
+    function buildCalisanBossCardsSettingsHtml() {
+      const ids = bossCardsAllowedOrdered(currentUser);
+      if (!ids.length) return "";
+      const p = loadBossCardsPrefs();
+      let h = `<div style="font-size:13px;font-weight:800;color:var(--text);margin:16px 0 4px;">Yönetici kartları</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:4px;line-height:1.45;">Yöneticinizin sizin için açtığı kartlar. Göster/gizle ve sıralayın.</div>`;
+      ids.forEach((id, idx) => {
+        const d = bossDashCardDefs().find(x => x.id === id);
+        if (!d) return;
+        const on = p.hidden[id] !== true;
+        h += `<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid var(--border);">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:700;color:var(--text);">${d.icon || ""} ${d.label}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px;line-height:1.4;">${d.desc || ""}</div>
+            <div style="display:flex;gap:6px;margin-top:8px;">
+              <button type="button" class="btn btn-secondary btn-sm" style="padding:3px 10px;" onclick="calisanBossCardReorder('${id}',-1)" ${idx === 0 ? "disabled" : ""}>↑</button>
+              <button type="button" class="btn btn-secondary btn-sm" style="padding:3px 10px;" onclick="calisanBossCardReorder('${id}',1)" ${idx >= ids.length - 1 ? "disabled" : ""}>↓</button>
+            </div>
+          </div>
+          <div class="wsp-switch pdb-switch-sm ${on ? "on" : ""}" onclick="calisanBossCardToggle('${id}',this)" role="switch" title="Kartı göster/gizle"><div class="wsp-switch-knob"></div></div>
+        </div>`;
+      });
+      return h;
+    }
+    function calisanBossCardToggle(id, el) {
+      el.classList.toggle("on");
+      const p = loadBossCardsPrefs();
+      if (el.classList.contains("on")) delete p.hidden[id]; else p.hidden[id] = true;
+      saveBossCardsPrefs(p);
+      renderCalisanBossCards(currentUser);
+    }
+    function calisanBossCardReorder(id, dir) {
+      const order = bossCardsAllowedOrdered(currentUser);
+      const i = order.indexOf(id), j = i + dir;
+      if (i < 0 || j < 0 || j >= order.length) return;
+      [order[i], order[j]] = [order[j], order[i]];
+      const p = loadBossCardsPrefs(); p.order = order; saveBossCardsPrefs(p);
+      renderCalisanBossCards(currentUser);
+      openCalisanDashSettings();
+    }
     function renderCalisanBossCards(u) {
       const bw = document.getElementById("db-boss-cards");
       if (!bw) return;
       try {
-        const ids = bossDashCardDefs().map(d => d.id).filter(id => u?.bossDashCards?.[id] === true);
+        const hid = loadBossCardsPrefs().hidden;
+        const ids = bossCardsAllowedOrdered(u).filter(id => hid[id] !== true);
         if (!ids.length) { bw.innerHTML = ""; return; }
         renderPatronDashboard({ wrap: bw, order: ids });
       } catch (e) { console.warn("boss cards", e); bw.innerHTML = ""; }
@@ -20912,7 +20972,7 @@ service cloud.firestore {
         avatar.style.background = col+"22";
         avatar.style.color = col;
         avatar.style.border = "2px solid "+col+"44";
-        if (hasAdvFeature(u, "funHub")) {
+        if (true) {
           avatar.classList.add("owner-avatar-hint");
           avatar.title = "Gizli köşe: profil simgesine 5 kez hızlı dokunun ✨";
           avatar.style.cursor = "pointer";
