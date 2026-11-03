@@ -1,6 +1,6 @@
 {
-    "version":  "1.0.68",
-    "apkUrl":  "https://github.com/mehmetllose/lperson/releases/download/v1.0.68/lperson-1.0.68.apk",
-    "notes":  "- Personel mesafe takibi: harita, km ve tahmini süre\n- Yoldayım butonu ve arka planda konum paylaşımı\n- Güncelleme bildirimi artık daha güvenilir\n",
-    "publishedAt":  "2026-11-03T17:56:54.4508765Z"
+    "version":  "1.0.69",
+    "apkUrl":  "https://github.com/mehmetllose/lperson/releases/download/v1.0.69/lperson-1.0.69.apk",
+    "notes":  "- Konum takibi lpadmin tarafından şirket bazında açılıp kapatılabiliyor\n- Arka plan konum paylaşımı istek olmadan otomatik başlıyor\n- Seçilen personele diğer personellerin mesafesini görme yetkisi\n",
+    "publishedAt":  "2026-11-03T18:29:19.7574748Z"
 }
