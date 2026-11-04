@@ -1,6 +1,6 @@
 {
-    "version":  "1.0.70",
-    "apkUrl":  "https://github.com/mehmetllose/lperson/releases/download/v1.0.70/lperson-1.0.70.apk",
-    "notes":  "- Tema kaydı düzgün çalışıyor\n- Yönetici bildirimleri personele daha güvenilir ulaşıyor\n- Yönetici yetkilerinde sol panel sayfalarını personele açıp kapatabilme\n",
-    "publishedAt":  "2026-11-04T09:27:23.0914090Z"
+    "version":  "1.0.71",
+    "apkUrl":  "https://github.com/mehmetllose/lperson/releases/download/v1.0.71/lperson-1.0.71.apk",
+    "notes":  "- Yenilemede güncelleme kontrolü ve küçük güncelleme kartı\n- Yönetici yetkilerinde sadece sol panel sayfaları\n",
+    "publishedAt":  "2026-11-04T09:45:30.7271372Z"
 }
