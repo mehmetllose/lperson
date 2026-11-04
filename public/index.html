@@ -19362,6 +19362,20 @@ service cloud.firestore {
     }
 
     // ── Owner APK: gizli eğlence köşesi (profil ×5) ──
+    /* Widget asistan seçenekleri (eksikti: loadOwnerFunPrefs ReferenceError verip temayı hep Klasik'e düşürüyordu). */
+    const WIDGET_ASSISTANT_AVATARS = [
+      { id: "robot", label: "Robot", emoji: "\u{1F916}" },
+      { id: "cat", label: "Kedi", emoji: "\u{1F431}" },
+      { id: "fox", label: "Tilki", emoji: "\u{1F98A}" },
+      { id: "owl", label: "Baykuş", emoji: "\u{1F989}" },
+    ];
+    const WIDGET_ASSISTANT_ACCENTS = [
+      { id: "green", label: "Yeşil", color: "#16a36a" },
+      { id: "blue", label: "Mavi", color: "#2f7de1" },
+      { id: "purple", label: "Mor", color: "#8b5cf6" },
+      { id: "orange", label: "Turuncu", color: "#f59e0b" },
+      { id: "red", label: "Kırmızı", color: "#e5484d" },
+    ];
     const OWNER_FUN_PREFS_KEY = "ct_owner_fun_prefs";
     const OWNER_FUN_THEMES = [
       { id: "default", label: "Klasik", emoji: "🌙" },
