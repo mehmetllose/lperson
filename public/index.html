@@ -8836,7 +8836,7 @@
 
           <div class="page" id="page-live-location">
             <div class="alert alert-info" style="margin-bottom:12px;font-size:12px;line-height:1.5;" id="live-loc-hint">
-              Anlık konumlar yalnızca lpadmin’in bu özelliği açtığı kişiler için paylaşılır. Konum izni gerekir.
+              Anlık konumlar yalnızca bu özelliğin açık olduğu hesaplarda paylaşılır. Konum izni gerekir.
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center;">
               <button type="button" class="btn btn-primary btn-sm" onclick="refreshLiveLocationPage()">Yenile</button>
@@ -10729,8 +10729,8 @@
       if (shareBtn) shareBtn.style.display = "none";
       if (hint) {
         hint.textContent = currentUser.role === "patron"
-          ? "İşyerindeki tüm personellerin anlık konumu (otomatik yenilenir). Menü yalnızca lpadmin’in izin verdiği hesaplarda görünür."
-          : "İşyerindeki patron ve tüm personellerin anlık konumu (otomatik yenilenir). Menü yalnızca lpadmin’in izin verdiği hesaplarda görünür.";
+          ? "İşyerindeki tüm personellerin anlık konumu (otomatik yenilenir)."
+          : "İşyerindeki patron ve tüm personellerin anlık konumu (otomatik yenilenir).";
       }
       if (shouldPublishLiveLocation()) void startLiveLocationPublish();
       else stopLiveLocationPublish();
@@ -15942,7 +15942,7 @@ service cloud.firestore {
           user.hourlyRate = Number(comp.settings?.hourlyRate) || 100;
           user.annualLeaveDays = 14;
           user.hiddenMenuIds = [];
-          user.wageChangeLog = [{ at: new Date().toISOString(), effectiveFrom: todayKey(), oldRate: 0, newRate: user.hourlyRate, byId: currentUser?.id || "", byName: currentUser?.name || "lpadmin", kind: "hire" }];
+          user.wageChangeLog = [{ at: new Date().toISOString(), effectiveFrom: todayKey(), oldRate: 0, newRate: user.hourlyRate, byId: currentUser?.id || "", byName: currentUser?.name || "Sistem", kind: "hire" }];
         }
         DB.users.push(user);
         if (role === "calisan") {
