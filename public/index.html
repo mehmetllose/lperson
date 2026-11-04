@@ -17973,7 +17973,7 @@ service cloud.firestore {
       const managerPermission = managerPermissionForPage(pageId);
       if (managerPermission && !userHasMgrPerm(user, managerPermission)) return true;
       if (!pageAllowedByPlan(pageId)) return true;
-      if ((pageId === "month" || pageId === "advances") && userHasMgrPerm(user, pageId)) return false;
+      if ((pageId === "month" || pageId === "advances" || pageId === "today" || pageId === "leaves") && userHasMgrPerm(user, pageId)) return false;
       if (pageId === "my-hours") return !staffWorkHoursAnalysisAllowed(user);
       const h = user.hiddenMenuIds;
       return Array.isArray(h) && h.includes(pageId);
@@ -18042,6 +18042,8 @@ service cloud.firestore {
       overview: "Genel bakışı görüntüleme",
       documents: "İşyeri belgelerini yönetme",
       month: "Tüm personelin ay görünümünü görüp düzenleme",
+      today: "Tüm personelin bugün kayıtlarını görüp düzenleme",
+      leaves: "Tüm personelin izinlerini görüp ekleme ve düzenleme",
     };
     const WORKER_NOTIFICATION_PERMISSION_LABELS = {
       shift: "Vardiya değişikliği ve hatırlatmaları",
@@ -18174,7 +18176,7 @@ service cloud.firestore {
     const MANAGER_PANEL_PAGES = [
       ["requests", "İstekler"], ["employees", "Personeller"], ["tasks", "Görevler"], ["shifts", "Vardiya Planı"],
       ["analytics", "Performans & Rapor"], ["costs", "Maliyet"], ["documents", "Belgeler"], ["overview", "Genel Bakış"],
-      ["month", "Ay Görünümü"], ["advances", "Avans & Ek Kazançlar"],
+      ["today", "Bugün"], ["month", "Ay Görünümü"], ["advances", "Avans & Ek Kazançlar"], ["leaves", "İzinler"],
     ];
     /** Yönetici görünümünde personel listesi: kendisi en üstte. */
     function mgrSelfFirst(list) {
@@ -18182,6 +18184,8 @@ service cloud.firestore {
       const me = list.find(u => u.id === currentUser.id);
       return me ? [me, ...list.filter(u => u.id !== currentUser.id)] : list;
     }
+    function canManageCompanyToday() { return currentUser?.role === "patron" || (currentUser?.role === "calisan" && userHasMgrPerm(currentUser, "today")); }
+    function canManageCompanyLeaves() { return currentUser?.role === "patron" || (currentUser?.role === "calisan" && userHasMgrPerm(currentUser, "leaves")); }
     function canManageCompanyMonth() { return currentUser?.role === "patron" || (currentUser?.role === "calisan" && userHasMgrPerm(currentUser, "month")); }
     function userHasMgrPerm(u, p) {
       return !!u && !!p && (u.managerPermissions?.[p] === true || u.managerPages?.[p] === true);
@@ -18481,7 +18485,7 @@ service cloud.firestore {
       const patronEls = ["patron-worker-select", "patron-month-worker-select", "patron-adv-worker-select"];
       patronEls.forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.style.display = id === "patron-adv-worker-select" ? (canManageCompanyAdvances() ? "" : "none") : id === "patron-month-worker-select" ? (canManageCompanyMonth() ? "" : "none") : (isPatron ? "" : "none");
+        if (el) el.style.display = id === "patron-adv-worker-select" ? (canManageCompanyAdvances() ? "" : "none") : id === "patron-month-worker-select" ? (canManageCompanyMonth() ? "" : "none") : id === "patron-worker-select" ? (canManageCompanyToday() ? "" : "none") : (isPatron ? "" : "none");
       });
       // Advances add button: patron=direct add, calisan=request
       const advAddContainer = document.getElementById("adv-add-btn-container");
@@ -18579,7 +18583,7 @@ service cloud.firestore {
         ? `<optgroup label="Geçmiş personel">${past.map(w => `<option value="${w.id}">${escHtml(w.name)} (eski)</option>`).join("")}</optgroup>`
         : "";
       const todaySel = document.getElementById("today-worker-sel");
-      if (todaySel) todaySel.innerHTML = workers.map(opt).join("");
+      if (todaySel) populateTodayWorkerSelect();
       const advSel = document.getElementById("adv-worker-sel");
       if (advSel) {
         populateAdvancesWorkerSelect();
@@ -18596,6 +18600,18 @@ service cloud.firestore {
       sel.innerHTML = workers.map(w => `<option value="${w.id}">${escHtml(w.name)}${w.terminatedAt ? " (eski)" : ""}${currentUser?.role === "calisan" && w.id === currentUser.id ? " (ben)" : ""}</option>`).join("");
       if (previous && workers.some(w => w.id === previous)) sel.value = previous;
       else if (workers.length) sel.value = workers[0].id;
+    }
+
+    function populateTodayWorkerSelect() {
+      const sel = document.getElementById("today-worker-sel");
+      if (!sel || !canManageCompanyToday()) return;
+      const prev = sel.value;
+      let workers = mgrSelfFirst(getWorkers());
+      if (currentUser?.role === "calisan" && !workers.some(u => u.id === currentUser.id)) workers = [currentUser, ...workers];
+      const me = currentUser?.role === "calisan";
+      sel.innerHTML = workers.map(w => `<option value="${w.id}">${escHtml(w.name)}${me && w.id === currentUser.id ? " (ben)" : ""}</option>`).join("");
+      if (prev && workers.some(w => w.id === prev)) sel.value = prev;
+      else if (workers[0]) sel.value = workers[0].id;
     }
 
     function populateMonthWorkerSelect() {
@@ -18617,7 +18633,7 @@ service cloud.firestore {
     }
 
     function getSelectedWorker(selId) {
-      if (currentUser.role === "patron" || (selId === "adv-worker-sel" && canManageCompanyAdvances()) || (selId === "month-worker-sel" && canManageCompanyMonth())) {
+      if (currentUser.role === "patron" || (selId === "adv-worker-sel" && canManageCompanyAdvances()) || (selId === "month-worker-sel" && canManageCompanyMonth()) || (selId === "today-worker-sel" && canManageCompanyToday())) {
         const sel = document.getElementById(selId);
         return sel ? DB.users.find(u => u.id === sel.value) || getWorkers()[0] : getWorkers()[0];
       }
@@ -23300,7 +23316,7 @@ service cloud.firestore {
     }
 
     function deletePatronAssignedLeave(leaveId) {
-      if (currentUser?.role !== "patron") return;
+      if (!canManageCompanyLeaves()) return;
       const comp = getCompany();
       const list = comp.settings.patronAssignedLeaves || [];
       const pl = list.find(x => x.id === leaveId);
@@ -23317,11 +23333,11 @@ service cloud.firestore {
     }
 
     function openEditPatronAssignedLeaveModal(leaveId) {
-      if (currentUser?.role !== "patron") return;
+      if (!canManageCompanyLeaves()) return;
       const comp = getCompany();
       const pl = (comp.settings.patronAssignedLeaves || []).find(x => x.id === leaveId);
       if (!pl) return;
-      const workers = getWorkers();
+      const workers = mgrSelfFirst(getWorkers());
       const wopts = workers.map(w => `<option value="${w.id}" ${w.id === pl.userId ? "selected" : ""}>${escHtml(w.name)}</option>`).join("");
       const lts = (getSettings().leaveTypes && getSettings().leaveTypes.length) ? getSettings().leaveTypes : DEFAULT_LEAVE_TYPES;
       const ltOpts = lts.map(lt => `<option value="${escHtml(lt.id)}" ${lt.id === (pl.leaveTypeId || "annual") ? "selected" : ""}>${escHtml(lt.label)}</option>`).join("");
@@ -23372,10 +23388,10 @@ service cloud.firestore {
     }
 
     function openEditLeaveSpan(uid, start, end, leaveTypeId) {
-      if (currentUser?.role !== "patron") return;
+      if (!canManageCompanyLeaves()) return;
       const assigned = (getSettings().patronAssignedLeaves || []).find(l => l.userId === uid && l.startDate === start && l.endDate === end);
       if (assigned) { openEditPatronAssignedLeaveModal(assigned.id); return; }
-      const workers = getWorkers();
+      const workers = mgrSelfFirst(getWorkers());
       const wopts = workers.map(w => `<option value="${w.id}" ${w.id === uid ? "selected" : ""}>${escHtml(w.name)}</option>`).join("");
       const lts = (getSettings().leaveTypes && getSettings().leaveTypes.length) ? getSettings().leaveTypes : DEFAULT_LEAVE_TYPES;
       const ltOpts = lts.map(lt => `<option value="${escHtml(lt.id)}" ${lt.id === (leaveTypeId || "annual") ? "selected" : ""}>${escHtml(lt.label)}</option>`).join("");
@@ -23430,7 +23446,7 @@ service cloud.firestore {
     }
 
     function deleteLeaveSpan(uid, start, end) {
-      if (currentUser?.role !== "patron") return;
+      if (!canManageCompanyLeaves()) return;
       const assigned = (getSettings().patronAssignedLeaves || []).find(l => l.userId === uid && l.startDate === start && l.endDate === end);
       if (assigned) { deletePatronAssignedLeave(assigned.id); return; }
       if (!confirm("Bu izin kaydı silinsin mi? İlgili günlerdeki izin işaretleri de kaldırılır.")) return;
@@ -23487,6 +23503,11 @@ service cloud.firestore {
     }
 
     function renderTodayPage() {
+      if (currentUser?.role === "calisan" && canManageCompanyToday()) {
+        const tsel = document.getElementById("today-worker-sel");
+        if (tsel && !tsel.options.length) populateTodayWorkerSelect();
+        const tw = document.getElementById("patron-worker-select"); if (tw) tw.style.display = "";
+      }
       const worker = getSelectedWorker("today-worker-sel");
       if (!worker) { document.getElementById("today-recent").innerHTML = `<div class="empty"><div class="empty-icon">👥</div><div class="empty-text">Henüz çalışan yok</div></div>`; return; }
       const today = todayKey();
@@ -23564,6 +23585,19 @@ service cloud.firestore {
         outBtn.className = "quick-btn quick-out" + (hasOpen ? " active" : "");
       } else {
         qbtns.style.display = "none";
+      }
+      let otherHint = document.getElementById("today-other-hint");
+      const viewingOther = currentUser.role === "calisan" && worker.id !== currentUser.id;
+      if (!otherHint && qbtns && viewingOther) {
+        otherHint = document.createElement("div");
+        otherHint.id = "today-other-hint";
+        otherHint.className = "alert alert-info";
+        otherHint.style.margin = "0 0 14px";
+        qbtns.parentNode.insertBefore(otherHint, qbtns);
+      }
+      if (otherHint) {
+        otherHint.style.display = viewingOther ? "" : "none";
+        if (viewingOther) otherHint.innerHTML = `<b>${escHtml(worker.name)}</b> görüntüleniyor. Kayıtlarını aşağıdan düzenleyebilirsin. Kendi giriş/çıkışın için listeden kendini seç. <button type="button" class="btn btn-ghost btn-sm" style="margin-left:6px;" onclick="const s=document.getElementById('today-worker-sel');if(s){s.value=currentUser.id;loadTodayForWorker();}">Kendime dön</button>`;
       }
 
       // Recent
@@ -23898,7 +23932,7 @@ service cloud.firestore {
     // ═══════════════════════════════════════════════════════════════════
     function openDayPanel(key, uid) {
       // Çalışan kendi kaydını doğrudan düzenleyemez — talep göndermesi gerekir
-      const targetUid = uid || (currentUser.role === "patron" ? getSelectedWorker("today-worker-sel")?.id : currentUser.id);
+      const targetUid = uid || (canManageCompanyToday() ? getSelectedWorker("today-worker-sel")?.id : currentUser.id);
       if (currentUser.role !== "patron" && targetUid === currentUser.id) {
         openNewHourRequestModal(key);
         return;
@@ -33067,14 +33101,14 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
       return keyFromDate(d);
     }
     function selectedLeavesWorkerId() {
-      if (currentUser?.role === "calisan") return currentUser.id;
+      if (currentUser?.role === "calisan" && !canManageCompanyLeaves()) return currentUser.id;
       return document.getElementById("leaves-worker-sel")?.value || "";
     }
     function syncLeavesWorkerSelect() {
       const sel = document.getElementById("leaves-worker-sel");
       const label = document.getElementById("leaves-worker-label");
       if (!sel) return;
-      if (currentUser?.role !== "patron") {
+      if (!canManageCompanyLeaves()) {
         sel.style.display = "none";
         if (label) label.style.display = "none";
         return;
@@ -33082,8 +33116,9 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
       sel.style.display = "";
       if (label) label.style.display = "";
       const prev = sel.value;
-      const workers = getWorkers();
-      sel.innerHTML = `<option value="">Tüm personel</option>` + workers.map(w => `<option value="${w.id}">${escHtml(w.name)}</option>`).join("");
+      const workers = mgrSelfFirst(getWorkers());
+      const meCal = currentUser?.role === "calisan";
+      sel.innerHTML = `<option value="">Tüm personel</option>` + workers.map(w => `<option value="${w.id}">${escHtml(w.name)}${meCal && w.id === currentUser.id ? " (ben)" : ""}</option>`).join("");
       if (prev && [...sel.options].some(o => o.value === prev)) sel.value = prev;
     }
     function collectRecordLeaveSpans(uid) {
@@ -33153,8 +33188,8 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
       const el = document.getElementById("leaves-patron-active-list");
       const summary = document.getElementById("leaves-summary");
       const title = document.getElementById("leaves-period-list-title");
-      const isPat = currentUser?.role === "patron";
-      const isCal = currentUser?.role === "calisan";
+      const isPat = canManageCompanyLeaves();
+      const isCal = currentUser?.role === "calisan" && !isPat;
       if (!bar || !wrap || !el) return;
       if (!isPat && !isCal) { bar.style.display = "none"; wrap.style.display = "none"; return; }
       bar.style.display = "";
@@ -33174,7 +33209,7 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
       if (title) title.textContent = leavesBrowseLabel() + " izinleri";
 
       const uid = selectedLeavesWorkerId();
-      const workers = isPat ? (uid ? getWorkers().filter(w => w.id === uid) : getWorkers()) : [currentUser];
+      const workers = isPat ? (uid ? (DB.users || []).filter(w => w.id === uid) : mgrSelfFirst(getWorkers())) : [currentUser];
       const spans = workers.flatMap(w => collectRecordLeaveSpans(w.id).map(s => ({ ...s, name: w.name })));
       const covered = {};
       spans.forEach(s => {
@@ -33650,7 +33685,7 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
     }
 
     function printPatronAssignedLeaveFormPdf(leaveId) {
-      if (currentUser?.role !== "patron") return;
+      if (!canManageCompanyLeaves()) return;
       const l = (getSettings().patronAssignedLeaves || []).find(x => x.id === leaveId);
       if (!l) { showToast("İzin kaydı bulunamadı", "warn"); return; }
       const worker = DB.users.find(u => u.id === l.userId);
@@ -33675,7 +33710,7 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
       if (ph) ph.style.display = isPat ? "" : "none";
       if (ch) ch.style.display = isCal ? "" : "none";
       if (btn) btn.style.display = isCal ? "" : "none";
-      if (patAssignBtn) patAssignBtn.style.display = isPat ? "" : "none";
+      if (patAssignBtn) patAssignBtn.style.display = canManageCompanyLeaves() ? "" : "none";
       const hourlyBtn = document.getElementById("leaves-hourly-btn");
       const annualBtn = document.getElementById("leaves-annual-btn");
       if (hourlyBtn) hourlyBtn.style.display = isCal ? "" : "none";
@@ -33685,8 +33720,8 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
     }
 
     function openPatronAssignLeaveModal() {
-      if (currentUser?.role !== "patron") return;
-      const workers = getWorkers();
+      if (!canManageCompanyLeaves()) return;
+      const workers = mgrSelfFirst(getWorkers());
       if (!workers.length) { showToast("Önce personel ekleyin", "warn"); return; }
       const wopts = workers.map(w => `<option value="${w.id}">${escHtml(w.name)}</option>`).join("");
       const today = todayKey();
