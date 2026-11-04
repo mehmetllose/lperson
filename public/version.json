@@ -1,6 +1,6 @@
 {
-    "version":  "1.0.72",
-    "apkUrl":  "https://github.com/mehmetllose/lperson/releases/download/v1.0.72/lperson-1.0.72.apk",
-    "notes":  "Yönetici yetkilerinde Ay Görünümü, Avans, Bugün ve İzinler açılabiliyor\nAçılan sayfalar yönetici haliyle çalışıyor",
-    "publishedAt":  "2026-11-04T10:05:03.5261159Z"
+    "version":  "1.0.73",
+    "apkUrl":  "https://github.com/mehmetllose/lperson/releases/download/v1.0.73/lperson-1.0.73.apk",
+    "notes":  "Yönetici sayfa isimleri patronla aynı\nVardiya Planı ile haftalık vardiya birleşti\nYönetici bildirimleri personele daha güvenilir ulaşıyor",
+    "publishedAt":  "2026-11-04T11:14:03.0127552Z"
 }
