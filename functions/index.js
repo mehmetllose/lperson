@@ -86,6 +86,40 @@ async function collectPatronTokens(companyId) {
   return [...new Set(tokens)];
 }
 
+// Yönetici yetkili personel (istemcideki managerNotifEnabledFor ile aynı kural)
+const MGR_NOTIF_TYPES = {
+  tasks: { perm: ["tasks"], def: true },
+  requests: { perm: ["requests"], def: true },
+  advances: { perm: ["requests", "advances"], def: true },
+  shifts: { perm: ["requests", "shifts"], def: true },
+  attendance: { perm: ["employees"], def: false },
+};
+function userHasMgrPerm(u, p) {
+  return !!u && (u.managerPermissions?.[p] === true || u.managerPages?.[p] === true);
+}
+function managerNotifEnabledFor(u, key) {
+  const t = MGR_NOTIF_TYPES[key];
+  if (!t || !u || u.role !== "calisan" || u.terminatedAt) return false;
+  const prefs = u.managerNotifPrefs || {};
+  const pref = prefs[key];
+  const held = t.perm.some((p) => userHasMgrPerm(u, p));
+  if (prefs._v >= 2) return pref === undefined ? (held && t.def) : pref === true;
+  if (!held) return false;
+  return pref === undefined ? t.def : pref === true;
+}
+async function collectManagerTokens(companyId, key, excludeIds) {
+  const ex = new Set((excludeIds || []).filter(Boolean).map(String));
+  const qs = await admin.firestore().collection("users").where("companyId", "==", companyId).get();
+  const tokens = [];
+  qs.forEach((d) => {
+    const u = d.data();
+    if (ex.has(String(d.id))) return;
+    if (!managerNotifEnabledFor(u, key)) return;
+    if (u.fcmToken && typeof u.fcmToken === "string") tokens.push(u.fcmToken);
+  });
+  return [...new Set(tokens)];
+}
+
 async function sendMulticast(tokens, { title, body, data }) {
   const unique = [...new Set(tokens)].filter(Boolean);
   if (!unique.length) {
@@ -166,9 +200,10 @@ exports.onRecordWritePush = onDocumentWritten("records/{workerId}", async (event
   if (!openInc && !closedInc) return;
 
   const ok = await companyAllowsPatronClockNotify(worker.companyId);
-  if (!ok) return;
-
-  const tokens = await collectPatronTokens(worker.companyId);
+  const patronTokens = ok && worker.patronNotificationsEnabled !== false ? await collectPatronTokens(worker.companyId) : [];
+  const mgrTokens = await collectManagerTokens(worker.companyId, "attendance", [workerId]);
+  const tokens = [...patronTokens, ...mgrTokens];
+  if (!tokens.length) return;
   const name = worker.name || "Çalışan";
 
   if (openInc) {
@@ -208,7 +243,11 @@ exports.onRequestWritePush = onDocumentWritten("requests/{requestId}", async (ev
     after.status === "pending" &&
     (after.type === "hour" || after.type === "adv" || after.type === "leave")
   ) {
-    const tokens = await collectPatronTokens(companyId);
+    const mgrKey = after.type === "adv" ? "advances" : "requests";
+    const tokens = [
+      ...(await collectPatronTokens(companyId)),
+      ...(await collectManagerTokens(companyId, mgrKey, [after.userId])),
+    ];
     const worker = (await getUser(after.userId)) || {};
     const wname = worker.name || "Çalışan";
     let title = "Yeni Talep";
@@ -233,6 +272,19 @@ exports.onRequestWritePush = onDocumentWritten("requests/{requestId}", async (ev
       title,
       body,
       data: { ct: "request_new", requestId, companyId, userId: after.userId || "", reqType: after.type || "" },
+    });
+    return;
+  }
+
+  // Yeni vardiya takası → yetkili yöneticiler
+  if (!before && after.status === "pending" && after.type === "shift_swap") {
+    const tokens = await collectManagerTokens(companyId, "shifts", [after.userId, after.peerId]);
+    if (!tokens.length) return;
+    const worker = (await getUser(after.userId)) || {};
+    await sendMulticast(tokens, {
+      title: "Vardiya Takas Talebi",
+      body: `${worker.name || "Çalışan"} - ${after.myDateKey || "?"}`,
+      data: { ct: "request_new", requestId, companyId, userId: after.userId || "", reqType: "shift_swap" },
     });
     return;
   }

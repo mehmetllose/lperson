@@ -17974,6 +17974,7 @@ service cloud.firestore {
       if (managerPermission && !userHasMgrPerm(user, managerPermission)) return true;
       if (!pageAllowedByPlan(pageId)) return true;
       if ((pageId === "month" || pageId === "advances" || pageId === "today" || pageId === "leaves") && userHasMgrPerm(user, pageId)) return false;
+      if (pageId === "my-shifts" && userHasMgrPerm(user, "shifts")) return true;
       if (pageId === "my-hours") return !staffWorkHoursAnalysisAllowed(user);
       const h = user.hiddenMenuIds;
       return Array.isArray(h) && h.includes(pageId);
@@ -18021,10 +18022,10 @@ service cloud.firestore {
       const managerNav = document.getElementById("calisan-manager-nav");
       if (managerNav) {
         const routes = [
-          ["tasks", "tasks", "🗒️", "Görev Atama"], ["shifts", "shifts", "🗓️", "Vardiya Planı"],
-          ["employees", "employees", "👥", "Personel Yönetimi"], ["requests", "requests", "📥", "Talepleri Onayla"],
-          ["advances", "advances", "💸", "Avans Ve Ek Kazançlar"], ["analytics", "analytics", "📊", "Performans Ve Rapor"],
-          ["costs", "costs", "🧾", "Maliyet Analizi"], ["overview", "overview", "📈", "Genel Bakış"],
+          ["tasks", "tasks", "🗒️", "Görevler"], ["shifts", "shifts", "🗓️", "Vardiya Planı"],
+          ["employees", "employees", "👥", "Personeller"], ["requests", "requests", "📥", "İstekler"],
+          ["analytics", "analytics", "📊", "Performans & Rapor"],
+          ["costs", "costs", "🧾", "Maliyet"], ["overview", "overview", "📈", "Genel Bakış"],
           ["documents", "documents", "📄", "Belgeler"],
         ].filter(([, permission]) => userHasMgrPerm(currentUser, permission));
         managerNav.style.display = routes.length ? "" : "none";
@@ -18912,6 +18913,7 @@ service cloud.firestore {
       if (currentUser?.role === "platformAdmin" && page !== "platform-admin" && page !== "settings") {
         page = "platform-admin";
       }
+      if (currentUser?.role === "calisan" && page === "my-shifts" && userHasMgrPerm(currentUser, "shifts")) page = "shifts";
       if (currentUser?.role === "calisan" && page === "tasks" && !isCompanyManagerFor("tasks")) {
         page = getFirstVisibleCalisanPage();
       }
@@ -21645,7 +21647,10 @@ service cloud.firestore {
           { id: "jobtasks", lab: "Görev", icon: "✅" },
           { id: "my-hours", lab: "Süre", icon: "⏱" },
           { id: "my-requests", lab: "Talep", icon: "📨" },
-        ].filter(l => !isWorkerMenuHidden(u, l.id));
+        ].filter(l => !isWorkerMenuHidden(u, l.id)).map(l => {
+          const mp = userHasMgrPerm(u, l.id) ? MANAGER_PANEL_PAGES.find(([k]) => k === l.id) : null;
+          return mp ? { ...l, lab: mp[1] } : l;
+        });
         chunks.shortcuts = `<div class="card" style="margin-bottom:12px;">
           <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:10px;">Hızlı Erişim</div>
           <div style="display:flex;flex-wrap:wrap;gap:8px;">${links.map(l => `<button type="button" class="btn btn-secondary btn-sm" onclick="navTo('${l.id}')" style="flex:1;min-width:calc(50% - 8px);min-height:44px;">${l.icon} ${l.lab}</button>`).join("")}</div>
@@ -21999,7 +22004,12 @@ service cloud.firestore {
     function renderShiftPlanPage() {
       const root = document.getElementById("shift-plan-root");
       if (!root) return;
-      const workers = getWorkers();
+      if (currentUser?.role === "calisan") {
+        const mine = document.getElementById("my-shift-plan-root");
+        if (mine && mine.parentNode !== root.parentNode) { mine.style.marginBottom = "18px"; root.parentNode.insertBefore(mine, root); }
+        try { renderMyShiftsPage(); } catch (e) {}
+      }
+      const workers = mgrSelfFirst(getWorkers());
       const settings = getSettings();
       const templates = (settings.shiftTemplates || []).filter(t => t.name && t.startTime && !t.ephemeral);
       const monday = getMondayOfWeek(shiftPlanWeek);
