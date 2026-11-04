@@ -22006,8 +22006,7 @@ service cloud.firestore {
       if (!root) return;
       if (currentUser?.role === "calisan") {
         const mine = document.getElementById("my-shift-plan-root");
-        if (mine && mine.parentNode !== root.parentNode) { mine.style.marginBottom = "18px"; root.parentNode.insertBefore(mine, root); }
-        try { renderMyShiftsPage(); } catch (e) {}
+        if (mine && mine.parentNode === root.parentNode) mine.remove();
       }
       const workers = mgrSelfFirst(getWorkers());
       const settings = getSettings();
