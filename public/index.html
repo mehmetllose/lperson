@@ -25091,17 +25091,16 @@ service cloud.firestore {
       const managerPermissionsHtml = currentUser?.role === "patron" ? `
     <div class="emp-edit-section emp-collapsible collapsed">
       <div class="emp-edit-section-hd" onclick="this.parentElement.classList.toggle('collapsed')">Yönetici Yetkileri</div>
-      <p class="emp-hint">Hangi yönetim araçlarını kullanabileceğini seçin.</p>
-      <div class="emp-tg-grid">
+      <div style="display:none" aria-hidden="true">
         ${Object.entries(MANAGER_PERMISSION_LABELS).map(([key, label]) => {
-          const on = w.managerPermissions?.[key] === true;
+          const on = MANAGER_PANEL_PAGES.some(([k]) => k === key) ? userHasMgrPerm(w, key) : w.managerPermissions?.[key] === true;
           return `<div class="emp-tg-row">
             <span class="emp-tg-lab">${label}</span>
             <div class="wsp-switch pdb-switch-sm${on ? " on" : ""}" role="switch" aria-checked="${on}" data-manager-permission="${key}" onclick="syncMgrSwitch('${key}',!this.classList.contains('on'))" title="Aç / kapat"><div class="wsp-switch-knob"></div></div>
           </div>`;
         }).join("")}
       </div>
-      <div class="emp-sub-hd" style="margin-top:12px;">Sol panel sayfaları</div>
+      <div class="emp-sub-hd" style="margin-top:4px;">Sol panel sayfaları</div>
       <p class="emp-hint">Patron sol panelindeki sayfalar. Açık olan sayfa personelin menüsünde (Yönetici Araçları) görünür ve ilgili yetki de açılır.</p>
       <div class="emp-tg-grid" id="emp-mgr-panel-grid">
         ${MANAGER_PANEL_PAGES.map(([key, label]) => {
