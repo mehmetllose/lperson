@@ -13998,6 +13998,15 @@ service cloud.firestore {
       if (patronNotificationAllowedForWorker(currentUser.id)) void enqueuePatronsNotif(title, body, tag, dir === "in" ? "clock_in" : "clock_out");
       void enqueueManagersNotif("attendance", title, body, "ct-clock-" + tag.slice(3), "mgr_clock");
     }
+    /** Yonetici bildirimi acik personele giris/cikis (patron kendi yolundan alir). */
+    function enqueueManagerClockNotif(dir, time, silent) {
+      if (silent || currentUser?.role !== "calisan") return;
+      const name = (currentUser?.name || "Çalışan").trim();
+      const tKey = dir === "in" ? "patron_clock_in" : "patron_clock_out";
+      const title = platformNotif(tKey + "_title");
+      const body = platformNotif(tKey + "_body", { name, time: time || "?" });
+      void enqueueManagersNotif("attendance", title, body, "ct-clock-" + dir + "-" + currentUser.id + "-" + todayKey() + "-" + String(time || ""), "mgr_clock");
+    }
     async function enqueueWorkerShiftNotifs(payloads) {
       if (!payloads || !payloads.length) return;
       await enqueueUserNotifs(payloads.filter(p => {
@@ -14526,6 +14535,8 @@ service cloud.firestore {
         if (!u) return false;
         const payload = userDocPayload(u);
         if (!payload) return false;
+        // Bildirim kuyrugu baskalarinca yazilir; eski yerel kopya kuyrugu ezmesin.
+        delete payload.recentShiftNotifs;
         await fsSetDoc("users", uid, payload, { merge: true });
         return true;
       } catch (e) {
@@ -17947,7 +17958,7 @@ service cloud.firestore {
       // Mobilde Bildirimler her zaman erişilebilir kalsın
       if (pageId === "worker-notifications") return false;
       const managerPermission = managerPermissionForPage(pageId);
-      if (managerPermission && user.managerPermissions?.[managerPermission] !== true) return true;
+      if (managerPermission && !userHasMgrPerm(user, managerPermission)) return true;
       if (!pageAllowedByPlan(pageId)) return true;
       if (pageId === "my-hours") return !staffWorkHoursAnalysisAllowed(user);
       const h = user.hiddenMenuIds;
@@ -18001,7 +18012,7 @@ service cloud.firestore {
           ["advances", "advances", "💸", "Avans Ve Ek Kazançlar"], ["analytics", "analytics", "📊", "Performans Ve Rapor"],
           ["costs", "costs", "🧾", "Maliyet Analizi"], ["overview", "overview", "📈", "Genel Bakış"],
           ["documents", "documents", "📄", "Belgeler"],
-        ].filter(([, permission]) => currentUser.managerPermissions?.[permission] === true);
+        ].filter(([, permission]) => userHasMgrPerm(currentUser, permission));
         managerNav.style.display = routes.length ? "" : "none";
         managerNav.innerHTML = routes.length ? `<div class="nav-section-label" style="margin-top:10px;">Yönetici Araçları</div>${routes.map(([page,,,label]) => `<button class="nav-item${mgrNavActivePage() === page ? " active" : ""}" type="button" data-mgr-page="${page}" onclick="navTo('${page}');closeSidebar();">${mgrNavIconSvg(page)}<span class="nav-item-label">${label}</span></button>`).join("")}` : "";
       }
@@ -18036,7 +18047,7 @@ service cloud.firestore {
       return Array.isArray(p) ? p : (p ? [p] : []);
     }
     function userHoldsManagerNotifPerm(u, key) {
-      return !!u && managerNotifPermList(key).some(p => u.managerPermissions?.[p] === true);
+      return !!u && managerNotifPermList(key).some(p => userHasMgrPerm(u, p));
     }
     function managerNotifEnabledFor(u, key) {
       if (!u || u.role !== "calisan" || u.terminatedAt) return false;
@@ -18144,11 +18155,25 @@ service cloud.firestore {
       if (t.startsWith("ct-myclock") || t.startsWith("ct-clock")) return "attendance";
       return "";
     }
+    /** Patron sol paneli sayfalari (personele dogrudan acilabilir). Anahtar = sayfa = yetki. */
+    const MANAGER_PANEL_PAGES = [
+      ["requests", "İstekler"], ["employees", "Personeller"], ["tasks", "Görevler"], ["shifts", "Vardiya Planı"],
+      ["analytics", "Performans & Rapor"], ["costs", "Maliyet"], ["documents", "Belgeler"], ["overview", "Genel Bakış"],
+    ];
+    function userHasMgrPerm(u, p) {
+      return !!u && !!p && (u.managerPermissions?.[p] === true || u.managerPages?.[p] === true);
+    }
+    function syncMgrSwitch(key, on) {
+      document.querySelectorAll('[data-manager-permission="' + key + '"],[data-mgr-panel-page="' + key + '"]').forEach(el => {
+        el.classList.toggle("on", !!on); el.setAttribute("aria-checked", !!on);
+      });
+      try { refreshEmpMgrNotifRows(); } catch (e) {}
+    }
     function managerPermissionForPage(page) {
       return ({ tasks: "tasks", shifts: "shifts", employees: "employees", requests: "requests", analytics: "analytics", costs: "costs", overview: "overview", documents: "documents" })[page] || "";
     }
     function isCompanyManagerFor(permission) {
-      return currentUser?.role === "calisan" && currentUser.managerPermissions?.[permission] === true;
+      return currentUser?.role === "calisan" && userHasMgrPerm(currentUser, permission);
     }
     function canManageCompanyTasks() { return currentUser?.role === "patron" || isCompanyManagerFor("tasks"); }
     function canManageCompanyShifts() { return currentUser?.role === "patron" || isCompanyManagerFor("shifts"); }
@@ -23614,6 +23639,7 @@ service cloud.firestore {
       const label = dir === "in" ? "Giriş" : "Çıkış";
       showToast(label + " kaydedildi: " + now);
       try { showQrSuccessOverlay(dir === "in" ? "in" : "out", now); } catch (e) {}
+      try { enqueueManagerClockNotif(dir, now, silent); } catch (e) {}
       try {
         pushWorkerFeed({ title: label + " kaydı", body: "Mesai " + (dir === "in" ? "girişi" : "çıkışı") + ": " + now, kind: dir === "in" ? "clock_in" : "clock_out" });
         void notifyDeviceNow(label + " kaydedildi", "Mesai " + (dir === "in" ? "girişi" : "çıkışı") + ": " + now, "ct-myclock-" + dir + "-" + uid + "-" + Date.now());
@@ -25043,7 +25069,18 @@ service cloud.firestore {
           const on = w.managerPermissions?.[key] === true;
           return `<div class="emp-tg-row">
             <span class="emp-tg-lab">${label}</span>
-            <div class="wsp-switch pdb-switch-sm${on ? " on" : ""}" role="switch" aria-checked="${on}" data-manager-permission="${key}" onclick="this.classList.toggle('on');this.setAttribute('aria-checked',this.classList.contains('on'));refreshEmpMgrNotifRows()" title="Aç / kapat"><div class="wsp-switch-knob"></div></div>
+            <div class="wsp-switch pdb-switch-sm${on ? " on" : ""}" role="switch" aria-checked="${on}" data-manager-permission="${key}" onclick="syncMgrSwitch('${key}',!this.classList.contains('on'))" title="Aç / kapat"><div class="wsp-switch-knob"></div></div>
+          </div>`;
+        }).join("")}
+      </div>
+      <div class="emp-sub-hd" style="margin-top:12px;">Sol panel sayfaları</div>
+      <p class="emp-hint">Patron sol panelindeki sayfalar. Açık olan sayfa personelin menüsünde (Yönetici Araçları) görünür ve ilgili yetki de açılır.</p>
+      <div class="emp-tg-grid" id="emp-mgr-panel-grid">
+        ${MANAGER_PANEL_PAGES.map(([key, label]) => {
+          const on = userHasMgrPerm(w, key);
+          return `<div class="emp-tg-row">
+            <span class="emp-tg-lab" style="display:flex;align-items:center;gap:8px;">${mgrNavIconSvg(key)}<span>${label}</span></span>
+            <div class="wsp-switch pdb-switch-sm${on ? " on" : ""}" role="switch" aria-checked="${on}" data-mgr-panel-page="${key}" onclick="syncMgrSwitch('${key}',!this.classList.contains('on'))" title="Aç / kapat"><div class="wsp-switch-knob"></div></div>
           </div>`;
         }).join("")}
       </div>
@@ -25290,6 +25327,9 @@ service cloud.firestore {
       const managerPermissions = currentUser?.role === "patron"
         ? Object.fromEntries(Object.keys(MANAGER_PERMISSION_LABELS).map(key => [key, !!document.querySelector(`[data-manager-permission="${key}"]`)?.classList.contains("on")]))
         : (w.managerPermissions || {});
+      const managerPages = currentUser?.role === "patron" && document.querySelector("[data-mgr-panel-page]")
+        ? Object.fromEntries(MANAGER_PANEL_PAGES.map(([key]) => [key, !!document.querySelector(`[data-mgr-panel-page="${key}"]`)?.classList.contains("on")]))
+        : (w.managerPages || {});
       const workerNotificationPermissions = currentUser?.role === "patron"
         ? Object.fromEntries(Object.keys(WORKER_NOTIFICATION_PERMISSION_LABELS).map(key => [key, !!document.querySelector(`[data-worker-notification-permission="${key}"]`)?.classList.contains("on")]))
         : (w.workerNotificationPermissions || {});
@@ -25349,7 +25389,7 @@ service cloud.firestore {
       if (String(w.username || "").toLowerCase() !== uname) {
         previousUsernames.push({ username: w.username, at: new Date().toISOString() });
       }
-      const updated = { ...w, name, jobTitle, username: uname, previousUsernames: previousUsernames.slice(-20), password: pass, hourlyRate, rateHistory, rateEffectiveFrom, wageChangeLog, phone, tcNo: tcNo || null, address, weeklyOff, color, hiddenMenuIds, managerPermissions, managerNotifPrefs, bossDashCards, workerNotificationPermissions, patronNotificationsEnabled, annualLeaveDays, hideTodayEarn: !!document.getElementById("emp-hide-today-earn")?.classList.contains("on"), allowSwapPrivacy: !!document.getElementById("emp-allow-swap-privacy")?.classList.contains("on"), showWorkHoursAnalysis: !!document.getElementById("emp-show-hours-analysis")?.classList.contains("on"), overtimePayBoostMode, overtimePayBoostValue, weeklyOffPayBoostMode, weeklyOffPayBoostValue, payWeeklyOffDays, payWeeklyOffFrom, hiredAt: hiredRaw || null, terminatedAt, terminationNote, advancePolicy: readAdvancePolicyFromEmpForm(), branchId: document.getElementById("emp-branch-id")?.value || normalizeUserBranchId(w) };
+      const updated = { ...w, name, jobTitle, username: uname, previousUsernames: previousUsernames.slice(-20), password: pass, hourlyRate, rateHistory, rateEffectiveFrom, wageChangeLog, phone, tcNo: tcNo || null, address, weeklyOff, color, hiddenMenuIds, managerPermissions, managerPages, managerNotifPrefs, bossDashCards, workerNotificationPermissions, patronNotificationsEnabled, annualLeaveDays, hideTodayEarn: !!document.getElementById("emp-hide-today-earn")?.classList.contains("on"), allowSwapPrivacy: !!document.getElementById("emp-allow-swap-privacy")?.classList.contains("on"), showWorkHoursAnalysis: !!document.getElementById("emp-show-hours-analysis")?.classList.contains("on"), overtimePayBoostMode, overtimePayBoostValue, weeklyOffPayBoostMode, weeklyOffPayBoostValue, payWeeklyOffDays, payWeeklyOffFrom, hiredAt: hiredRaw || null, terminatedAt, terminationNote, advancePolicy: readAdvancePolicyFromEmpForm(), branchId: document.getElementById("emp-branch-id")?.value || normalizeUserBranchId(w) };
       DB.users[idx] = updated;
       if (currentUser?.id === uid) currentUser = updated;
       localCacheSave();
@@ -30502,6 +30542,7 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
           }
           showQRScanResult("in", `✅ Giriş yapıldı: ${now}`);
           showQrSuccessOverlay("in", now);
+          try { enqueueManagerClockNotif("in", now, false); } catch (e) {}
           pushWorkerFeed({ title: "Giriş kaydı", body: `Mesai girişi: ${now}`, kind: "clock_in" });
           void notifyDeviceNow("Giriş kaydedildi", `Mesai girişi: ${now}`, "ct-myclock-in-" + uid + "-" + Date.now());
           qrApplied = true;
@@ -30529,6 +30570,7 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
           }
           showQRScanResult("out", `✅ Çıkış yapıldı: ${now}`);
           showQrSuccessOverlay("out", now);
+          try { enqueueManagerClockNotif("out", now, false); } catch (e) {}
           pushWorkerFeed({ title: "Çıkış kaydı", body: `Mesai çıkışı: ${now}`, kind: "clock_out" });
           void notifyDeviceNow("Çıkış kaydedildi", `Mesai çıkışı: ${now}`, "ct-myclock-out-" + uid + "-" + Date.now());
           qrApplied = true;
