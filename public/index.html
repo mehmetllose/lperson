@@ -19,6 +19,10 @@
 #ptr-ind { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 4px); left: 50%; width: 40px; height: 40px; margin-left: -20px; border-radius: 50%; background: var(--bg2); border: 2px solid var(--accent); color: var(--accent); display: flex; align-items: center; justify-content: center; z-index: 10050; pointer-events: none; opacity: 0; transform: translateY(-60px); box-shadow: 0 4px 14px rgba(0,0,0,.35); }
 #ptr-ind.ptr-spin svg { animation: spin .7s linear infinite; }
 #app-update-slim { position: fixed; left: 10px; right: 10px; top: calc(env(safe-area-inset-top, 0px) + 8px); z-index: 10040; display: flex; align-items: center; gap: 8px; padding: 7px 8px 7px 14px; background: var(--bg2); border: 1px solid var(--accent); border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,.35); font-size: 12px; color: var(--text); max-width: 520px; margin: 0 auto; }
+#app-update-slim.app-update-ptr { animation: appUpdSlide .28s ease-out; }
+@keyframes appUpdSlide { from { transform: translateY(-14px); opacity: 0; } to { transform: none; opacity: 1; } }
+.app-update-slim-ico { width: 30px; height: 30px; flex-shrink: 0; border-radius: 9px; display: grid; place-items: center; background: rgba(245,166,35,.14); font-size: 16px; }
+.app-update-slim-sub { display: block; font-size: 10.5px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
 .app-update-slim-x { background: none; border: none; color: var(--text3); font-size: 20px; line-height: 1; padding: 2px 6px; cursor: pointer; }
 </style>
   <meta name="mobile-web-app-capable" content="yes" />
@@ -11237,14 +11241,23 @@
       window._modalSaveFn = null;
       try { applyButtonTitleCase(document.getElementById("modal-container")); } catch (e) {}
     }
-    function showAppUpdateBar(latest, installed, notes, url) {
-      try {
+    function showAppUpdateBar(latest, installed, notes, url, opts) {
+      const ptr = !!(opts && opts.ptr);
+      if (!ptr) try {
         const sn = JSON.parse(localStorage.getItem("ct_app_update_snooze") || "null");
         if (sn && sn.v === latest && Date.now() < sn.until) return;
       } catch (e) {}
       _appUpdatePending = { latest, url, installed, notes };
       let bar = document.getElementById("app-update-slim");
       if (!bar) { bar = document.createElement("div"); bar.id = "app-update-slim"; document.body.appendChild(bar); }
+      if (ptr) {
+        bar.classList.remove("app-update-ptr"); void bar.offsetWidth; bar.classList.add("app-update-ptr");
+        const first = String(notes || "").split("\n").map(x => x.replace(/^[-*\s]+/, "").trim()).find(Boolean) || "";
+        bar.innerHTML = `<span class="app-update-slim-ico">\u2b06\ufe0f</span><span style="flex:1;min-width:0;"><b style="display:block;font-size:12.5px;">G\u00fcncelleme var <span style="color:var(--accent);">v${escHtml(latest)}</span></b><span class="app-update-slim-sub">${escHtml(first || ("Y\u00fckl\u00fc: v" + (installed || "-")))}</span></span>
+        <button type="button" class="btn btn-primary btn-sm" onclick="appUpdateBarGo()">G\u00fcncelle</button>
+        <button type="button" class="app-update-slim-x" aria-label="Kapat" onclick="appUpdateBarClose()">\u00d7</button>`;
+        return;
+      }
       bar.innerHTML = `<span style="flex:1;min-width:0;">Yeni sürüm <b style="color:var(--accent);">v${escHtml(latest)}</b> mevcut</span>
         <button type="button" class="btn btn-primary btn-sm" onclick="appUpdateBarGo()">Güncelle</button>
         <button type="button" class="app-update-slim-x" aria-label="Kapat" onclick="appUpdateBarClose()">×</button>`;
@@ -11354,7 +11367,7 @@
       if (_appUpdateChecking) return;
       if (!manual && !(opts && opts.force)) { const last = +localStorage.getItem("ct_app_update_checked") || 0; if (Date.now() - last < 30 * 60 * 1000) return; }
       _appUpdateChecking = true;
-      try { await checkAppUpdateInner(manual); } finally { _appUpdateChecking = false; }
+      try { await checkAppUpdateInner(manual, false, !!(opts && opts.ptr)); } finally { _appUpdateChecking = false; }
     }
     const APP_UPDATE_VERSION_JSON = "https://lperson.web.app/version.json";
     let _appUpdateRetryT = null;
@@ -11396,7 +11409,7 @@
         throw new Error((e2.message || e2) + (err1 ? " / site: " + (err1.message || err1) : ""));
       }
     }
-    async function checkAppUpdateInner(manual, isRetry) {
+    async function checkAppUpdateInner(manual, isRetry, ptr) {
       if (/^OWNER\//.test(APP_UPDATE_REPO)) { if (manual) showToast("G\u00fcncelleme deposu hen\u00fcz ayarlanmad\u0131", "warn"); return; }
       const installed = AndroidUpdater.getVersionName();
       if (manual) appUpdateStatus("Kontrol ediliyor...");
@@ -11410,11 +11423,11 @@
           return;
         }
         appUpdateSetLast("v" + latest + " mevcut");
-        if (!manual && localStorage.getItem("ct_app_update_skip") === latest) return;
+        if (!manual && !ptr && localStorage.getItem("ct_app_update_skip") === latest) return;
         const notes = r.notes.slice(0, 1200);
         appUpdateStatus("v" + latest + " mevcut.");
         if (manual) openAppUpdatePanel(latest, installed, notes, r.url);
-        else showAppUpdateBar(latest, installed, notes, r.url);
+        else showAppUpdateBar(latest, installed, notes, r.url, { ptr });
       } catch (e) {
         console.warn("update check", e);
         appUpdateSetLast("hata: " + (e.message || e));
@@ -18813,6 +18826,7 @@ service cloud.firestore {
         const el = ind();
         el.innerHTML = SPIN; el.classList.add("ptr-spin");
         el.style.transition = "transform .2s ease"; el.style.opacity = "1"; el.style.transform = "translateY(48px)";
+        try { setTimeout(() => { try { checkAppUpdate(false, { force: true, ptr: true }); } catch (e) {} }, 400); } catch (e) {}
         Promise.resolve(manualRefresh()).catch(() => {}).finally(() => { refreshing = false; hide(); });
       }, { passive: true });
       document.addEventListener("touchcancel", () => { if (armed && !refreshing) hide(); armed = false; }, { passive: true });
