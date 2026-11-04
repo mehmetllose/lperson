@@ -1,6 +1,6 @@
 {
-    "version":  "1.0.73",
-    "apkUrl":  "https://github.com/mehmetllose/lperson/releases/download/v1.0.73/lperson-1.0.73.apk",
-    "notes":  "Yönetici sayfa isimleri patronla aynı\nVardiya Planı ile haftalık vardiya birleşti\nYönetici bildirimleri personele daha güvenilir ulaşıyor",
-    "publishedAt":  "2026-11-04T11:14:03.0127552Z"
+    "version":  "1.0.74",
+    "apkUrl":  "https://github.com/mehmetllose/lperson/releases/download/v1.0.74/lperson-1.0.74.apk",
+    "notes":  "- Vardiya Planı sayfası düzeltildi: yetkili personel artık yalnızca patronun Vardiya Planı sayfasını görür",
+    "publishedAt":  "2026-11-04T16:55:35.8681698Z"
 }
