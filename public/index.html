@@ -9218,6 +9218,7 @@
               </div>
               <div style="font-size:11px;color:var(--text3);margin-bottom:12px;line-height:1.45;">Her şubenin ayrı personeli ve QR giriş/çıkış kodu olur. Sol menüden aktif şubeyi değiştirin.</div>
               <div id="branches-settings-list"></div>
+              <div id="branches-combine-wrap"></div>
               <button type="button" class="btn btn-primary btn-sm" style="margin-top:8px;" onclick="openAddBranchModal()">+ Şube Ekle</button>
             </div>
 
@@ -14463,6 +14464,7 @@ service cloud.firestore {
       const u1 = _firestore.collection("companies").doc(cid).onSnapshot(doc => {
         if (!doc.exists) return;
         _mergeCompanyFromRemote(cid, doc.data());
+        try { syncPatronBranchSelector(); renderCombineBranchesToggle(); } catch (e) {}
         scheduleRemoteUIRefresh();
       }, e => scheduleFirestoreLiveRecovery(e));
       _firestoreLiveUnsubs.push(() => u1());
@@ -14680,6 +14682,67 @@ service cloud.firestore {
     function normalizeUserBranchId(u) {
       return (u && u.branchId) ? u.branchId : BRANCH_DEFAULT_ID;
     }
+    let _viewBranchScope = null;
+    function isCombineBranchesOn() {
+      if (!currentUser || currentUser.role === "platformAdmin") return false;
+      const c = getCompany();
+      return !!(c && c.combineBranches === true && getCompanyBranches().length >= 2);
+    }
+    function getViewBranchIds() {
+      if (isCombineBranchesOn()) return getCompanyBranches().map(b => b.id);
+      return [currentUser?.role === "calisan" ? normalizeUserBranchId(currentUser) : getEffectiveBranchId()];
+    }
+    function withBranchScope(branchId, fn) {
+      const prev = _viewBranchScope;
+      _viewBranchScope = branchId;
+      try { return fn(); } finally { _viewBranchScope = prev; }
+    }
+    function branchSectionHeaderHtml(b) {
+      return `<div class="branch-sec-hd" style="font-size:13px;font-weight:800;color:var(--accent);margin:18px 0 8px;padding:6px 10px;border-left:3px solid var(--accent);background:var(--bg3);border-radius:8px;">${escHtml(b?.name || "\u015eube")}</div>`;
+    }
+    /** Birlikte g\u00f6sterim a\u00e7\u0131ksa sayfay\u0131 her \u015fube i\u00e7in ayr\u0131 render edip etiketli b\u00f6l\u00fcmlerde birle\u015ftirir. */
+    function renderBranchSections(containerId, renderFn) {
+      const el = document.getElementById(containerId);
+      if (!el) return renderFn();
+      const parts = [];
+      getCompanyBranches().forEach(b => {
+        withBranchScope(b.id, () => { renderFn(); });
+        const cur = document.getElementById(containerId);
+        parts.push(`<div class="branch-sec" data-branch-id="${escHtml(b.id)}">${branchSectionHeaderHtml(b)}${cur ? cur.innerHTML : ""}</div>`);
+      });
+      const target = document.getElementById(containerId);
+      if (target) target.innerHTML = parts.join("");
+    }
+    function workerOptionsByBranch(workers, optFn) {
+      if (!isCombineBranchesOn()) return workers.map(optFn).join("");
+      const branches = getCompanyBranches();
+      const ids = new Set(branches.map(b => b.id));
+      const loose = workers.filter(w => w.role !== "calisan" || !ids.has(normalizeUserBranchId(w)));
+      return loose.map(optFn).join("") + branches.map(b => {
+        const list = workers.filter(w => w.role === "calisan" && normalizeUserBranchId(w) === b.id && !loose.includes(w));
+        return list.length ? `<optgroup label="${escHtml(b.name)}">${list.map(optFn).join("")}</optgroup>` : "";
+      }).join("");
+    }
+    function setCombineBranches(on) {
+      const comp = getCompany();
+      if (!comp || currentUser?.role !== "patron") return;
+      comp.combineBranches = !!on;
+      saveSettings();
+      syncPatronBranchSelector();
+      renderBranchesSettingsCard();
+      showToast(on ? "\u015eubeler birlikte g\u00f6steriliyor" : "\u015eubeler ayr\u0131 g\u00f6steriliyor");
+    }
+    function renderCombineBranchesToggle() {
+      const wrap = document.getElementById("branches-combine-wrap");
+      if (!wrap) return;
+      if (currentUser?.role !== "patron" || getCompanyBranches().length < 2) { wrap.innerHTML = ""; return; }
+      const on = getCompany()?.combineBranches === true;
+      wrap.innerHTML = `<label style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;margin-top:10px;cursor:pointer;">
+        <input type="checkbox" id="combine-branches-sw" ${on ? "checked" : ""} onchange="setCombineBranches(this.checked)" style="width:18px;height:18px;accent-color:var(--accent);"/>
+        <span style="flex:1;"><span style="font-size:13px;font-weight:700;color:var(--text);">\u015eubeleri birlikte g\u00f6ster</span>
+        <span style="display:block;font-size:10px;color:var(--text3);margin-top:2px;line-height:1.4;">A\u00e7\u0131kken sayfalarda her \u015fube ayr\u0131 ba\u015fl\u0131k ve tabloda alt alta g\u00f6r\u00fcn\u00fcr. Personelin \u015fubesi de\u011fi\u015fmez.</span></span>
+      </label>`;
+    }
     function getEffectiveBranchId() {
       if (!currentUser) return BRANCH_DEFAULT_ID;
       if (currentUser.role === "calisan") return normalizeUserBranchId(currentUser);
@@ -14720,20 +14783,22 @@ service cloud.firestore {
     }
     function workerMatchesActiveBranch(u) {
       if (!u || u.role !== "calisan") return false;
+      if (_viewBranchScope) return normalizeUserBranchId(u) === _viewBranchScope;
       if (currentUser?.role === "calisan") return true;
+      if (isCombineBranchesOn()) return true;
       return normalizeUserBranchId(u) === getEffectiveBranchId();
     }
     function getWorkerById(uid) {
       return (DB.users || []).find(u => u.id === uid) || null;
     }
     function requestMatchesActiveBranch(r) {
-      if (!r || currentUser?.role !== "patron") return true;
+      if (!r || (currentUser?.role !== "patron" && !_viewBranchScope)) return true;
       const u = getWorkerById(r.userId);
       if (!u || u.role !== "calisan" || u.companyId !== currentUser.companyId) return false;
       return workerMatchesActiveBranch(u);
     }
     function documentMatchesActiveBranch(d) {
-      if (!d || currentUser?.role !== "patron") return true;
+      if (!d || (currentUser?.role !== "patron" && !_viewBranchScope)) return true;
       if (!d.workerId) return false;
       const u = getWorkerById(d.workerId);
       if (!u || u.role !== "calisan" || u.companyId !== currentUser.companyId) return false;
@@ -14759,7 +14824,7 @@ service cloud.firestore {
       if (!wrap || !sel) return;
       const isPatron = currentUser?.role === "patron";
       const branches = getCompanyBranches();
-      wrap.style.display = isPatron && branches.length ? "" : "none";
+      wrap.style.display = isPatron && branches.length && !isCombineBranchesOn() ? "" : "none";
       if (!isPatron || !branches.length) return;
       const active = getEffectiveBranchId();
       sel.innerHTML = branches.map(b => `<option value="${escHtml(b.id)}"${b.id === active ? " selected" : ""}>${escHtml(b.name)}</option>`).join("");
@@ -14834,6 +14899,7 @@ service cloud.firestore {
     }
     function renderBranchesSettingsCard() {
       const el = document.getElementById("branches-settings-list");
+      renderCombineBranchesToggle();
       if (!el || currentUser?.role !== "patron") return;
       const branches = getCompanyBranches();
       const comp = getCompany();
@@ -18598,7 +18664,7 @@ service cloud.firestore {
       const previous = sel.value;
       let workers = mgrSelfFirst(getWorkersForMonth(year, month));
       if (currentUser?.role === "calisan" && !workers.some(u => u.id === currentUser.id)) workers = [currentUser, ...workers];
-      sel.innerHTML = workers.map(w => `<option value="${w.id}">${escHtml(w.name)}${w.terminatedAt ? " (eski)" : ""}${currentUser?.role === "calisan" && w.id === currentUser.id ? " (ben)" : ""}</option>`).join("");
+      sel.innerHTML = workerOptionsByBranch(workers, w => `<option value="${w.id}">${escHtml(w.name)}${w.terminatedAt ? " (eski)" : ""}${currentUser?.role === "calisan" && w.id === currentUser.id ? " (ben)" : ""}</option>`);
       if (previous && workers.some(w => w.id === previous)) sel.value = previous;
       else if (workers.length) sel.value = workers[0].id;
     }
@@ -18610,7 +18676,7 @@ service cloud.firestore {
       let workers = mgrSelfFirst(getWorkers());
       if (currentUser?.role === "calisan" && !workers.some(u => u.id === currentUser.id)) workers = [currentUser, ...workers];
       const me = currentUser?.role === "calisan";
-      sel.innerHTML = workers.map(w => `<option value="${w.id}">${escHtml(w.name)}${me && w.id === currentUser.id ? " (ben)" : ""}</option>`).join("");
+      sel.innerHTML = workerOptionsByBranch(workers, w => `<option value="${w.id}">${escHtml(w.name)}${me && w.id === currentUser.id ? " (ben)" : ""}</option>`);
       if (prev && workers.some(w => w.id === prev)) sel.value = prev;
       else if (workers[0]) sel.value = workers[0].id;
     }
@@ -18627,7 +18693,7 @@ service cloud.firestore {
         ? `<optgroup label="Geçmiş personel">${past.map(w => `<option value="${w.id}">${escHtml(w.name)} (eski)</option>`).join("")}</optgroup>`
         : "";
       const prev = sel.value;
-      sel.innerHTML = workers.map(opt).join("") + pastGrp;
+      sel.innerHTML = workerOptionsByBranch(workers, opt) + pastGrp;
       if (prev && [...sel.options].some(o => o.value === prev)) sel.value = prev;
       else if (workers[0]) sel.value = workers[0].id;
       else if (past[0]) sel.value = past[0].id;
@@ -22068,7 +22134,7 @@ service cloud.firestore {
       const cur = getCurrency();
 
       // Worker rows
-      const workerRows = filtered.map(w => {
+      const buildWorkerRows = (list) => list.map(w => {
         const col = w.color || "#5b9cf6";
         const init = w.name.split(" ").map(c=>c[0]).join("").slice(0,2).toUpperCase();
         const wo = getWorkerWeeklyOff(w.id);
@@ -22183,6 +22249,7 @@ service cloud.firestore {
           ${cells}
         </tr>`;
       }).join("");
+      const workerRows = buildWorkerRows(filtered);
 
       // Prev/Next week buttons
       const prevWk = (() => { const d = getMondayOfWeek(shiftPlanWeek); d.setDate(d.getDate()-7); return getISOWeekKey(d); })();
@@ -22203,6 +22270,28 @@ service cloud.firestore {
         }).join("")}
       </div>` : "";
 
+      const gridOne = (rowsHtml, hasRows) => `
+        <!-- Grid -->
+        <div class="shift-plan-scroll" style="overflow-x:auto;border:2px solid var(--border);border-radius:12px;background:var(--bg2);">
+          <table class="shift-plan-table" style="width:100%;border-collapse:collapse;font-size:12px;">
+            <thead style="background:var(--bg2);">
+              <tr>
+                <th style="padding:10px 12px;text-align:left;border-right:1px solid var(--border);position:sticky;left:0;background:var(--bg2);z-index:3;">
+                  <div style="font-size:11px;color:var(--text3);">Personel</div>
+                </th>
+                ${headerCells}
+              </tr>
+            </thead>
+            <tbody>
+              ${hasRows ? rowsHtml : `<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text3);">Çalışan bulunamadı</td></tr>`}
+            </tbody>
+          </table>
+        </div>
+
+`;
+      const gridHtml = isCombineBranchesOn()
+        ? getCompanyBranches().map(b => { const list = filtered.filter(w => normalizeUserBranchId(w) === b.id); return branchSectionHeaderHtml(b) + gridOne(buildWorkerRows(list), list.length > 0); }).join("")
+        : gridOne(workerRows, filtered.length > 0);
       root.innerHTML = `
         <!-- Toolbar -->
         <div class="splan-toolbar">
@@ -22227,22 +22316,7 @@ service cloud.firestore {
         ${swapBannerHtml}
         ${legendHtml}
 
-        <!-- Grid -->
-        <div class="shift-plan-scroll" style="overflow-x:auto;border:2px solid var(--border);border-radius:12px;background:var(--bg2);">
-          <table class="shift-plan-table" style="width:100%;border-collapse:collapse;font-size:12px;">
-            <thead style="background:var(--bg2);">
-              <tr>
-                <th style="padding:10px 12px;text-align:left;border-right:1px solid var(--border);position:sticky;left:0;background:var(--bg2);z-index:3;">
-                  <div style="font-size:11px;color:var(--text3);">Personel</div>
-                </th>
-                ${headerCells}
-              </tr>
-            </thead>
-            <tbody>
-              ${filtered.length ? workerRows : `<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text3);">Çalışan bulunamadı</td></tr>`}
-            </tbody>
-          </table>
-        </div>
+        ${gridHtml}
 
         <!-- Context menu (hidden) -->
         <div id="shift-ctx-menu" style="display:none;position:fixed;background:var(--bg2);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.4);z-index:9999;width:292px;max-width:calc(100vw - 20px);box-sizing:border-box;overflow:hidden;"></div>
@@ -24872,7 +24946,9 @@ service cloud.firestore {
           ? ""
           : `<div class="empty"><div class="empty-icon">👥</div><div class="empty-text">Aktif personel yok.<br>Sağ üstten personel ekleyin.</div></div>`;
       } else {
-        listHtml += workers.map(w => empRow(w, false)).join("");
+        listHtml += isCombineBranchesOn()
+          ? getCompanyBranches().map(b => { const list = workers.filter(w => normalizeUserBranchId(w) === b.id); return list.length ? branchSectionHeaderHtml(b) + list.map(w => empRow(w, false)).join("") : ""; }).join("")
+          : workers.map(w => empRow(w, false)).join("");
       }
       const staffComp = getCompany();
       const quotaLine = staffComp
@@ -25641,6 +25717,7 @@ service cloud.firestore {
 
     // ── ANALYTICS PAGE ──
     function renderAnalyticsPage() {
+      if (isCombineBranchesOn() && !_viewBranchScope) return renderBranchSections("analytics-content", () => renderAnalyticsPage());
       const { year, month } = analyticsViewMonth;
       document.getElementById("analytics-month-title").textContent = `${MONTH_NAMES[month]} ${year}`;
       const workers = getWorkersForMonth(year, month);
@@ -26329,6 +26406,7 @@ service cloud.firestore {
 
     // ── COST PAGE ──
     function renderCostPage() {
+      if (isCombineBranchesOn() && !_viewBranchScope) return renderBranchSections("cost-content", () => renderCostPage());
       const { year, month } = costViewMonth;
       document.getElementById("cost-month-title").textContent = `${MONTH_NAMES[month]} ${year}`;
       const workers = getWorkersForMonth(year, month);
@@ -27419,6 +27497,7 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
     }
 
     function renderDocumentsPage(skipInviteMerge) {
+      if (isCombineBranchesOn() && !_viewBranchScope && !window._cvEditorOpen) return renderBranchSections("documents-content", () => renderDocumentsPage(true));
       if (!skipInviteMerge && currentUser?.role === "patron") {
         void cvMergeInviteSubmissionsIntoCompany().then(changed => {
           if (changed && currentPage === "documents") renderDocumentsPage(true);
@@ -27835,6 +27914,7 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
     function changeOverviewMonth(dir) { const d = new Date(overviewViewMonth.year, overviewViewMonth.month + dir, 1); overviewViewMonth = { year: d.getFullYear(), month: d.getMonth() }; renderOverviewPage(); }
 
     function renderOverviewPage() {
+      if (isCombineBranchesOn() && !_viewBranchScope) return renderBranchSections("overview-content", () => renderOverviewPage());
       const { year, month } = overviewViewMonth;
       document.getElementById("overview-month-title").textContent = `${MONTH_NAMES[month]} ${year}`;
       const workers = getWorkersForMonth(year, month);
@@ -31381,6 +31461,7 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
 
     // ── PATRON: render all requests ──
     function renderRequestsPage() {
+      if (isCombineBranchesOn() && !_viewBranchScope) return renderBranchSections("requests-list", () => renderRequestsPage());
       const all = getPatronCompanyRequests();
       let list = all;
       if (reqFilter === "pending") list = all.filter(r => r.status === "pending");
@@ -32515,6 +32596,7 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
     }
 
     function renderTasksPatronPage() {
+      if (isCombineBranchesOn() && !_viewBranchScope) return renderBranchSections("tasks-patron-root", () => renderTasksPatronPage());
       const root = document.getElementById("tasks-patron-root");
       if (!root || !canManageCompanyTasks()) return;
       const ted = document.getElementById("tasks-cell-editor");
@@ -33192,6 +33274,7 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
       }
     }
     function renderLeaveBrowse() {
+      if (isCombineBranchesOn() && !_viewBranchScope && !selectedLeavesWorkerId()) return renderBranchSections("leaves-patron-active-list", () => renderLeaveBrowse());
       const bar = document.getElementById("leaves-browse-bar");
       const wrap = document.getElementById("leaves-patron-active-wrap");
       const el = document.getElementById("leaves-patron-active-list");
