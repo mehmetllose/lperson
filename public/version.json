@@ -1,6 +1,6 @@
 {
-    "version":  "1.0.74",
-    "apkUrl":  "https://github.com/mehmetllose/lperson/releases/download/v1.0.74/lperson-1.0.74.apk",
-    "notes":  "- Vardiya Planı sayfası düzeltildi: yetkili personel artık yalnızca patronun Vardiya Planı sayfasını görür",
-    "publishedAt":  "2026-11-04T16:55:35.8681698Z"
+    "version":  "1.0.75",
+    "apkUrl":  "https://github.com/mehmetllose/lperson/releases/download/v1.0.75/lperson-1.0.75.apk",
+    "notes":  "- Şubeleri birlikte göster (isteğe bağlı): Ayarlar \u003e Şubeler’den açılınca her şube kendi kartında ayrı görünür\n- Görevler: onay bekleyen görevler artık sayfanın yanında, daha az yer kaplıyor\n- Küçük düzeltmeler ve iyileştirmeler\n",
+    "publishedAt":  "2026-11-06T11:52:32.6853482Z"
 }
