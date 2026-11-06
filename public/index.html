@@ -14751,11 +14751,13 @@ service cloud.firestore {
       if (!wrap) return;
       if (currentUser?.role !== "patron" || getCompanyBranches().length < 2) { wrap.innerHTML = ""; return; }
       const on = getCompany()?.combineBranches === true;
-      wrap.innerHTML = `<label style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;margin-top:10px;cursor:pointer;">
-        <input type="checkbox" id="combine-branches-sw" ${on ? "checked" : ""} onchange="setCombineBranches(this.checked)" style="width:18px;height:18px;accent-color:var(--accent);"/>
-        <span style="flex:1;"><span style="font-size:13px;font-weight:700;color:var(--text);">\u015eubeleri birlikte g\u00f6ster</span>
-        <span style="display:block;font-size:10px;color:var(--text3);margin-top:2px;line-height:1.4;">A\u00e7\u0131kken sayfalarda her \u015fube ayr\u0131 ba\u015fl\u0131k ve tabloda alt alta g\u00f6r\u00fcn\u00fcr. Personelin \u015fubesi de\u011fi\u015fmez.</span></span>
-      </label>`;
+      wrap.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:12px;margin-top:10px;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:700;color:var(--text);">\u015eubeleri birlikte g\u00f6ster</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:4px;line-height:1.45;">A\u00e7\u0131kken sayfalarda her \u015fube ayr\u0131 kartta, ba\u015fl\u0131\u011f\u0131yla g\u00f6r\u00fcn\u00fcr. Personelin \u015fubesi de\u011fi\u015fmez.</div>
+        </div>
+        <div id="combine-branches-sw" class="wsp-switch${on ? " on" : ""}" onclick="setCombineBranches(!this.classList.contains('on'))" style="flex-shrink:0;cursor:pointer;" role="switch" title="A\u00e7 / kapat"><div class="wsp-switch-knob"></div></div>
+      </div>`;
     }
     function getEffectiveBranchId() {
       if (!currentUser) return BRANCH_DEFAULT_ID;
