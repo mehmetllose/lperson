@@ -14697,8 +14697,22 @@ service cloud.firestore {
       _viewBranchScope = branchId;
       try { return fn(); } finally { _viewBranchScope = prev; }
     }
+    function ensureBranchSecCss() {
+      if (document.getElementById("branch-sec-css")) return;
+      const st = document.createElement("style");
+      st.id = "branch-sec-css";
+      st.textContent = `.branch-sec{background:var(--bg2);border:2px solid var(--border);border-radius:16px;padding:0 16px 16px;margin:0 0 22px;box-shadow:0 6px 22px rgba(0,0,0,.18);overflow:hidden;}
+.branch-sec-hd{margin:0 -16px 16px;padding:14px 16px 12px;text-align:center;background:var(--bg3);border-bottom:2px solid var(--accent);}
+.branch-sec-hd .branch-sec-name{font-size:17px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text);}
+.branch-sec-hd .branch-sec-sub{font-size:10px;font-weight:700;letter-spacing:.14em;color:var(--accent);margin-top:3px;}`;
+      document.head.appendChild(st);
+    }
     function branchSectionHeaderHtml(b) {
-      return `<div class="branch-sec-hd" style="font-size:13px;font-weight:800;color:var(--accent);margin:18px 0 8px;padding:6px 10px;border-left:3px solid var(--accent);background:var(--bg3);border-radius:8px;">${escHtml(b?.name || "\u015eube")}</div>`;
+      ensureBranchSecCss();
+      return `<div class="branch-sec-hd"><div class="branch-sec-name">${escHtml(b?.name || "\u015eube")}</div><div class="branch-sec-sub">\u015eUBE</div></div>`;
+    }
+    function branchSectionCardHtml(b, inner) {
+      return `<div class="branch-sec" data-branch-id="${escHtml(b?.id || "")}">${branchSectionHeaderHtml(b)}${inner}</div>`;
     }
     /** Birlikte g\u00f6sterim a\u00e7\u0131ksa sayfay\u0131 her \u015fube i\u00e7in ayr\u0131 render edip etiketli b\u00f6l\u00fcmlerde birle\u015ftirir. */
     function renderBranchSections(containerId, renderFn) {
@@ -14708,7 +14722,7 @@ service cloud.firestore {
       getCompanyBranches().forEach(b => {
         withBranchScope(b.id, () => { renderFn(); });
         const cur = document.getElementById(containerId);
-        parts.push(`<div class="branch-sec" data-branch-id="${escHtml(b.id)}">${branchSectionHeaderHtml(b)}${cur ? cur.innerHTML : ""}</div>`);
+        parts.push(branchSectionCardHtml(b, cur ? cur.innerHTML : ""));
       });
       const target = document.getElementById(containerId);
       if (target) target.innerHTML = parts.join("");
@@ -22290,7 +22304,7 @@ service cloud.firestore {
 
 `;
       const gridHtml = isCombineBranchesOn()
-        ? getCompanyBranches().map(b => { const list = filtered.filter(w => normalizeUserBranchId(w) === b.id); return branchSectionHeaderHtml(b) + gridOne(buildWorkerRows(list), list.length > 0); }).join("")
+        ? getCompanyBranches().map(b => { const list = filtered.filter(w => normalizeUserBranchId(w) === b.id); return branchSectionCardHtml(b, gridOne(buildWorkerRows(list), list.length > 0)); }).join("")
         : gridOne(workerRows, filtered.length > 0);
       root.innerHTML = `
         <!-- Toolbar -->
@@ -24947,7 +24961,7 @@ service cloud.firestore {
           : `<div class="empty"><div class="empty-icon">👥</div><div class="empty-text">Aktif personel yok.<br>Sağ üstten personel ekleyin.</div></div>`;
       } else {
         listHtml += isCombineBranchesOn()
-          ? getCompanyBranches().map(b => { const list = workers.filter(w => normalizeUserBranchId(w) === b.id); return list.length ? branchSectionHeaderHtml(b) + list.map(w => empRow(w, false)).join("") : ""; }).join("")
+          ? getCompanyBranches().map(b => { const list = workers.filter(w => normalizeUserBranchId(w) === b.id); return list.length ? branchSectionCardHtml(b, list.map(w => empRow(w, false)).join("")) : ""; }).join("")
           : workers.map(w => empRow(w, false)).join("");
       }
       const staffComp = getCompany();
