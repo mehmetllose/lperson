@@ -6100,6 +6100,17 @@
     .tasks-pend-who { font-size: 11px; font-weight: 700; color: var(--text3); margin-bottom: 3px; }
     .tasks-pend-txt { font-size: 13px; font-weight: 700; color: var(--text); overflow-wrap: anywhere; }
     .tasks-pend-btns { display: flex; gap: 6px; flex-shrink: 0; }
+    .tasks-layout.has-pend { display: grid; grid-template-columns: minmax(0, 1fr) 250px; gap: 12px; align-items: start; }
+    .tasks-layout .tasks-main { min-width: 0; }
+    .tasks-layout .tasks-pend { margin: 0; padding: 10px; border-width: 1px; position: sticky; top: 8px; max-height: 70vh; overflow-y: auto; }
+    .tasks-layout .tasks-pend-hd { font-size: 10px; margin-bottom: 6px; }
+    .tasks-layout .tasks-pend-item { flex-direction: column; gap: 6px; padding: 8px 10px; }
+    .tasks-layout .tasks-pend-txt { font-size: 12px; }
+    .tasks-layout .tasks-pend-btns .btn { padding: 4px 10px; font-size: 11px; }
+    @media (max-width: 900px) {
+      .tasks-layout.has-pend { grid-template-columns: 1fr; }
+      .tasks-layout .tasks-pend { position: static; max-height: 220px; }
+    }
     .tasks-week-scroll { overflow-x: auto; margin: 0 -4px; padding: 0 4px 4px; -webkit-overflow-scrolling: touch; }
     .tasks-week-grid {
       display: grid;
@@ -9206,7 +9217,7 @@
               <button type="button" class="btn btn-primary btn-sm" onclick="captureQrGeoAnchor()" style="width:100%;margin-bottom:8px;">
                 Bu cihazın konumunu işyeri merkezi yap
               </button>
-              <div style="display:flex;gap:8px;margin-bottom:8px;"><button type="button" class="btn btn-secondary btn-sm" onclick="openWorkplaceMapPicker()" style="flex:1;">🗺️ Haritadan seç</button><button type="button" class="btn btn-secondary btn-sm" onclick="openStaffDistancePanel()" style="flex:1;">📍 Personel mesafeleri</button></div>
+              <div style="display:flex;gap:8px;margin-bottom:8px;"><button type="button" class="btn btn-secondary btn-sm" onclick="openWorkplaceMapPicker()" style="flex:1;">🗺️ Haritadan seç</button><button type="button" id="settings-staff-dist-btn" class="btn btn-secondary btn-sm" onclick="openStaffDistancePanel()" style="flex:1;display:none;">📍 Personel mesafeleri</button></div>
               <div style="font-size:10px;color:var(--text3);line-height:1.4;">Dükkanda veya işyeri Wi‑Fi’sindeyken bu telefondan bir kez kaydedin. Personel uygulaması aynı yarıçap içinde olmadan QR okutamaz.</div>
               </div>
             </div>
@@ -10571,6 +10582,7 @@
     }
     function syncLiveLocationNavVisibility() {
       try { const sd = document.getElementById("nav-staff-distance"); if (sd) sd.style.display = canViewStaffDistance() ? "" : "none"; } catch (e) {}
+      try { const sb = document.getElementById("settings-staff-dist-btn"); if (sb) sb.style.display = canViewStaffDistance() ? "" : "none"; } catch (e) {}
       const el = document.getElementById("nav-live-location");
       if (!el) return;
       const show = canAccessLiveLocationPage();
@@ -32741,12 +32753,12 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
           <div id="tasks-onetime-list">${oneTimeList}</div>
         </div>`;
       const tab = tasksPatronTab === "once" ? "once" : "week";
-      root.innerHTML = `${pendingBlock}
+      root.innerHTML = `<div class="tasks-layout${pending.length ? " has-pend" : ""}"><div class="tasks-main">
         <div class="req-filter-bar tasks-tabs" style="margin-bottom:12px;">
           <button type="button" class="tab${tab === "week" ? " active" : ""}" onclick="setTasksPatronTab('week')">Haftalık plan</button>
           <button type="button" class="tab${tab === "once" ? " active" : ""}" onclick="setTasksPatronTab('once')">Atanan görevler${oneTime.length ? `<span class="tasks-tab-n">${oneTime.length}</span>` : ""}</button>
         </div>
-        ${tab === "once" ? oncePane : weekPane}`;
+        ${tab === "once" ? oncePane : weekPane}</div>${pendingBlock}</div>`;
       restoreOtForm(otSnap);
     }
     function toggleTasksWeekNeedsApproval(el) {
