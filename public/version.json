@@ -1,6 +1,6 @@
 {
-    "version":  "1.0.76",
-    "apkUrl":  "https://github.com/mehmetllose/lperson/releases/download/v1.0.76/lperson-1.0.76.apk",
-    "notes":  "- Vardiya Planı: personel gün kartları sağa-sola kaydırılabiliyor\n- Giriş ekranı yenilendi (daha net kart ve form)\n- Bildirimler: uygulamaya her girişte aynı bildirimlerin tekrar gelmesi düzeltildi\n- Yönetici bildirimleri: bazı yöneticilere / personellere bildirimlerin gelmemesi düzeltildi",
-    "publishedAt":  "2026-11-09T20:00:05.5091159Z"
+    "version": "1.0.77",
+    "apkUrl": "https://github.com/mehmetllose/lperson/releases/download/v1.0.77/lperson-1.0.77.apk",
+    "notes": "- Vardiya Planı: geniş ekranda tablonun sağında kalan boşluk giderildi.",
+    "publishedAt": "2026-11-09T22:44:53.532Z"
 }

@@ -1,0 +1,1 @@
+- Vardiya Planı: geniş ekranda tablonun sağında kalan boşluk giderildi.
