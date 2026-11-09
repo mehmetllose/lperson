@@ -3089,7 +3089,7 @@
     }
     .my-shift-table {
       width: max-content;
-      min-width: 560px;
+      min-width: 100%;
       border-collapse: collapse;
       font-size: 12px;
       table-layout: fixed;
@@ -3097,7 +3097,7 @@
     .my-shift-table th,
     .my-shift-table td {
       min-width: 72px;
-      width: 72px;
+      width: auto;
       scroll-snap-align: start;
     }
     .my-shift-table th,
@@ -7318,15 +7318,14 @@
     }
     .shift-plan-scroll .shift-plan-table {
       width: max-content !important;
-      min-width: 700px;
+      min-width: 100% !important;
       table-layout: fixed;
       border-collapse: collapse;
     }
     .shift-plan-scroll th.splan-day-h,
     .shift-plan-scroll td.splan-day-c {
       min-width: 88px;
-      width: 88px;
-      max-width: 110px;
+      width: auto;
       flex: 0 0 auto;
       scroll-snap-align: start;
     }
@@ -7404,7 +7403,7 @@
       .shift-plan-scroll .shift-plan-table {
         table-layout: fixed;
         width: max-content !important;
-        min-width: 700px !important;
+        min-width: 100% !important;
         font-size: 12px !important;
       }
       .shift-plan-scroll .shift-plan-table > thead > tr > th:first-child,
@@ -7459,7 +7458,7 @@
     body.ct-native .shift-plan-scroll .shift-plan-table {
       table-layout: fixed;
       width: max-content !important;
-      min-width: 700px !important;
+      min-width: 100% !important;
       font-size: 12px !important;
     }
     body.ct-native .shift-plan-scroll .shift-plan-table > thead > tr > th:first-child,
