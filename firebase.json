@@ -1,6 +1,8 @@
 {
   "functions": {
-    "source": "functions"
+    "source": "functions",
+    "codebase": "default",
+    "disallowLegacyRuntimeConfig": true
   },
   "hosting": {
     "site": "lperson",
