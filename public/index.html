@@ -13595,9 +13595,13 @@ service cloud.firestore {
     }
 
     function _maybeNotifyPatronClockIn(uid, incomingData_) {
-      if (currentUser?.role !== "patron" || uid === currentUser.id) return;
-      if (getSettings().notifyPatronOnClockIn === false) return;
-      if (!patronNotificationAllowedForWorker(uid)) return;
+      const isPatron = currentUser?.role === "patron";
+      const isMgr = currentUser?.role === "calisan" && managerNotifEnabledFor(currentUser, "attendance");
+      if ((!isPatron && !isMgr) || uid === currentUser.id) return;
+      if (isPatron && getSettings().notifyPatronOnClockIn === false) return;
+      if (isPatron && !patronNotificationAllowedForWorker(uid)) return;
+      const w = DB.users.find(u => u.id === uid);
+      if (isMgr && !managerCoversWorker(currentUser, w || { companyId: currentUser.companyId })) return;
       if (!_recordNotifBaselined.has(uid)) {
         _recordNotifBaselined.add(uid);
         return;
@@ -13611,22 +13615,22 @@ service cloud.firestore {
       const newStarts = newRec.shifts.filter(s => s.start && audible(s)).length;
       const oldClosed = oldRec.shifts.filter(s => s.start && s.end && audible(s)).length;
       const newClosed = newRec.shifts.filter(s => s.start && s.end && audible(s)).length;
-      const w = DB.users.find(u => u.id === uid);
       const openInc = newStarts > oldStarts;
       const closedInc = newClosed > oldClosed;
+      const tagBase = isPatron ? "ct-patron-" : "ct-mgr-clock-";
       if (openInc) {
         const last = newRec.shifts.filter(s => s.start && audible(s)).slice(-1)[0];
         const title = platformNotif("patron_clock_in_title");
-        const body = platformNotif("patron_clock_in_body", { name: w?.name || "Çalışan", time: last?.start || "?" });
-        void notifyDeviceNow(title, body, "ct-patron-in-" + uid + "-" + tk + "-" + String(last?.start || ""));
+        const body = platformNotif("patron_clock_in_body", { name: w?.name || "Calisan", time: last?.start || "?" });
+        void notifyDeviceNow(title, body, tagBase + "in-" + uid + "-" + tk + "-" + String(last?.start || ""));
         pushWorkerFeed({ title, body, kind: "clock_in" });
       }
       if (closedInc) {
         const closed = newRec.shifts.filter(s => s.start && s.end && audible(s));
         const last = closed[closed.length - 1];
         const title = platformNotif("patron_clock_out_title");
-        const body = platformNotif("patron_clock_out_body", { name: w?.name || "Çalışan", time: last?.end || "?" });
-        void notifyDeviceNow(title, body, "ct-patron-out-" + uid + "-" + tk + "-" + String(last?.end || ""));
+        const body = platformNotif("patron_clock_out_body", { name: w?.name || "Calisan", time: last?.end || "?" });
+        void notifyDeviceNow(title, body, tagBase + "out-" + uid + "-" + tk + "-" + String(last?.end || ""));
         pushWorkerFeed({ title, body, kind: "clock_out" });
       }
     }
@@ -13741,7 +13745,11 @@ service cloud.firestore {
 
     function _attachRecordAdvListeners(cid) {
       const workerIds = DB.users.filter(u => u.companyId === cid && u.role === "calisan").map(u => u.id);
-      const targets = currentUser?.role === "patron" ? workerIds : [currentUser.id].filter(id => id);
+      const mgrWantsAttendance = currentUser?.role === "calisan" && managerNotifEnabledFor(currentUser, "attendance");
+      const mgrWantsTasks = currentUser?.role === "calisan" && managerNotifEnabledFor(currentUser, "tasks");
+      const targets = currentUser?.role === "patron" || mgrWantsAttendance || mgrWantsTasks
+        ? workerIds
+        : [currentUser.id].filter(id => id);
       const want = new Set(targets);
       Object.keys(_firestoreRecUnsubs).forEach(uid => {
         if (!want.has(uid)) { try { _firestoreRecUnsubs[uid](); } catch (e) {} delete _firestoreRecUnsubs[uid]; }
@@ -14029,11 +14037,40 @@ service cloud.firestore {
         || t.startsWith("ct-req-") || t.startsWith("ct-myreq-") || t.startsWith("ct-swap-peer-");
     }
     const _ctNotifDedupe = new Map();
+    function _notifDeliveredKey() {
+      return "ct_notif_delivered_" + (currentUser?.id || "x");
+    }
+    function _readNotifDelivered() {
+      try {
+        const arr = JSON.parse(localStorage.getItem(_notifDeliveredKey()) || "[]");
+        return new Set(Array.isArray(arr) ? arr.map(String) : []);
+      } catch (e) { return new Set(); }
+    }
+    function _writeNotifDelivered(set) {
+      try { localStorage.setItem(_notifDeliveredKey(), JSON.stringify([...set].slice(-250))); } catch (e) {}
+    }
+    function _managerMayReceiveTag(tg) {
+      if (!currentUser || currentUser.role !== "calisan") return false;
+      const t = String(tg || "");
+      if (t.startsWith("ct-mgr-") || t.startsWith("ct-clock-")) return true;
+      if (t.startsWith("ct-req-") || t.startsWith("ct-req-peerok-")) {
+        // avans / izin / saat / takas: ilgili yonetici tercihi
+        return managerNotifEnabledFor(currentUser, "requests")
+          || managerNotifEnabledFor(currentUser, "advances")
+          || managerNotifEnabledFor(currentUser, "shifts");
+      }
+      if (t.startsWith("ct-task-")) return managerNotifEnabledFor(currentUser, "tasks");
+      if (t.startsWith("ct-patron-in-") || t.startsWith("ct-patron-out-") || t.startsWith("ct-mgr-clock-")) {
+        return managerNotifEnabledFor(currentUser, "attendance");
+      }
+      return false;
+    }
     async function notifyDeviceNow(title, body, tag) {
       const tg = String(tag || "");
-      if ((tg.startsWith("ct-patron-in-") || tg.startsWith("ct-patron-out-") || tg === "ct-remote-login" || tg.startsWith("ct-req-") || tg.startsWith("ct-task-")) && currentUser?.role !== "patron") return;
+      const isPatronAlert = tg.startsWith("ct-patron-in-") || tg.startsWith("ct-patron-out-") || tg === "ct-remote-login" || tg.startsWith("ct-req-") || tg.startsWith("ct-task-");
+      if (isPatronAlert && currentUser?.role !== "patron" && !_managerMayReceiveTag(tg)) return;
       if ((tg.startsWith("ct-myreq-") || tg.startsWith("ct-swap-peer") || tg.startsWith("ct-myshift-") || tg.startsWith("ct-mytask-")) && currentUser?.role !== "calisan") return;
-      if (currentUser?.role === "calisan" && !workerNotificationAllowed(currentUser, workerNotificationTagCategory(tg))) return;
+      if (currentUser?.role === "calisan" && !workerNotificationAllowed(currentUser, workerNotificationTagCategory(tg)) && !_managerMayReceiveTag(tg)) return;
       const t = notifFormatTitle(String(title || "").trim());
       const b = notifFormatBody(String(body || "").trim());
       if (!t || !b) return;
@@ -14053,6 +14090,13 @@ service cloud.firestore {
       if (prevFam && now - prevFam < 45000) return;
       _ctNotifDedupe.set(tagStr, now);
       if (family) _ctNotifDedupe.set(family, now);
+      try {
+        const delivered = _readNotifDelivered();
+        if (delivered.has(tagStr) || (family && delivered.has(family))) return;
+        delivered.add(tagStr);
+        if (family) delivered.add(family);
+        _writeNotifDelivered(delivered);
+      } catch (e) {}
       try { updateReqNotifDot(); } catch (e) {}
       // FCM sunucu gönderimi kapalı; tepsi her zaman yerel basılır (Watch + LocalNotifications).
       if (nativeTrayOwnsAlerts() || isCapacitorNative()) {
@@ -14106,18 +14150,18 @@ service cloud.firestore {
       } catch (e) { return new Set(); }
     }
     function writeShiftNotifSeen(set) {
-      try { localStorage.setItem(shiftNotifSeenKey(), JSON.stringify([...set].slice(0, 80))); } catch (e) {}
+      try { localStorage.setItem(shiftNotifSeenKey(), JSON.stringify([...set].slice(-150))); } catch (e) {}
     }
     function consumeIncomingShiftNotifs(userDoc, initial) {
       if (!userDoc || !currentUser || userDoc.id !== currentUser.id) return;
       const list = Array.isArray(userDoc.recentShiftNotifs) ? userDoc.recentShiftNotifs : [];
       const seen = readShiftNotifSeen();
-      const recentMs = 20 * 60 * 1000;
+      // Ilk snapshot / canli senkron yeniden baslatma: eski kuyruk tekrar bildirim basmasin.
+      // Yalnizca daha once gormedigimiz VE bu oturumda yeni gelen (initial=false) kayitlar bildirilir.
       list.forEach(n => {
         if (!n || !n.id || seen.has(String(n.id))) return;
         seen.add(String(n.id));
-        const age = Date.now() - Number(n.t || 0);
-        if (initial && !(Number.isFinite(age) && age >= 0 && age < recentMs)) return;
+        if (initial) return;
         const title = String(n.title || "Bildirim");
         const body = String(n.body || "");
         const tag = String(n.tag || ("ct-myshift-" + n.id));
@@ -14173,7 +14217,7 @@ service cloud.firestore {
       const body = platformNotif(tKey + "_body", { name, time: time || "?" });
       const tag = (dir === "in" ? "ct-patron-in-" : "ct-patron-out-") + currentUser.id + "-" + todayKey() + "-" + String(time || "");
       if (patronNotificationAllowedForWorker(currentUser.id)) void enqueuePatronsNotif(title, body, tag, dir === "in" ? "clock_in" : "clock_out");
-      void enqueueManagersNotif("attendance", title, body, "ct-clock-" + tag.slice(3), "mgr_clock");
+      void enqueueManagersNotif("attendance", title, body, "ct-clock-" + tag.slice(3), "mgr_clock", { workerId: currentUser.id });
     }
     /** Yonetici bildirimi acik personele giris/cikis (patron kendi yolundan alir). */
     function enqueueManagerClockNotif(dir, time, silent) {
@@ -14182,7 +14226,7 @@ service cloud.firestore {
       const tKey = dir === "in" ? "patron_clock_in" : "patron_clock_out";
       const title = platformNotif(tKey + "_title");
       const body = platformNotif(tKey + "_body", { name, time: time || "?" });
-      void enqueueManagersNotif("attendance", title, body, "ct-clock-" + dir + "-" + currentUser.id + "-" + todayKey() + "-" + String(time || ""), "mgr_clock");
+      void enqueueManagersNotif("attendance", title, body, "ct-clock-" + dir + "-" + currentUser.id + "-" + todayKey() + "-" + String(time || ""), "mgr_clock", { workerId: currentUser.id });
     }
     async function enqueueWorkerShiftNotifs(payloads) {
       if (!payloads || !payloads.length) return;
@@ -14211,7 +14255,7 @@ service cloud.firestore {
     async function notifyPatronsTaskPending(workerName, taskText, uid, dateKey, taskId, assignedBy) {
       const task = String(taskText || "").slice(0, 60);
       void enqueueManagersNotif("tasks", platformNotif("task_pending_title"), platformNotif("task_pending_body", { name: workerName, task }),
-        "ct-task-" + uid + "-" + dateKey + "-" + String(taskId || ""), "mgr_task", { extraIds: assignedBy ? [assignedBy] : [], excludeIds: [uid] });
+        "ct-task-" + uid + "-" + dateKey + "-" + String(taskId || ""), "mgr_task", { extraIds: assignedBy ? [assignedBy] : [], excludeIds: [uid], workerId: uid });
       if (!patronNotificationAllowedForWorker(uid)) return;
       const id = "taskpend-" + String(taskId || "") + "-" + Date.now();
       await enqueueUserNotifs(getCompanyPatrons().map(p => ({
@@ -14416,7 +14460,7 @@ service cloud.firestore {
       const n = buildPatronRequestNotif(r);
       if (!n) return;
       void enqueuePatronsNotif(n.title, n.body, "ct-req-" + r.id, "request");
-      void enqueueManagersNotif(managerNotifKeyForRequest(r), n.title, n.body, "ct-req-" + r.id, "mgr_req", { excludeIds: [r.userId] });
+      void enqueueManagersNotif(managerNotifKeyForRequest(r), n.title, n.body, "ct-req-" + r.id, "mgr_req", { excludeIds: [r.userId], workerId: r.userId });
       if (r.type === "shift_swap" && r.peerId) {
         const worker = DB.users.find(u => u.id === r.userId);
         void enqueueUserNotifs([{
@@ -14511,10 +14555,16 @@ service cloud.firestore {
         const prevStatus = prev ? String(prev).split("|")[0] : null;
         const prevPeer = prev ? String(prev).split("|")[1] : null;
         const reqTypeOk = r.type === "hour" || r.type === "adv" || r.type === "leave" || r.type === "shift_swap";
-        if (patron && reqTypeOk && r.companyId === currentUser.companyId && status === "pending" && prev == null) {
-          if (!initial || _reqIsoRecent(r.createdAt, recentMs)) showPatronRequestNotification(r);
+        const mgrKey = managerNotifKeyForRequest(r);
+        const asManager = calisan && managerNotifEnabledFor(currentUser, mgrKey)
+          && r.companyId === currentUser.companyId
+          && r.userId !== currentUser.id
+          && managerCoversWorker(currentUser, (DB.users || []).find(u => u.id === r.userId) || { companyId: r.companyId, branchId: r.branchId });
+        // Ilk snapshot: sadece seen isaretle, tekrar bildirim yok (uygulama acilinca spam).
+        if ((patron || asManager) && reqTypeOk && r.companyId === currentUser.companyId && status === "pending" && prev == null) {
+          if (!initial) showPatronRequestNotification(r);
         }
-        if (patron && r.type === "shift_swap" && r.companyId === currentUser.companyId && status === "pending"
+        if ((patron || asManager) && r.type === "shift_swap" && r.companyId === currentUser.companyId && status === "pending"
           && r.peerStatus === "approved" && (r.patronStatus || "pending") === "pending" && prevPeer !== "approved") {
           if (!initial) {
             const worker = DB.users.find(u => u.id === r.userId);
@@ -18303,8 +18353,18 @@ service cloud.firestore {
       requests: { perm: "requests", label: "Yeni izin / saat talepleri", hint: "İzin, saat ve diğer talepler", def: true },
       advances: { perm: ["requests", "advances"], label: "Yeni avans talepleri", hint: "Avans talebi gelince", def: true },
       shifts: { perm: ["requests", "shifts"], label: "Vardiya takas talepleri", hint: "Takas isteği / onayı", def: true },
-      attendance: { perm: "employees", label: "Personel giriş / çıkışları", hint: "Mesai başlangıç ve bitişleri", def: false },
+      attendance: { perm: ["employees", "today"], label: "Personel giriş / çıkışları", hint: "Mesai başlangıç ve bitişleri", def: true },
     };
+    /** Yonetici bu personeli kapsar mi? Sube listesi yoksa tum sirket; personelde sube yoksa dahil. */
+    function managerCoversWorker(mgr, worker) {
+      if (!mgr || !worker) return true;
+      if (mgr.companyId && worker.companyId && mgr.companyId !== worker.companyId) return false;
+      const allowed = mgr.managerBranchIds || mgr.managedBranchIds;
+      if (!Array.isArray(allowed) || !allowed.length) return true;
+      const wb = typeof normalizeUserBranchId === "function" ? normalizeUserBranchId(worker) : (worker.branchId || "main");
+      if (!worker.branchId) return true;
+      return allowed.map(String).includes(String(wb)) || allowed.map(String).includes(String(worker.branchId));
+    }
     function managerNotifPermList(key) {
       const p = MANAGER_NOTIF_TYPES[key]?.perm;
       return Array.isArray(p) ? p : (p ? [p] : []);
@@ -18330,9 +18390,11 @@ service cloud.firestore {
         const cid = currentUser?.companyId;
         const exclude = new Set([currentUser?.id, ...(o.excludeIds || [])].filter(Boolean).map(String));
         const extra = new Set((o.extraIds || []).filter(Boolean).map(String));
+        const about = o.workerId ? (DB.users || []).find(x => x.id === o.workerId) : null;
         const recips = (DB.users || []).filter(u => u.companyId === cid && u.role === "calisan" && !u.terminatedAt
           && !exclude.has(String(u.id))
-          && managerNotifEnabledFor(u, key));
+          && (extra.has(String(u.id)) || managerNotifEnabledFor(u, key))
+          && (!about || managerCoversWorker(u, about)));
         if (!recips.length) return Promise.resolve();
         const base = String(tag || "n").replace(/^ct-/, "");
         const idBase = "mgr-" + base + "-" + Date.now().toString(36);
@@ -32667,9 +32729,14 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
       );
     }
     function _maybeNotifyPatronTaskPending(uid, prevData, nextData) {
-      if (_tasksNotifBoot || currentUser?.role !== "patron") return;
+      if (_tasksNotifBoot) return;
+      const isPatron = currentUser?.role === "patron";
+      const isMgr = currentUser?.role === "calisan" && managerNotifEnabledFor(currentUser, "tasks");
+      if (!isPatron && !isMgr) return;
       const w = DB.users.find(u => u.id === uid);
-      if (!w || w.companyId !== currentUser.companyId || !patronNotificationAllowedForWorker(uid)) return;
+      if (!w || w.companyId !== currentUser.companyId) return;
+      if (isPatron && !patronNotificationAllowedForWorker(uid)) return;
+      if (isMgr && (!managerCoversWorker(currentUser, w) || uid === currentUser.id)) return;
       forEachTaskInStore(nextData, (nt, list, locKey) => {
         if (!nt?.pendingApproval) return;
         let pt = null;
@@ -32704,9 +32771,14 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
     }
 
     function _maybeNotifyPatronOneTimeTaskDone(uid, prevData, nextData) {
-      if (_tasksNotifBoot || currentUser?.role !== "patron") return;
+      if (_tasksNotifBoot) return;
+      const isPatron = currentUser?.role === "patron";
+      const isMgr = currentUser?.role === "calisan" && managerNotifEnabledFor(currentUser, "tasks");
+      if (!isPatron && !isMgr) return;
       const w = DB.users.find(u => u.id === uid);
-      if (!w || w.companyId !== currentUser.companyId || !patronNotificationAllowedForWorker(uid)) return;
+      if (!w || w.companyId !== currentUser.companyId) return;
+      if (isPatron && !patronNotificationAllowedForWorker(uid)) return;
+      if (isMgr && (!managerCoversWorker(currentUser, w) || uid === currentUser.id)) return;
       const notified = new Set();
       forEachTaskInStore(nextData, nt => {
         if (!nt?.rangeId || !nt?.id || notified.has(nt.id)) return;

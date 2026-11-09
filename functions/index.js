@@ -92,7 +92,7 @@ const MGR_NOTIF_TYPES = {
   requests: { perm: ["requests"], def: true },
   advances: { perm: ["requests", "advances"], def: true },
   shifts: { perm: ["requests", "shifts"], def: true },
-  attendance: { perm: ["employees"], def: false },
+  attendance: { perm: ["employees", "today"], def: true },
 };
 function userHasMgrPerm(u, p) {
   return !!u && (u.managerPermissions?.[p] === true || u.managerPages?.[p] === true);
@@ -107,14 +107,31 @@ function managerNotifEnabledFor(u, key) {
   if (!held) return false;
   return pref === undefined ? t.def : pref === true;
 }
-async function collectManagerTokens(companyId, key, excludeIds) {
+function managerCoversWorker(mgr, worker) {
+  if (!mgr || !worker) return true;
+  if (mgr.companyId && worker.companyId && mgr.companyId !== worker.companyId) return false;
+  const allowed = mgr.managerBranchIds || mgr.managedBranchIds;
+  if (!Array.isArray(allowed) || !allowed.length) return true;
+  if (!worker.branchId) return true;
+  const wb = worker.branchId || "main";
+  return allowed.map(String).includes(String(wb));
+}
+async function collectManagerTokens(companyId, key, excludeIds, workerId) {
   const ex = new Set((excludeIds || []).filter(Boolean).map(String));
   const qs = await admin.firestore().collection("users").where("companyId", "==", companyId).get();
+  let worker = null;
+  if (workerId) {
+    try {
+      const wdoc = await admin.firestore().doc(`users/${workerId}`).get();
+      if (wdoc.exists) worker = { id: workerId, ...wdoc.data() };
+    } catch (e) {}
+  }
   const tokens = [];
   qs.forEach((d) => {
     const u = d.data();
     if (ex.has(String(d.id))) return;
     if (!managerNotifEnabledFor(u, key)) return;
+    if (worker && !managerCoversWorker(u, worker)) return;
     if (u.fcmToken && typeof u.fcmToken === "string") tokens.push(u.fcmToken);
   });
   return [...new Set(tokens)];
@@ -201,7 +218,7 @@ exports.onRecordWritePush = onDocumentWritten("records/{workerId}", async (event
 
   const ok = await companyAllowsPatronClockNotify(worker.companyId);
   const patronTokens = ok && worker.patronNotificationsEnabled !== false ? await collectPatronTokens(worker.companyId) : [];
-  const mgrTokens = await collectManagerTokens(worker.companyId, "attendance", [workerId]);
+  const mgrTokens = await collectManagerTokens(worker.companyId, "attendance", [workerId], workerId);
   const tokens = [...patronTokens, ...mgrTokens];
   if (!tokens.length) return;
   const name = worker.name || "Çalışan";
@@ -246,7 +263,7 @@ exports.onRequestWritePush = onDocumentWritten("requests/{requestId}", async (ev
     const mgrKey = after.type === "adv" ? "advances" : "requests";
     const tokens = [
       ...(await collectPatronTokens(companyId)),
-      ...(await collectManagerTokens(companyId, mgrKey, [after.userId])),
+      ...(await collectManagerTokens(companyId, mgrKey, [after.userId], after.userId)),
     ];
     const worker = (await getUser(after.userId)) || {};
     const wname = worker.name || "Çalışan";
@@ -278,7 +295,7 @@ exports.onRequestWritePush = onDocumentWritten("requests/{requestId}", async (ev
 
   // Yeni vardiya takası → yetkili yöneticiler
   if (!before && after.status === "pending" && after.type === "shift_swap") {
-    const tokens = await collectManagerTokens(companyId, "shifts", [after.userId, after.peerId]);
+    const tokens = await collectManagerTokens(companyId, "shifts", [after.userId, after.peerId], after.userId);
     if (!tokens.length) return;
     const worker = (await getUser(after.userId)) || {};
     await sendMulticast(tokens, {
