@@ -3069,16 +3069,28 @@
     }
     .my-shift-grid-scroller {
       overflow-x: auto;
+      overflow-y: hidden;
       border: 2px solid var(--border);
       border-radius: 12px;
       background: var(--bg2);
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-x: contain;
+      touch-action: pan-x pan-y;
+      scroll-snap-type: x proximity;
+      scrollbar-width: thin;
     }
     .my-shift-table {
-      width: 100%;
+      width: max-content;
+      min-width: 560px;
       border-collapse: collapse;
       font-size: 12px;
       table-layout: fixed;
-      min-width: 520px;
+    }
+    .my-shift-table th,
+    .my-shift-table td {
+      min-width: 72px;
+      width: 72px;
+      scroll-snap-align: start;
     }
     .my-shift-table th,
     .my-shift-table td {
@@ -7188,7 +7200,30 @@
     .pdb-early-late-grid > .card { min-width:0; overflow:hidden; }
     .pdb-w-cell.pdb-span-1 .pdb-early-late-grid { grid-template-columns:1fr; }
     #shift-plan-root, #my-shift-plan-root { max-width:100%; min-width:0; overflow-x:hidden; }
-    .shift-plan-scroll { max-width:100%; -webkit-overflow-scrolling:touch; }
+    .shift-plan-scroll {
+      max-width:100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-x: contain;
+      touch-action: pan-x pan-y;
+      scroll-snap-type: x proximity;
+      scrollbar-width: thin;
+    }
+    .shift-plan-scroll .shift-plan-table {
+      width: max-content !important;
+      min-width: 700px;
+      table-layout: fixed;
+      border-collapse: collapse;
+    }
+    .shift-plan-scroll th.splan-day-h,
+    .shift-plan-scroll td.splan-day-c {
+      min-width: 88px;
+      width: 88px;
+      max-width: 110px;
+      flex: 0 0 auto;
+      scroll-snap-align: start;
+    }
     .splan-day-short { display: none; }
     .splan-cell-inner {
       position: relative;
@@ -7199,6 +7234,9 @@
       border: 2px solid var(--border);
       box-sizing: border-box;
       overflow: hidden;
+      flex: 0 0 auto;
+      min-width: 0;
+      width: 100%;
     }
     .splan-cell-tag,
     .splan-cell-title,
@@ -22095,6 +22133,60 @@ service cloud.firestore {
       document.addEventListener("mousedown", onShiftPlanBackgroundPointerDown, true);
     }
 
+    function bindSplanHScroll(root) {
+      if (!root) return;
+      const els = root.querySelectorAll('.shift-plan-scroll, .my-shift-grid-scroller');
+      els.forEach(el => {
+        if (el._splanHScrollBound) return;
+        el._splanHScrollBound = true;
+        el.addEventListener('wheel', (ev) => {
+          if (el.scrollWidth <= el.clientWidth + 1) return;
+          const absX = Math.abs(ev.deltaX), absY = Math.abs(ev.deltaY);
+          if (ev.shiftKey || absX > absY) {
+            const dx = ev.shiftKey ? ev.deltaY : (absX > absY ? ev.deltaX : ev.deltaY);
+            if (!dx) return;
+            el.scrollLeft += dx;
+            ev.preventDefault();
+          } else if (absY > 0) {
+            const atStart = el.scrollLeft <= 0;
+            const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 1;
+            if ((ev.deltaY < 0 && !atStart) || (ev.deltaY > 0 && !atEnd)) {
+              el.scrollLeft += ev.deltaY;
+              ev.preventDefault();
+            }
+          }
+        }, { passive: false });
+        let drag = null;
+        el.addEventListener('pointerdown', (ev) => {
+          if (ev.pointerType === 'touch') return;
+          if (ev.button !== 0) return;
+          if (ev.target.closest('.splan-cell-inner, .my-shift-cell, button, a, input, select, textarea')) return;
+          if (el.scrollWidth <= el.clientWidth + 1) return;
+          drag = { x: ev.clientX, left: el.scrollLeft, moved: false, id: ev.pointerId };
+          try { el.setPointerCapture(ev.pointerId); } catch (e) {}
+        });
+        el.addEventListener('pointermove', (ev) => {
+          if (!drag || drag.id !== ev.pointerId) return;
+          const dx = ev.clientX - drag.x;
+          if (Math.abs(dx) > 4) drag.moved = true;
+          if (drag.moved) el.scrollLeft = drag.left - dx;
+        });
+        const endDrag = (ev) => {
+          if (!drag || (ev && drag.id !== ev.pointerId)) return;
+          if (drag.moved) {
+            el._splanSuppressClick = true;
+            setTimeout(() => { el._splanSuppressClick = false; }, 80);
+          }
+          drag = null;
+        };
+        el.addEventListener('pointerup', endDrag);
+        el.addEventListener('pointercancel', endDrag);
+        el.addEventListener('click', (ev) => {
+          if (el._splanSuppressClick) { ev.preventDefault(); ev.stopPropagation(); }
+        }, true);
+      });
+    }
+
     function renderShiftPlanPage() {
       const root = document.getElementById("shift-plan-root");
       if (!root) return;
@@ -22350,6 +22442,7 @@ service cloud.firestore {
         <div id="shift-ctx-menu" style="display:none;position:fixed;background:var(--bg2);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.4);z-index:9999;width:292px;max-width:calc(100vw - 20px);box-sizing:border-box;overflow:hidden;"></div>
       `;
       updateShiftPlanSelectionBar();
+      bindSplanHScroll(root);
     }
 
     function myShiftPlanWeekNav(delta) {
@@ -22795,6 +22888,7 @@ service cloud.firestore {
           </div>
           <div class="my-shift-legend"><div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:6px;">Açıklama</div>${legendRows}</div>
         </div>`;
+      bindSplanHScroll(root);
     }
 
     function ensureShiftCtxMenu() {
