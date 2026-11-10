@@ -1,1 +1,2 @@
-- Vardiya Planı: geniş ekranda tablonun sağında kalan boşluk giderildi.
+## Herkes
+- Vardiya planı tablosundaki sağ boşluk giderildi

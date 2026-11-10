@@ -4,8 +4,11 @@
 #   release.ps1 -Notes "Madde 1","Madde 2","Madde 3"      (her biri "- " madde olur)
 #   release.ps1 -NotesFile scripts\release-notes.md        (cok satirli Markdown, UTF-8)
 #   release.ps1 ... -NoPublish                             (yalnizca derle)
-# Notlar uygulamadaki "Yenilikler" penceresinde gosterilir. Kisa, kullanicinin anlayacagi
-# Turkce maddeler yazin; ornek icin scripts\RELEASE_NOTES_ORNEK.md dosyasina bakin.
+# Notlar uygulamadaki "Yenilikler" penceresinde gosterilir. Kisa, tek satirlik, genel
+# Turkce maddeler yazin; istek metnini birebir yapistirmayin.
+# Kitle: not dosyasinda "## Herkes" / "## Patron" basliklari, veya madde basi [all] / [patron].
+# Basliksiz eski duz maddeler herkes icin sayilir. Ornek: scripts\RELEASE_NOTES_ORNEK.md
+# Personel yalnizca Herkes maddelerini gorur; patron ve yoneticiler tumunu gorur.
 param([string[]]$Notes = @(), [string]$NotesFile = "", [switch]$NoPublish)
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot

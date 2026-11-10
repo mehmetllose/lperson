@@ -1,4 +1,5 @@
-- Vardiya Planı: personel gün kartları sağa-sola kaydırılabiliyor
-- Giriş ekranı yenilendi (daha net kart ve form)
-- Bildirimler: uygulamaya her girişte aynı bildirimlerin tekrar gelmesi düzeltildi
-- Yönetici bildirimleri: bazı yöneticilere / personellere bildirimlerin gelmemesi düzeltildi
+## Herkes
+- Vardiya planında gün kartları yatay kaydırılabilir
+- Giriş ekranı görünümü yenilendi
+- Tekrarlayan bildirimler düzeltildi
+- Bazı bildirimlerin ulaşmaması düzeltildi
