@@ -7378,7 +7378,7 @@
       justify-content: flex-end;
     }
     .splan-tpl-head {
-      padding: 8px 12px 6px;
+      padding: 6px 12px 3px;
       font-size: 10px;
       font-weight: 800;
       color: var(--text3);
@@ -7387,33 +7387,42 @@
     }
     .splan-tpl-chips {
       display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      padding: 0 12px 10px;
+      flex-flow: column wrap;
+      align-content: flex-start;
+      gap: 4px;
+      padding: 0 12px 8px;
+      max-height: 52px;
+      overflow-x: auto;
+      overflow-y: hidden;
       border-bottom: 1px solid var(--border);
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
     }
     .splan-tpl-chip {
       display: inline-flex;
       flex-direction: column;
       align-items: flex-start;
-      gap: 1px;
+      justify-content: center;
+      gap: 0;
+      flex: 0 0 auto;
       border: 1px solid var(--border);
       background: var(--bg3);
       color: var(--text);
-      border-radius: 9px;
-      padding: 6px 9px;
+      border-radius: 7px;
+      padding: 4px 8px;
       cursor: pointer;
       text-align: left;
-      max-width: 100%;
+      max-width: 160px;
+      line-height: 1.15;
     }
     .splan-tpl-chip:hover { filter: brightness(1.08); }
     .splan-tpl-chip.is-current {
       border-color: var(--accent);
       box-shadow: inset 0 0 0 1px var(--accent);
     }
-    .splan-tpl-chip-name { font-size: 12px; font-weight: 700; line-height: 1.2; }
-    .splan-tpl-chip-time { font-size: 10px; color: var(--text3); }
-    .splan-tpl-empty { padding: 0 12px 10px; font-size: 11px; color: var(--text3); line-height: 1.4; border-bottom: 1px solid var(--border); }
+    .splan-tpl-chip-name { font-size: 12px; font-weight: 700; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 144px; }
+    .splan-tpl-chip-time { font-size: 10px; color: var(--text3); line-height: 1.15; }
+    .splan-tpl-empty { padding: 0 12px 8px; font-size: 11px; color: var(--text3); line-height: 1.4; border-bottom: 1px solid var(--border); }
     body.splan-swapping { cursor: grabbing; user-select: none; }
     body.splan-swapping .shift-plan-scroll { touch-action: none; }
     .splan-cell-inner {
@@ -18169,12 +18178,13 @@ service cloud.firestore {
     }
     function savedShiftTemplatesForTargets(targets) {
       const catalog = (getSettings().shiftTemplates || []).filter(isSavedShiftTemplateChip);
-      const uids = [...new Set((targets || []).map(c => String(c.workerId || "")).filter(Boolean))];
-      if (!uids.length) return catalog.filter(t => getShiftTplUserIds(t).length === 0 && getShiftTplBranchIds(t).length === 0);
-      return catalog.filter(t => uids.every(uid => {
-        const w = (DB.users || []).find(u => String(u.id) === uid);
-        return shiftTplAppliesToUser(t, uid) && shiftTplAppliesToBranch(t, w);
-      }));
+      const workers = [...new Set((targets || []).map(c => String(c.workerId || "")).filter(Boolean))]
+        .map(uid => (DB.users || []).find(u => String(u.id) === uid))
+        .filter(Boolean);
+      if (!workers.length) return catalog;
+      // userIds = sablonda kimlere atanmis; listede kisitlama icin kullanma.
+      // Yalnizca sablonda acikca branchId/branchIds varsa sube filtresi uygula.
+      return catalog.filter(t => workers.every(w => shiftTplAppliesToBranch(t, w)));
     }
     function pickTplForUser(list, uid) {
       const matches = (list || []).filter(t => shiftTplAppliesToUser(t, uid));
@@ -23351,7 +23361,7 @@ service cloud.firestore {
         }).join("");
         menuItems.push(`<div class="splan-tpl-chips">${chips}</div>`);
       } else {
-        menuItems.push(`<div class="splan-tpl-empty">Bu personel için kayıtlı vardiya yok. Saatleri aşağıdan elle girebilirsiniz.</div>`);
+        menuItems.push(`<div class="splan-tpl-empty">Kayıtlı vardiya yok. Saatleri aşağıdan elle girebilirsiniz.</div>`);
       }
 
       menuItems.push(`<div style="display:flex;align-items:stretch;gap:6px;border-bottom:1px solid var(--border);">
