@@ -1,6 +1,6 @@
 {
-    "version": "1.0.78",
-    "apkUrl": "https://github.com/mehmetllose/lperson/releases/download/v1.0.78/lperson-1.0.78.apk",
-    "notes": "## Herkes\n- Vardiya kartları kaydırınca artık geri kaymıyor.\n## Patron\n- Vardiya düzenlemede kayıtlı vardiyalardan seçim.\n- Kartları sürükleyerek vardiya takası.\n",
-    "publishedAt": "2026-11-10T22:17:30.3787572Z"
+    "version": "1.0.79",
+    "apkUrl": "https://github.com/mehmetllose/lperson/releases/download/v1.0.79/lperson-1.0.79.apk",
+    "notes": "## Patron\n- Vardiya düzenlemede tüm kayıtlı vardiyalar listeleniyor.\n",
+    "publishedAt": "2026-11-10T22:31:36.9352684Z"
 }
