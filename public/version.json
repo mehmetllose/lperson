@@ -1,6 +1,6 @@
 {
-    "version": "1.0.77",
-    "apkUrl": "https://github.com/mehmetllose/lperson/releases/download/v1.0.77/lperson-1.0.77.apk",
-    "notes": "## Herkes\n- Vardiya planı tablosundaki sağ boşluk giderildi",
-    "publishedAt": "2026-11-09T22:44:53.532Z"
+    "version": "1.0.78",
+    "apkUrl": "https://github.com/mehmetllose/lperson/releases/download/v1.0.78/lperson-1.0.78.apk",
+    "notes": "## Herkes\n- Vardiya kartları kaydırınca artık geri kaymıyor.\n## Patron\n- Vardiya düzenlemede kayıtlı vardiyalardan seçim.\n- Kartları sürükleyerek vardiya takası.\n",
+    "publishedAt": "2026-11-10T22:17:30.3787572Z"
 }
