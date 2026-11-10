@@ -3084,7 +3084,6 @@
       -webkit-overflow-scrolling: touch;
       overscroll-behavior-x: contain;
       touch-action: pan-x pan-y;
-      scroll-snap-type: x proximity;
       scrollbar-width: thin;
     }
     .my-shift-table {
@@ -3098,7 +3097,6 @@
     .my-shift-table td {
       min-width: 72px;
       width: auto;
-      scroll-snap-align: start;
     }
     .my-shift-table th,
     .my-shift-table td {
@@ -7313,7 +7311,6 @@
       -webkit-overflow-scrolling: touch;
       overscroll-behavior-x: contain;
       touch-action: pan-x pan-y;
-      scroll-snap-type: x proximity;
       scrollbar-width: thin;
     }
     .shift-plan-scroll .shift-plan-table {
@@ -7327,9 +7324,98 @@
       min-width: 88px;
       width: auto;
       flex: 0 0 auto;
-      scroll-snap-align: start;
     }
     .splan-day-short { display: none; }
+
+    .splan-cell-inner.splan-drag-src { opacity: 0.5; }
+    .splan-cell-inner.splan-drop-ok {
+      outline: 2px solid var(--accent) !important;
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent);
+      filter: brightness(1.08);
+    }
+    .splan-swap-ghost {
+      position: fixed;
+      pointer-events: none;
+      z-index: 10050;
+      width: 88px;
+      min-height: 64px;
+      border-radius: 8px;
+      background: var(--bg2);
+      border: 2px solid var(--accent);
+      box-shadow: 0 10px 28px rgba(0,0,0,0.35);
+      opacity: 0.92;
+      transform: translate(-50%, -60%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 4px;
+      font-size: 11px;
+      color: var(--text);
+    }
+    #splan-swap-confirm {
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      z-index: 10060;
+      width: min(420px, calc(100vw - 24px));
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+      padding: 12px 14px;
+    }
+    #splan-swap-confirm .splan-swap-confirm-msg {
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.45;
+      margin-bottom: 10px;
+    }
+    #splan-swap-confirm .splan-swap-confirm-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    .splan-tpl-head {
+      padding: 8px 12px 6px;
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: .6px;
+    }
+    .splan-tpl-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 0 12px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .splan-tpl-chip {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1px;
+      border: 1px solid var(--border);
+      background: var(--bg3);
+      color: var(--text);
+      border-radius: 9px;
+      padding: 6px 9px;
+      cursor: pointer;
+      text-align: left;
+      max-width: 100%;
+    }
+    .splan-tpl-chip:hover { filter: brightness(1.08); }
+    .splan-tpl-chip.is-current {
+      border-color: var(--accent);
+      box-shadow: inset 0 0 0 1px var(--accent);
+    }
+    .splan-tpl-chip-name { font-size: 12px; font-weight: 700; line-height: 1.2; }
+    .splan-tpl-chip-time { font-size: 10px; color: var(--text3); }
+    .splan-tpl-empty { padding: 0 12px 10px; font-size: 11px; color: var(--text3); line-height: 1.4; border-bottom: 1px solid var(--border); }
+    body.splan-swapping { cursor: grabbing; user-select: none; }
+    body.splan-swapping .shift-plan-scroll { touch-action: none; }
     .splan-cell-inner {
       position: relative;
       outline: none !important;
@@ -11371,8 +11457,9 @@
     let _appUpdatePending = null;
     function openAppUpdatePanel(latest, installed, notes, url) {
       _appUpdatePending = { latest, url };
-      const notesHtml = notes ? `<div style="font-size:12px;font-weight:700;color:var(--text2);margin:12px 0 6px;">Yenilikler</div>
-        <div style="font-size:12px;color:var(--text);line-height:1.55;white-space:pre-wrap;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:10px 12px;max-height:180px;overflow:auto;">${escHtml(notes)}</div>` : "";
+      const notesBody = notes ? whatsNewNotesHtml(notes) : "";
+      const notesHtml = notesBody ? `<div style="font-size:12px;font-weight:700;color:var(--text2);margin:12px 0 6px;">Yenilikler</div>
+        <div style="font-size:12px;color:var(--text);line-height:1.55;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:10px 12px;max-height:180px;overflow:auto;">${notesBody}</div>` : "";
       document.getElementById("modal-container").innerHTML = `
     <div class="modal-overlay">
       <div class="modal">
@@ -11415,7 +11502,7 @@
       if (!bar) { bar = document.createElement("div"); bar.id = "app-update-slim"; document.body.appendChild(bar); }
       if (ptr) {
         bar.classList.remove("app-update-ptr"); void bar.offsetWidth; bar.classList.add("app-update-ptr");
-        const first = String(notes || "").split("\n").map(x => x.replace(/^[-*\s]+/, "").trim()).find(Boolean) || "";
+        const first = (typeof whatsNewNotesPlainList === "function" ? whatsNewNotesPlainList(notes)[0] : "") || String(notes || "").split("\n").map(x => x.replace(/^[-*\s]+/, "").trim()).find(Boolean) || "";
         bar.innerHTML = `<span class="app-update-slim-ico">\u2b06\ufe0f</span><span style="flex:1;min-width:0;"><b style="display:block;font-size:12.5px;">G\u00fcncelleme var <span style="color:var(--accent);">v${escHtml(latest)}</span></b><span class="app-update-slim-sub">${escHtml(first || ("Y\u00fckl\u00fc: v" + (installed || "-")))}</span></span>
         <button type="button" class="btn btn-primary btn-sm" onclick="appUpdateBarGo()">G\u00fcncelle</button>
         <button type="button" class="app-update-slim-x" aria-label="Kapat" onclick="appUpdateBarClose()">\u00d7</button>`;
@@ -11439,18 +11526,83 @@
       startAppUpdateDownload();
     }
     // ── Yenilikler: sürüm değişince bir kez göster ──
-    function whatsNewNotesHtml(body) {
-      const lines = String(body || "").replace(/\r/g, "").split("\n").map(x => x.trim()).filter(Boolean);
-      if (!lines.length) return '<div style="font-size:12px;color:var(--text3);">Bu sürüm için not yok.</div>';
-      let html = "", inList = false;
-      lines.forEach(t => {
+    function canSeePatronWhatsNew() {
+      if (!currentUser) return false;
+      if (currentUser.role === "patron") return true;
+      const perms = currentUser.managerPermissions || currentUser.managerPages || {};
+      return Object.keys(perms).some(k => perms[k] === true);
+    }
+    function parseWhatsNewAudienceToken(tok) {
+      const k = String(tok || "").trim().toLowerCase();
+      if (/^(patron|y[oö]netici|yonetici|manager)$/i.test(k)) return "patron";
+      if (/^(herkes|all|everyone|genel)$/i.test(k)) return "all";
+      return "";
+    }
+    function parseWhatsNewItems(body) {
+      const lines = String(body || "").replace(/\r/g, "").split("\n");
+      let section = "all";
+      let inComment = false;
+      const items = [];
+      for (const raw of lines) {
+        const t = raw.trim();
+        if (inComment) {
+          if (t.includes("-->")) inComment = false;
+          continue;
+        }
+        if (t.includes("<!--")) {
+          if (!t.includes("-->")) inComment = true;
+          continue;
+        }
+        if (!t) continue;
+        const sec = t.match(/^##+\s*(.+)$/);
+        if (sec) {
+          const aud = parseWhatsNewAudienceToken(sec[1].replace(/:/g, ""));
+          if (aud) { section = aud; continue; }
+          items.push({ kind: "h", text: sec[1].trim(), audience: section });
+          continue;
+        }
+        const tagged = t.match(/^(?:[-*•]|\d+[.)])?\s*\[(all|herkes|patron|yonetici|yönetici|manager)\]\s*(.*)$/i);
+        if (tagged) {
+          const audience = parseWhatsNewAudienceToken(tagged[1]) || "all";
+          const text = String(tagged[2] || "").replace(/\*\*(.+?)\*\*/g, "$1").trim();
+          if (text) items.push({ kind: "li", text, audience });
+          continue;
+        }
         const m = t.match(/^(?:[-*•]|\d+[.)])\s+(.*)$/);
-        const clean = escHtml((m ? m[1] : t).replace(/^#+\s*/, "").replace(/\*\*(.+?)\*\*/g, "$1"));
-        if (m) { if (!inList) { html += '<ul style="margin:4px 0 8px 18px;padding:0;">'; inList = true; } html += `<li style="margin:3px 0;">${clean}</li>`; }
-        else { if (inList) { html += "</ul>"; inList = false; } html += `<div style="margin:4px 0;${/^#/.test(t) ? "font-weight:800;" : ""}">${clean}</div>`; }
+        const text = (m ? m[1] : t.replace(/^#+\s*/, "")).replace(/\*\*(.+?)\*\*/g, "$1").trim();
+        if (!text) continue;
+        items.push({ kind: m ? "li" : "p", text, audience: section });
+      }
+      return items;
+    }
+    function filterWhatsNewItems(items) {
+      const seePatron = canSeePatronWhatsNew();
+      return (items || []).filter(it => it.audience !== "patron" || seePatron);
+    }
+    function whatsNewVisibleItems(body) {
+      return filterWhatsNewItems(parseWhatsNewItems(body));
+    }
+    function whatsNewNotesHtml(body) {
+      const items = whatsNewVisibleItems(body);
+      if (!items.length) return "";
+      let html = "", inList = false;
+      items.forEach(it => {
+        const clean = escHtml(it.text);
+        if (it.kind === "li") {
+          if (!inList) { html += '<ul style="margin:4px 0 8px 18px;padding:0;">'; inList = true; }
+          html += `<li style="margin:3px 0;">${clean}</li>`;
+        } else {
+          if (inList) { html += "</ul>"; inList = false; }
+          html += `<div style="margin:4px 0;${it.kind === "h" ? "font-weight:800;" : ""}">${clean}</div>`;
+        }
       });
       if (inList) html += "</ul>";
-      return html;
+      return html || '<div style="font-size:12px;color:var(--text3);">Bu sürüm için not yok.</div>';
+    }
+    function whatsNewNotesPlainList(body) {
+      return whatsNewVisibleItems(body)
+        .filter(it => it.kind === "li" || it.kind === "p")
+        .map(it => it.text);
     }
     async function fetchReleaseNotesBetween(fromExcl, toIncl) {
       const res = await fetch("https://api.github.com/repos/" + APP_UPDATE_REPO + "/releases?per_page=40", { headers: { Accept: "application/vnd.github+json" }, cache: "no-store" });
@@ -11469,6 +11621,7 @@
       let items = [];
       try { items = await fetchReleaseNotesBetween(o.since || "", cur); } catch (e) { if (o.manual) showToast("Yenilikler alınamadı", "warn"); return false; }
       if (!o.since && items.length > 5) items = items.slice(0, 5);
+      items = items.filter(r => whatsNewVisibleItems(r.body).length);
       if (!items.length) { if (o.manual) showToast("Henüz not yok"); return false; }
       const body = items.map((r, i) => `<div style="background:var(--bg2);border:1px solid ${i === 0 ? "var(--accent)" : "var(--border)"};border-radius:12px;padding:10px 12px;margin-bottom:10px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
@@ -17989,6 +18142,40 @@ service cloud.firestore {
       if (!uid) return false;
       return ids.includes(String(uid));
     }
+    function getShiftTplBranchIds(t) {
+      if (!t) return [];
+      const out = [];
+      if (t.branchId) out.push(String(t.branchId));
+      if (t.branch && typeof t.branch === "string") out.push(String(t.branch));
+      if (Array.isArray(t.branchIds)) t.branchIds.forEach(id => { if (id) out.push(String(id)); });
+      return [...new Set(out.filter(Boolean))];
+    }
+    function shiftTplAppliesToBranch(t, worker) {
+      const ids = getShiftTplBranchIds(t);
+      if (!ids.length) return true;
+      if (!worker) return false;
+      const b = String(normalizeUserBranchId(worker) || "");
+      return !!b && ids.includes(b);
+    }
+    function isSavedShiftTemplateChip(t) {
+      if (typeof isRecurringShiftTemplateCatalogEntry === "function") {
+        if (!isRecurringShiftTemplateCatalogEntry(t)) return false;
+      } else if (!t || t.ephemeral || t.type === "weekplan") return false;
+      if (!t.name || !t.startTime) return false;
+      if (t.fromSwap) return false;
+      // Hücreye yazılan günlük kopyaları katalog şablonu sayma
+      if (t.type === "daily" && t.date && t.userId && !Array.isArray(t.userIds)) return false;
+      return true;
+    }
+    function savedShiftTemplatesForTargets(targets) {
+      const catalog = (getSettings().shiftTemplates || []).filter(isSavedShiftTemplateChip);
+      const uids = [...new Set((targets || []).map(c => String(c.workerId || "")).filter(Boolean))];
+      if (!uids.length) return catalog.filter(t => getShiftTplUserIds(t).length === 0 && getShiftTplBranchIds(t).length === 0);
+      return catalog.filter(t => uids.every(uid => {
+        const w = (DB.users || []).find(u => String(u.id) === uid);
+        return shiftTplAppliesToUser(t, uid) && shiftTplAppliesToBranch(t, w);
+      }));
+    }
     function pickTplForUser(list, uid) {
       const matches = (list || []).filter(t => shiftTplAppliesToUser(t, uid));
       if (!matches.length) return null;
@@ -22282,6 +22469,7 @@ service cloud.firestore {
     function onShiftPlanCellClick(ev, workerId, dateKey, isOff, isLeave) {
       ev.preventDefault();
       ev.stopPropagation();
+      if (window._splanSuppressClick) return;
       if (ev.ctrlKey || ev.metaKey) return;
       const multi = shiftPlanSelection.size > 1;
       const inSel = isShiftPlanCellSelected(workerId, dateKey);
@@ -22307,13 +22495,42 @@ service cloud.firestore {
       document.addEventListener("mousedown", onShiftPlanBackgroundPointerDown, true);
     }
 
+    const _splanScrollPos = Object.create(null);
+    function splanScrollerKey(el) {
+      if (!el) return "plan";
+      return el.getAttribute("data-splan-scroll-key")
+        || (el.classList.contains("my-shift-grid-scroller") ? "my" : "plan");
+    }
+    function captureSplanScrollPositions(root) {
+      const scope = root && root.querySelectorAll ? root : document;
+      scope.querySelectorAll(".shift-plan-scroll, .my-shift-grid-scroller").forEach(el => {
+        _splanScrollPos[splanScrollerKey(el)] = el.scrollLeft;
+      });
+    }
+    function restoreSplanScrollPositions(root) {
+      const apply = () => {
+        const scope = root && root.querySelectorAll ? root : document;
+        scope.querySelectorAll(".shift-plan-scroll, .my-shift-grid-scroller").forEach(el => {
+          const k = splanScrollerKey(el);
+          if (_splanScrollPos[k] != null) el.scrollLeft = _splanScrollPos[k];
+        });
+      };
+      apply();
+      requestAnimationFrame(apply);
+    }
     function bindSplanHScroll(root) {
       if (!root) return;
-      const els = root.querySelectorAll('.shift-plan-scroll, .my-shift-grid-scroller');
+      const els = root.querySelectorAll(".shift-plan-scroll, .my-shift-grid-scroller");
       els.forEach(el => {
+        if (!el._splanScrollSaveBound) {
+          el._splanScrollSaveBound = true;
+          el.addEventListener("scroll", () => {
+            _splanScrollPos[splanScrollerKey(el)] = el.scrollLeft;
+          }, { passive: true });
+        }
         if (el._splanHScrollBound) return;
         el._splanHScrollBound = true;
-        el.addEventListener('wheel', (ev) => {
+        el.addEventListener("wheel", (ev) => {
           if (el.scrollWidth <= el.clientWidth + 1) return;
           const absX = Math.abs(ev.deltaX), absY = Math.abs(ev.deltaY);
           if (ev.shiftKey || absX > absY) {
@@ -22330,40 +22547,14 @@ service cloud.firestore {
             }
           }
         }, { passive: false });
-        let drag = null;
-        el.addEventListener('pointerdown', (ev) => {
-          if (ev.pointerType === 'touch') return;
-          if (ev.button !== 0) return;
-          if (ev.target.closest('.splan-cell-inner, .my-shift-cell, button, a, input, select, textarea')) return;
-          if (el.scrollWidth <= el.clientWidth + 1) return;
-          drag = { x: ev.clientX, left: el.scrollLeft, moved: false, id: ev.pointerId };
-          try { el.setPointerCapture(ev.pointerId); } catch (e) {}
-        });
-        el.addEventListener('pointermove', (ev) => {
-          if (!drag || drag.id !== ev.pointerId) return;
-          const dx = ev.clientX - drag.x;
-          if (Math.abs(dx) > 4) drag.moved = true;
-          if (drag.moved) el.scrollLeft = drag.left - dx;
-        });
-        const endDrag = (ev) => {
-          if (!drag || (ev && drag.id !== ev.pointerId)) return;
-          if (drag.moved) {
-            el._splanSuppressClick = true;
-            setTimeout(() => { el._splanSuppressClick = false; }, 80);
-          }
-          drag = null;
-        };
-        el.addEventListener('pointerup', endDrag);
-        el.addEventListener('pointercancel', endDrag);
-        el.addEventListener('click', (ev) => {
-          if (el._splanSuppressClick) { ev.preventDefault(); ev.stopPropagation(); }
-        }, true);
       });
+      restoreSplanScrollPositions(root);
     }
 
     function renderShiftPlanPage() {
       const root = document.getElementById("shift-plan-root");
       if (!root) return;
+      captureSplanScrollPositions(root);
       if (currentUser?.role === "calisan") {
         const mine = document.getElementById("my-shift-plan-root");
         if (mine && mine.parentNode === root.parentNode) mine.remove();
@@ -22564,9 +22755,9 @@ service cloud.firestore {
         }).join("")}
       </div>` : "";
 
-      const gridOne = (rowsHtml, hasRows) => `
+      const gridOne = (rowsHtml, hasRows, scrollKey) => `
         <!-- Grid -->
-        <div class="shift-plan-scroll" style="overflow-x:auto;border:2px solid var(--border);border-radius:12px;background:var(--bg2);">
+        <div class="shift-plan-scroll" data-splan-scroll-key="${escHtml(scrollKey || "plan")}" style="overflow-x:auto;border:2px solid var(--border);border-radius:12px;background:var(--bg2);">
           <table class="shift-plan-table" style="width:100%;border-collapse:collapse;font-size:12px;">
             <thead style="background:var(--bg2);">
               <tr>
@@ -22584,8 +22775,8 @@ service cloud.firestore {
 
 `;
       const gridHtml = isCombineBranchesOn()
-        ? getCompanyBranches().map(b => { const list = filtered.filter(w => normalizeUserBranchId(w) === b.id); return branchSectionCardHtml(b, gridOne(buildWorkerRows(list), list.length > 0)); }).join("")
-        : gridOne(workerRows, filtered.length > 0);
+        ? getCompanyBranches().map(b => { const list = filtered.filter(w => normalizeUserBranchId(w) === b.id); return branchSectionCardHtml(b, gridOne(buildWorkerRows(list), list.length > 0, "plan-" + (b.id || "x"))); }).join("")
+        : gridOne(workerRows, filtered.length > 0, "plan");
       root.innerHTML = `
         <!-- Toolbar -->
         <div class="splan-toolbar">
@@ -22613,10 +22804,11 @@ service cloud.firestore {
         ${gridHtml}
 
         <!-- Context menu (hidden) -->
-        <div id="shift-ctx-menu" style="display:none;position:fixed;background:var(--bg2);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.4);z-index:9999;width:292px;max-width:calc(100vw - 20px);box-sizing:border-box;overflow:hidden;"></div>
+        <div id="shift-ctx-menu" style="display:none;position:fixed;background:var(--bg2);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.4);z-index:9999;width:320px;max-width:calc(100vw - 20px);max-height:min(70vh, 560px);box-sizing:border-box;overflow-x:hidden;overflow-y:auto;"></div>
       `;
       updateShiftPlanSelectionBar();
       bindSplanHScroll(root);
+      bindSplanCellSwap(root);
     }
 
     function myShiftPlanWeekNav(delta) {
@@ -22895,6 +23087,7 @@ service cloud.firestore {
     function renderMyShiftsPage() {
       const root = document.getElementById("my-shift-plan-root");
       if (!root || currentUser.role !== "calisan") return;
+      captureSplanScrollPositions(root);
       const w = currentUser;
       const settings = getSettings();
       const templates = (settings.shiftTemplates || []).filter(t => t.name && t.startTime && !t.ephemeral);
@@ -23070,7 +23263,7 @@ service cloud.firestore {
       if (menu) return menu;
       menu = document.createElement("div");
       menu.id = "shift-ctx-menu";
-      menu.style.cssText = "display:none;position:fixed;background:var(--bg2);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.4);z-index:9999;width:292px;max-width:calc(100vw - 20px);box-sizing:border-box;overflow:hidden;";
+      menu.style.cssText = "display:none;position:fixed;background:var(--bg2);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.4);z-index:9999;width:320px;max-width:calc(100vw - 20px);max-height:min(70vh, 560px);box-sizing:border-box;overflow-x:hidden;overflow-y:auto;";
       document.body.appendChild(menu);
       return menu;
     }
@@ -23137,12 +23330,28 @@ service cloud.firestore {
         ? `<button type="button" class="btn btn-danger btn-sm" style="align-self:center;margin:6px 8px 6px 0;flex-shrink:0;padding:6px 10px;" onclick="event.stopPropagation();removePlanCellDayHourlyRate('${workerId}','${dateKey}');">Sil</button>`
         : "";
 
+      const savedTpls = savedShiftTemplatesForTargets(shiftPlanMenuTargets);
       const menuItems = [];
       if (bulk) {
         menuItems.push(`<div style="padding:8px 14px 6px;font-size:11px;font-weight:800;color:var(--accent);border-bottom:1px solid var(--border);">${shiftPlanMenuTargets.length} hücreye toplu uygula</div>`);
       }
       if (!bulk && isSwapDone) {
         menuItems.push(buildShiftSwapDetailButtonHtml(workerId, dateKey));
+      }
+
+      menuItems.push(`<div class="splan-tpl-head">Kayıtlı vardiyalar</div>`);
+      if (savedTpls.length) {
+        const chips = savedTpls.map(t => {
+          const col = tplColor(t);
+          const cur = !bulk && currentTpl && currentTpl.name === t.name && currentTpl.startTime === t.startTime && (currentTpl.endTime || "") === (t.endTime || "");
+          return `<button type="button" class="splan-tpl-chip${cur ? " is-current" : ""}" style="border-left:3px solid ${col};" onclick="event.stopPropagation();applyShiftTemplateToTargets('${escHtml(t.id)}');closeShiftCtxMenu();">
+            <span class="splan-tpl-chip-name">${escHtml(t.name)}</span>
+            <span class="splan-tpl-chip-time">${escHtml(t.startTime || "")}${t.endTime ? "–" + escHtml(t.endTime) : ""}</span>
+          </button>`;
+        }).join("");
+        menuItems.push(`<div class="splan-tpl-chips">${chips}</div>`);
+      } else {
+        menuItems.push(`<div class="splan-tpl-empty">Bu personel için kayıtlı vardiya yok. Saatleri aşağıdan elle girebilirsiniz.</div>`);
       }
 
       menuItems.push(`<div style="display:flex;align-items:stretch;gap:6px;border-bottom:1px solid var(--border);">
@@ -32307,6 +32516,232 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
       });
       setTimeout(() => renderSwapPickerTables(), 30);
     }
+
+    function performPatronShiftSwap(myId, myDateKey, peerId, peerDateKey, note) {
+      if (!canManageCompanyShifts()) {
+        showToast("Bu işlem için yetkiniz yok", "warn");
+        return false;
+      }
+      if (!myId || !peerId || !myDateKey || !peerDateKey) {
+        showToast("İki personel ve günlerini seçin", "warn");
+        return false;
+      }
+      if (myId === peerId && myDateKey === peerDateKey) return false;
+      if (myId === peerId) {
+        showToast("Aynı personelin günleri takas edilemez", "warn");
+        return false;
+      }
+      const workers = getWorkers();
+      const left = workers.find(w => w.id === myId) || (DB.users || []).find(u => u.id === myId);
+      const peer = workers.find(w => w.id === peerId) || (DB.users || []).find(u => u.id === peerId);
+      if (!left || !peer) { showToast("Personel bulunamadı", "warn"); return false; }
+      if (typeof getPendingShiftSwapsForCell === "function") {
+        if (getPendingShiftSwapsForCell(myId, myDateKey).length || getPendingShiftSwapsForCell(peerId, peerDateKey).length) {
+          showToast("Bekleyen takas isteği olan gün takas edilemez", "warn");
+          return false;
+        }
+      }
+      const myDay = snapDayForSwap(myId, myDateKey);
+      const peerDay = snapDayForSwap(peerId, peerDateKey);
+      if (!myDay.startTime && !peerDay.startTime && !myDay.isLeave && !peerDay.isLeave) {
+        showToast("Seçilen günlerde planlı vardiya veya izin yok", "warn");
+        return false;
+      }
+      const kind = (myDay.isLeave || peerDay.isLeave) ? "leave" : "shift";
+      const nowIso = new Date().toISOString();
+      if (!DB.requests) DB.requests = [];
+      const req = {
+        id: "r" + genId(),
+        userId: myId,
+        companyId: currentUser.companyId,
+        branchId: normalizeUserBranchId(left),
+        type: "shift_swap",
+        swapKind: kind,
+        byPatron: true,
+        initiatedBy: currentUser.id,
+        status: "approved",
+        peerStatus: "approved",
+        patronStatus: "approved",
+        createdAt: nowIso,
+        peerResolvedAt: nowIso,
+        patronResolvedAt: nowIso,
+        resolvedAt: nowIso,
+        myDateKey,
+        peerId,
+        peerDateKey,
+        myDaySnap: myDay,
+        peerDaySnap: peerDay,
+        myShiftSnap: myDay,
+        peerShiftSnap: peerDay,
+        note: note || "Patron tarafından yapıldı",
+      };
+      const swapCells = myDateKey === peerDateKey
+        ? [
+            { workerId: myId, dateKey: myDateKey, action: "swap", extra: peer.name },
+            { workerId: peerId, dateKey: peerDateKey, action: "swap", extra: left.name },
+          ]
+        : [
+            { workerId: myId, dateKey: myDateKey, action: "swap", extra: peer.name },
+            { workerId: myId, dateKey: peerDateKey, action: "swap", extra: peer.name },
+            { workerId: peerId, dateKey: peerDateKey, action: "swap", extra: left.name },
+            { workerId: peerId, dateKey: myDateKey, action: "swap", extra: left.name },
+          ];
+      beginShiftPlanNotifCells(swapCells, "swap");
+      applyApprovedShiftSwap(req);
+      DB.requests.push(req);
+      localCacheSave();
+      fsSetDoc("requests", req.id, req).catch(e => console.warn(e));
+      updateReqNotifDot();
+      pruneRevertedShiftPlanNotifs(swapCells);
+      pushWorkerFeed({
+        title: "Personeller arası takas",
+        body: `${left.name} ↔ ${peer.name} (${myDateKey} ⇄ ${peerDateKey}) plana işlendi.`,
+        kind: "request_shift_swap",
+      });
+      showToast("Takas plana işlendi ✓");
+      if (currentPage === "shifts") renderShiftPlanPage();
+      if (currentPage === "requests") renderRequestsPage();
+      return true;
+    }
+    function splanSwapConfirm(message, onYes) {
+      const prev = document.getElementById("splan-swap-confirm");
+      if (prev) prev.remove();
+      const el = document.createElement("div");
+      el.id = "splan-swap-confirm";
+      el.innerHTML = `<div class="splan-swap-confirm-msg">${message}</div>
+        <div class="splan-swap-confirm-actions">
+          <button type="button" class="btn btn-secondary btn-sm" data-act="no">Vazgeç</button>
+          <button type="button" class="btn btn-primary btn-sm" data-act="yes">Takas et</button>
+        </div>`;
+      const close = () => { try { el.remove(); } catch (e) {} document.removeEventListener("keydown", onKey, true); };
+      const onKey = (ev) => { if (ev.key === "Escape") close(); };
+      el.addEventListener("click", ev => {
+        const act = ev.target.closest("[data-act]")?.getAttribute("data-act");
+        if (act === "yes") { close(); if (typeof onYes === "function") onYes(); }
+        else if (act === "no") close();
+      });
+      document.addEventListener("keydown", onKey, true);
+      document.body.appendChild(el);
+    }
+    let _splanDrag = null;
+    function splanClearDropHighlights() {
+      document.querySelectorAll(".splan-cell-inner.splan-drop-ok").forEach(el => el.classList.remove("splan-drop-ok"));
+    }
+    function splanEndDragState() {
+      if (_splanDrag?.lpTimer) { clearTimeout(_splanDrag.lpTimer); _splanDrag.lpTimer = null; }
+      if (_splanDrag?.ghost) { try { _splanDrag.ghost.remove(); } catch (e) {} }
+      if (_splanDrag?.srcEl) _splanDrag.srcEl.classList.remove("splan-drag-src");
+      splanClearDropHighlights();
+      document.body.classList.remove("splan-swapping");
+      const st = _splanDrag;
+      _splanDrag = null;
+      window.removeEventListener("pointermove", onSplanSwapPointerMove, true);
+      window.removeEventListener("pointerup", onSplanSwapPointerUp, true);
+      window.removeEventListener("pointercancel", onSplanSwapPointerUp, true);
+      if (st && st.active) {
+        window._splanSuppressClick = true;
+        setTimeout(() => { window._splanSuppressClick = false; }, 80);
+      }
+    }
+    function splanStartDrag(st) {
+      if (!st || st.active) return;
+      st.active = true;
+      st.pending = false;
+      if (st.lpTimer) { clearTimeout(st.lpTimer); st.lpTimer = null; }
+      document.body.classList.add("splan-swapping");
+      if (st.srcEl) st.srcEl.classList.add("splan-drag-src");
+      const ghost = document.createElement("div");
+      ghost.className = "splan-swap-ghost";
+      ghost.innerHTML = st.srcEl ? st.srcEl.innerHTML : "⇄";
+      ghost.style.left = st.x + "px";
+      ghost.style.top = st.y + "px";
+      document.body.appendChild(ghost);
+      st.ghost = ghost;
+      closeShiftCtxMenu();
+    }
+    function onSplanSwapPointerMove(ev) {
+      const st = _splanDrag;
+      if (!st) return;
+      if (st.pointerId != null && ev.pointerId !== st.pointerId) return;
+      const dx = ev.clientX - st.x0, dy = ev.clientY - st.y0;
+      const dist = Math.hypot(dx, dy);
+      if (!st.active) {
+        if (st.lpTimer && dist > 10) { clearTimeout(st.lpTimer); st.lpTimer = null; splanEndDragState(); return; }
+        if (st.pending && dist > 6) splanStartDrag(st);
+        if (!st.active) return;
+      }
+      ev.preventDefault();
+      st.x = ev.clientX; st.y = ev.clientY;
+      if (st.ghost) { st.ghost.style.left = st.x + "px"; st.ghost.style.top = st.y + "px"; }
+      splanClearDropHighlights();
+      const over = document.elementFromPoint(ev.clientX, ev.clientY)?.closest?.(".splan-cell-inner");
+      if (over && over !== st.srcEl) over.classList.add("splan-drop-ok");
+      st.over = over && over !== st.srcEl ? over : null;
+    }
+    function onSplanSwapPointerUp(ev) {
+      const st = _splanDrag;
+      if (!st) return;
+      if (st.pointerId != null && ev && ev.pointerId !== st.pointerId) return;
+      const wasActive = st.active;
+      const srcEl = st.srcEl;
+      const myId = st.workerId;
+      const myDate = st.dateKey;
+      const over = wasActive ? (st.over || (ev && document.elementFromPoint(ev.clientX, ev.clientY)?.closest?.(".splan-cell-inner"))) : null;
+      splanEndDragState();
+      if (!wasActive || !over || over === srcEl) return;
+      const peerId = over.getAttribute("data-worker-id");
+      const peerDate = over.getAttribute("data-date-key");
+      if (!peerId || !peerDate) return;
+      if (peerId === myId && peerDate === myDate) return;
+      const a = (DB.users || []).find(u => u.id === myId);
+      const b = (DB.users || []).find(u => u.id === peerId);
+      const aSnap = formatSwapShiftSnap(snapDayForSwap(myId, myDate));
+      const bSnap = formatSwapShiftSnap(snapDayForSwap(peerId, peerDate));
+      const msg = `<b>${escHtml(a?.name || "?")}</b> (${escHtml(myDate)} · ${escHtml(aSnap)}) ↔ <b>${escHtml(b?.name || "?")}</b> (${escHtml(peerDate)} · ${escHtml(bSnap)}) takas edilsin mi?`;
+      splanSwapConfirm(msg, () => {
+        performPatronShiftSwap(myId, myDate, peerId, peerDate, "Sürükleyerek takas");
+      });
+    }
+    function onSplanSwapPointerDown(ev) {
+      if (!canManageCompanyShifts()) return;
+      if (ev.button != null && ev.button !== 0) return;
+      if (ev.ctrlKey || ev.metaKey) return;
+      const cell = ev.target.closest?.(".splan-cell-inner");
+      if (!cell) return;
+      const workerId = cell.getAttribute("data-worker-id");
+      const dateKey = cell.getAttribute("data-date-key");
+      if (!workerId || !dateKey) return;
+      if (_splanDrag) splanEndDragState();
+      const isTouch = ev.pointerType === "touch" || ev.pointerType === "pen";
+      _splanDrag = {
+        pointerId: ev.pointerId,
+        srcEl: cell,
+        workerId,
+        dateKey,
+        x0: ev.clientX,
+        y0: ev.clientY,
+        x: ev.clientX,
+        y: ev.clientY,
+        active: false,
+        pending: !isTouch,
+        lpTimer: null,
+        ghost: null,
+        over: null,
+      };
+      if (isTouch) {
+        _splanDrag.lpTimer = setTimeout(() => {
+          if (_splanDrag) splanStartDrag(_splanDrag);
+        }, 300);
+      }
+      window.addEventListener("pointermove", onSplanSwapPointerMove, { capture: true, passive: false });
+      window.addEventListener("pointerup", onSplanSwapPointerUp, true);
+      window.addEventListener("pointercancel", onSplanSwapPointerUp, true);
+    }
+    function bindSplanCellSwap(root) {
+      if (!root || root._splanSwapBound) return;
+      root._splanSwapBound = true;
+      root.addEventListener("pointerdown", onSplanSwapPointerDown);
+    }
     function openPatronShiftSwapModal() {
       if (currentUser?.role !== "patron") return;
       const workers = getWorkers();
@@ -32352,75 +32787,7 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
         const myDateKey = document.getElementById("swap-my-date")?.value || _swapUi.myDate;
         const peerDateKey = document.getElementById("swap-peer-date")?.value || _swapUi.peerDate;
         const note = document.getElementById("swap-note")?.value?.trim() || "";
-        if (!myId || !peerId || !myDateKey || !peerDateKey) {
-          showToast("İki personel ve günlerini seçin", "warn");
-          return false;
-        }
-        if (myId === peerId) { showToast("Aynı personel seçilemez", "warn"); return false; }
-        const left = workers.find(w => w.id === myId);
-        const peer = workers.find(w => w.id === peerId);
-        if (!left || !peer) { showToast("Personel bulunamadı", "warn"); return false; }
-        const myDay = snapDayForSwap(myId, myDateKey);
-        const peerDay = snapDayForSwap(peerId, peerDateKey);
-        if (!myDay.startTime && !peerDay.startTime && !myDay.isLeave && !peerDay.isLeave) {
-          showToast("Seçilen günlerde planlı vardiya veya izin yok", "warn");
-          return false;
-        }
-        const kind = (myDay.isLeave || peerDay.isLeave) ? "leave" : "shift";
-        const nowIso = new Date().toISOString();
-        if (!DB.requests) DB.requests = [];
-        const req = {
-          id: "r" + genId(),
-          userId: myId,
-          companyId: currentUser.companyId,
-          branchId: normalizeUserBranchId(left),
-          type: "shift_swap",
-          swapKind: kind,
-          byPatron: true,
-          initiatedBy: currentUser.id,
-          status: "approved",
-          peerStatus: "approved",
-          patronStatus: "approved",
-          createdAt: nowIso,
-          peerResolvedAt: nowIso,
-          patronResolvedAt: nowIso,
-          resolvedAt: nowIso,
-          myDateKey,
-          peerId,
-          peerDateKey,
-          myDaySnap: myDay,
-          peerDaySnap: peerDay,
-          myShiftSnap: myDay,
-          peerShiftSnap: peerDay,
-          note: note || "Patron tarafından yapıldı",
-        };
-        const swapCells = myDateKey === peerDateKey
-          ? [
-              { workerId: myId, dateKey: myDateKey, action: "swap", extra: peer.name },
-              { workerId: peerId, dateKey: peerDateKey, action: "swap", extra: left.name },
-            ]
-          : [
-              { workerId: myId, dateKey: myDateKey, action: "swap", extra: peer.name },
-              { workerId: myId, dateKey: peerDateKey, action: "swap", extra: peer.name },
-              { workerId: peerId, dateKey: peerDateKey, action: "swap", extra: left.name },
-              { workerId: peerId, dateKey: myDateKey, action: "swap", extra: left.name },
-            ];
-        beginShiftPlanNotifCells(swapCells, "swap");
-        applyApprovedShiftSwap(req);
-        DB.requests.push(req);
-        localCacheSave();
-        fsSetDoc("requests", req.id, req).catch(e => console.warn(e));
-        updateReqNotifDot();
-        pruneRevertedShiftPlanNotifs(swapCells);
-        pushWorkerFeed({
-          title: "Personeller arası takas",
-          body: `${left.name} ↔ ${peer.name} (${myDateKey} ⇄ ${peerDateKey}) plana işlendi.`,
-          kind: "request_shift_swap",
-        });
-        showToast("Takas plana işlendi ✓");
-        if (currentPage === "shifts") renderShiftPlanPage();
-        if (currentPage === "requests") renderRequestsPage();
-        return true;
+        return performPatronShiftSwap(myId, myDateKey, peerId, peerDateKey, note) || false;
       });
       setTimeout(() => {
         syncPatronSwapPeerOptions();
@@ -35482,6 +35849,7 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
     window.openSpecialDayRateForTargets = openSpecialDayRateForTargets;
     window.pasteEphemeralShiftToTargets = pasteEphemeralShiftToTargets;
     window.applyShiftTemplateToTargets = applyShiftTemplateToTargets;
+    window.performPatronShiftSwap = performPatronShiftSwap;
     window.openShiftPlanLeaveModalForTargets = openShiftPlanLeaveModalForTargets;
     window.clearShiftCellsFromMenu = clearShiftCellsFromMenu;
     window.removePlanCellEphemeralShift = removePlanCellEphemeralShift;
