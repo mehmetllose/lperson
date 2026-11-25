@@ -7753,6 +7753,45 @@
     .pf-grade-row .pf-g-name { flex: 1; }
     .pf-desc { margin-top: 10px; padding: 9px 11px; border-radius: 10px; background: rgba(91,156,246,0.08); border: 1px solid rgba(91,156,246,0.25); font-size: 12px; line-height: 1.45; color: var(--text2); }
     .pf-desc.muted { background: transparent; border-style: dashed; color: var(--text3); }
+    .pf-cr { border: 1px solid var(--border); background: var(--bg2); border-radius: 12px; padding: 10px 11px; margin-top: 8px; }
+    .pf-cr.p { border-color: rgba(16,185,129,0.5); }
+    .pf-cr.m { border-color: rgba(239,68,68,0.5); }
+    .pf-cr-hd { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .pf-cr-name { font-size: 13px; font-weight: 600; color: var(--text); }
+    .pf-cr.p .pf-cr-val { color: var(--green); font-weight: 600; }
+    .pf-cr.m .pf-cr-val { color: var(--red); font-weight: 600; }
+    .pf-cr-desc { font-size: 11px; color: var(--text3); line-height: 1.4; margin-bottom: 7px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; cursor: pointer; }
+    .pf-cr-desc.open { -webkit-line-clamp: unset; display: block; }
+    .pf-cr .pf-chip.pf-pt { min-width: 40px; padding: 6px 8px; }
+    .pf-cr .pf-chip.pl.on { border-color: var(--green); color: var(--green); background: rgba(16,185,129,0.14); box-shadow: none; }
+    .pf-cr .pf-chip.mi.on { border-color: var(--red); color: var(--red); background: rgba(239,68,68,0.14); box-shadow: none; }
+    .pf-cr-note { width: 100%; margin-top: 8px; background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; color: var(--text); padding: 8px 10px; font: inherit; font-size: 12px; box-sizing: border-box; }
+    .pf-cr-sum { position: sticky; top: -1px; z-index: 2; background: var(--bg2); padding: 8px 2px; font-size: 12px; color: var(--text2); border-bottom: 1px solid var(--border); }
+    .pf-cr-sum .p, .pf-rep .p { color: var(--green); } .pf-cr-sum .m, .pf-rep .m { color: var(--red); }
+    .pf-crit-row { border: 1px solid var(--border); border-radius: 10px; padding: 7px; margin-bottom: 6px; background: var(--bg2); }
+    .pf-crit-row-top { display: flex; gap: 4px; align-items: center; }
+    .pf-crit-row input, .pf-crit-row textarea { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; color: var(--text); padding: 7px 9px; font: inherit; font-size: 12px; min-width: 0; box-sizing: border-box; }
+    .pf-crit-row .pf-c-name { flex: 1; font-weight: 600; }
+    .pf-crit-row textarea { width: 100%; margin-top: 5px; resize: vertical; }
+    .pf-mv { background: var(--bg3); border: 1px solid var(--border); color: var(--text2); border-radius: 8px; width: 30px; height: 30px; cursor: pointer; flex-shrink: 0; font: inherit; }
+    .pf-rep-btn { margin-top: 8px; }
+    .pf-rep .pf-mini { grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); }
+    .pf-rep .pf-mini small { font-size: 10px; color: var(--text3); font-weight: 400; }
+    .pf-rep-bw { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+    .pf-rep-card { border-radius: 12px; padding: 9px 11px; border: 1px solid var(--border); background: var(--bg2); }
+    .pf-rep-card span { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--text3); }
+    .pf-rep-card b { display: block; font-size: 13px; font-weight: 600; margin-top: 3px; }
+    .pf-rep-card.p { border-color: rgba(16,185,129,0.4); } .pf-rep-card.m { border-color: rgba(239,68,68,0.4); }
+    .pf-trend { width: 100%; height: 70px; display: block; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; }
+    .pf-trend-ax { display: flex; justify-content: space-between; font-size: 10px; color: var(--text3); padding: 2px 4px 0; }
+    .pf-rep-tbl { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .pf-rep-row { display: grid; grid-template-columns: 1fr 40px 40px 44px; gap: 6px; align-items: center; padding: 8px 11px; font-size: 12px; }
+    .pf-rep-row + .pf-rep-row { border-top: 1px solid rgba(128,128,128,0.15); }
+    .pf-rep-row span:not(.pf-rep-n), .pf-rep-row b { text-align: right; font-weight: 600; }
+    .pf-rep-n { color: var(--text); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pf-rep-person { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 9px 11px; margin-bottom: 6px; color: var(--text); font: inherit; cursor: pointer; }
+    .pf-rep-person .pf-mid { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+    .pf-rep-diff { font-size: 11px; font-weight: 600; min-width: 42px; text-align: right; }
     .pf-help-p { border-bottom: 1px solid var(--border); padding: 4px 0; }
     .pf-help-p summary { display: flex; flex-direction: column; gap: 2px; cursor: pointer; list-style: none; padding: 8px 0; }
     .pf-help-p summary::-webkit-details-marker { display: none; }
@@ -20338,6 +20377,7 @@ service cloud.firestore {
           }
           setTimeout(() => { try { locAutoEnsure(); syncLiveLocationNavVisibility(); } catch (e) {} }, 3000);
           setTimeout(() => maybeShowWhatsNew(), 1500);
+          setTimeout(() => { try { maybePerfMonthReport(); } catch (e) {} }, 9000);
         } catch (e) {}
       }
       if (!window.__inlineWidgetHost) initNativeCapacitorShell().then(async () => {
@@ -28004,7 +28044,7 @@ service cloud.firestore {
         perfAdjList(records[key]).forEach(e => manual.push({
           key, id: String(e.id || ""), sign: e.sign > 0 ? 1 : -1,
           pts: Math.max(1, Math.min(20, Math.round(Number(e.pts) || 0))),
-          crit: String(e.crit || ""), note: String(e.note || "").slice(0, 140),
+          crit: String(e.crit || ""), critName: String(e.critName || "").slice(0, 40), note: String(e.note || "").slice(0, 140),
           byName: String(e.byName || ""), at: String(e.at || ""), src: String(e.src || "manual"),
         }));
       });
@@ -28027,8 +28067,8 @@ service cloud.firestore {
       const autoScore = autoWork ? Math.max(0, Math.min(100, 100 - penalty + bonus)) : 100;
       // Patron artı/eksileri otomatik puanın üstüne eklenir (100 üstüne çıkabilir, tavan 150)
       const score = hasWork ? Math.max(0, Math.min(150, autoScore + manualPlus - manualMinus)) : null;
-      pushCut("adjPlus", "Patron artısı", manualPlus, manual.filter(m => m.sign > 0).length + " kayıt");
-      pushCut("adjMinus", "Patron eksisi", -manualMinus, manual.filter(m => m.sign < 0).length + " kayıt");
+      pushCut("adjPlus", "Değerlendirme artısı", manualPlus, manual.filter(m => m.sign > 0).length + " kayıt");
+      pushCut("adjMinus", "Değerlendirme eksisi", -manualMinus, manual.filter(m => m.sign < 0).length + " kayıt");
       const overMin = late.reduce((a, x) => a + x.over, 0);
       return {
         w, score, cuts, limits, scheduled, arrived, beforePlan, late, soft, missed, early, excused,
@@ -28185,6 +28225,17 @@ service cloud.firestore {
         uniq[uniq.length - 1].min = 0;
         s.perfGrades = uniq;
       }
+      const cRows = [...document.querySelectorAll("#perf-crit-rows .pf-crit-row")];
+      if (cRows.length) {
+        const used = new Set();
+        const cl = cRows.map(r => ({
+          id: String(r.getAttribute("data-id") || ("c" + genId())).slice(0, 40),
+          label: String(r.querySelector(".pf-c-name")?.value || "").trim().slice(0, 40),
+          desc: String(r.querySelector(".pf-c-desc")?.value || "").trim().slice(0, 300),
+        })).filter(c => c.label && c.id !== "yardim" && !used.has(c.id) && (used.add(c.id), true));
+        if (!cl.length) { showToast("En az bir kriter adı girin", "warn"); return; }
+        s.perfCrits = cl;
+      }
       perfRulesOpen = true;
       await saveSettings();
       renderAnalyticsPage();
@@ -28196,6 +28247,33 @@ service cloud.firestore {
     }
     function perfGradeRowHtml(g) {
       return `<div class="pf-grade-row"><input type="number" class="pf-g-min" min="0" max="150" value="${g.min}" aria-label="Alt puan"/><input type="text" class="pf-g-name" maxlength="24" value="${escHtml(g.name)}" placeholder="Derece adı" aria-label="Derece adı"/><button type="button" class="pf-del" title="Sil" onclick="this.parentElement.remove()">×</button></div>`;
+    }
+    function perfCritRowHtml(c) {
+      return `<div class="pf-crit-row" data-id="${escHtml(c.id)}">
+        <div class="pf-crit-row-top"><input type="text" class="pf-c-name" maxlength="40" value="${escHtml(c.label)}" placeholder="Kriter adı"/>
+        <button type="button" class="pf-mv" title="Yukarı" onclick="perfCritMove(this,-1)">↑</button><button type="button" class="pf-mv" title="Aşağı" onclick="perfCritMove(this,1)">↓</button><button type="button" class="pf-del" title="Sil" onclick="perfCritDel(this)">×</button></div>
+        <textarea class="pf-c-desc" rows="2" maxlength="300" placeholder="Açıklama: ne zaman artı, ne zaman eksi verilir">${escHtml(c.desc || "")}</textarea>
+      </div>`;
+    }
+    function perfCritMove(btn, dir) {
+      const row = btn.closest(".pf-crit-row");
+      if (!row || !row.parentElement) return;
+      if (dir < 0 && row.previousElementSibling) row.parentElement.insertBefore(row, row.previousElementSibling);
+      else if (dir > 0 && row.nextElementSibling) row.parentElement.insertBefore(row.nextElementSibling, row);
+    }
+    function perfCritDel(btn) {
+      const row = btn.closest(".pf-crit-row");
+      if (!row) return;
+      if (row.parentElement.querySelectorAll(".pf-crit-row").length <= 1) { showToast("En az bir kriter kalmalı", "warn"); return; }
+      row.remove();
+    }
+    function perfCritAddRow() {
+      const box = document.getElementById("perf-crit-rows");
+      if (!box) return;
+      if (box.querySelectorAll(".pf-crit-row").length >= 25) { showToast("En fazla 25 kriter", "warn"); return; }
+      box.insertAdjacentHTML("beforeend", perfCritRowHtml({ id: "c" + genId() + genId(), label: "", desc: "" }));
+      const inp = box.lastElementChild && box.lastElementChild.querySelector(".pf-c-name");
+      if (inp) inp.focus();
     }
     function perfGradeRowsHtml() {
       return getPerfGrades().map(perfGradeRowHtml).join("");
@@ -28340,13 +28418,39 @@ service cloud.firestore {
       { id: "yardim", label: "Yardıma gelme", plus: 1,
         desc: "Vardiya ya da izin gününde, çağrılmadan yardıma gelmek. QR ile \"Yardıma geldim\" seçilince kaydolur, patron onaylayınca puan yazılır." },
     ];
+    const PERF_CRIT_DEFAULT_LABEL = { telefon: "Telefon disiplini" };
+    function perfDefaultCrits() {
+      return PERF_CRITS.filter(c => c.id !== "yardim").map(c => ({
+        id: c.id, label: PERF_CRIT_DEFAULT_LABEL[c.id] || c.label,
+        desc: c.plusDesc ? (c.desc + " Artı: " + c.plusDesc) : (c.desc || ""),
+      }));
+    }
+    /** Artı ve eksi için ortak kriter listesi (ayarlarda perfCrits; yoksa varsayılan). "yardim" sistem kriteridir, listede yer almaz. */
+    function getPerfCrits() {
+      const st = getSettings();
+      if (Array.isArray(st.perfCrits) && st.perfCrits.length) {
+        const seen = new Set();
+        const list = st.perfCrits.map(c => ({
+          id: String((c && c.id) || "").slice(0, 40),
+          label: String((c && c.label) || "").trim().slice(0, 40),
+          desc: String((c && c.desc) || "").trim().slice(0, 300),
+        })).filter(c => c.id && c.label && c.id !== "yardim" && !seen.has(c.id) && (seen.add(c.id), true));
+        if (list.length) return list;
+      }
+      return perfDefaultCrits();
+    }
     function perfCritDesc(id, sign) {
+      const cc = getPerfCrits().find(x => x.id === id);
+      if (cc) return cc.desc || "";
       const c = PERF_CRITS.find(x => x.id === id);
       if (!c) return "";
       return sign > 0 && c.plusDesc ? c.plusDesc : (c.desc || "");
     }
     const PERF_HELP_PTS = 3;
-    function perfCritLabel(id, sign) {
+    function perfCritLabel(id, sign, storedName) {
+      if (storedName) return String(storedName);
+      const cc = getPerfCrits().find(x => x.id === id);
+      if (cc) return cc.label;
       const c = PERF_CRITS.find(x => x.id === id);
       if (!c) return "Diğer";
       return sign > 0 && c.plusLabel ? c.plusLabel : c.label;
@@ -28383,65 +28487,92 @@ service cloud.firestore {
       const uid = decodeURIComponent(uidEnc || "");
       const w = (DB.users || []).find(u => u.id === uid);
       if (!w) return;
-      _perfGive = { uid, sign: sign === -1 ? -1 : 1, crit: "", pts: 2, note: "", date: todayKey() };
-      openModal("Puan ver · " + escHtml(w.name), `<div id="pf-give-body"></div>`, () => savePerfGive());
+      _perfGive = { uid, sign: sign === -1 ? -1 : 1, vals: {}, notes: {}, date: todayKey() };
+      openModal("Değerlendir · " + escHtml(w.name), `<div id="pf-give-body"></div>`, () => savePerfGive());
       renderPerfGiveBody();
+    }
+    function perfGiveSyncInputs() {
+      const g = _perfGive;
+      if (!g) return;
+      document.querySelectorAll("#pf-give-body .pf-cr-note").forEach(i => { g.notes[i.getAttribute("data-c")] = i.value; });
+      const d = document.getElementById("pf-give-date");
+      if (d && d.value) g.date = d.value;
     }
     function renderPerfGiveBody() {
       const el = document.getElementById("pf-give-body");
       const g = _perfGive;
       if (!el || !g) return;
-      const noteEl = document.getElementById("pf-give-note");
-      const dateEl = document.getElementById("pf-give-date");
-      if (noteEl) g.note = noteEl.value;
-      if (dateEl && dateEl.value) g.date = dateEl.value;
-      const crits = PERF_CRITS.filter(c => g.sign > 0 ? c.plus : c.minus);
-      const sg = g.sign > 0 ? "+" : "−";
+      perfGiveSyncInputs();
+      const mb = el.closest(".modal-body");
+      const st = mb ? mb.scrollTop : 0;
+      const crits = getPerfCrits();
+      const sg = g.sign > 0 ? 1 : -1;
+      let nP = 0, nM = 0, cnt = 0;
+      crits.forEach(c => { const v = Number(g.vals[c.id]) || 0; if (v) { cnt++; if (v > 0) nP += v; else nM -= v; } });
+      const rows = crits.map(c => {
+        const v = Number(g.vals[c.id]) || 0;
+        const ce = perfEnc(c.id);
+        const chips = `<button type="button" class="pf-chip pf-pt${!v ? " on" : ""}" onclick="perfGiveSet('${ce}',0)">0</button>`
+          + [1, 2, 3, 5].map(n => { const val = n * sg; return `<button type="button" class="pf-chip pf-pt ${sg > 0 ? "pl" : "mi"}${v === val ? " on" : ""}" onclick="perfGiveSet('${ce}',${val})">${sg > 0 ? "+" : "−"}${n}</button>`; }).join("");
+        return `<div class="pf-cr${v ? (v > 0 ? " p" : " m") : ""}">
+          <div class="pf-cr-hd"><span class="pf-cr-name">${escHtml(c.label)}</span>${v ? `<span class="pf-cr-val">${perfPtsTxt(v)}</span>` : ""}</div>
+          ${c.desc ? `<div class="pf-cr-desc" onclick="this.classList.toggle('open')">${escHtml(c.desc)}</div>` : ""}
+          <div class="pf-chips">${chips}</div>
+          ${v ? `<input type="text" class="pf-cr-note" data-c="${escHtml(c.id)}" maxlength="140" placeholder="Not (isteğe bağlı)" value="${escHtml(g.notes[c.id] || "")}"/>` : ""}
+        </div>`;
+      }).join("");
       el.innerHTML = `
         <div class="pf-seg">
-          <button type="button" class="pf-seg-btn${g.sign > 0 ? " on plus" : ""}" onclick="perfGiveSet('sign',1)">＋ Artı</button>
-          <button type="button" class="pf-seg-btn${g.sign < 0 ? " on minus" : ""}" onclick="perfGiveSet('sign',-1)">− Eksi</button>
+          <button type="button" class="pf-seg-btn${sg > 0 ? " on plus" : ""}" onclick="perfGiveMode(1)">＋ Artı</button>
+          <button type="button" class="pf-seg-btn${sg < 0 ? " on minus" : ""}" onclick="perfGiveMode(-1)">− Eksi</button>
         </div>
-        <div class="pf-lbl">Kriter</div>
-        <div class="pf-chips">${crits.map(c => `<button type="button" class="pf-chip${g.crit === c.id ? " on" : ""}" onclick="perfGiveSet('crit','${c.id}')">${escHtml(g.sign > 0 && c.plusLabel ? c.plusLabel : c.label)}</button>`).join("")}</div>
-        ${g.crit ? `<div class="pf-desc">${escHtml(perfCritDesc(g.crit, g.sign))}</div>` : `<div class="pf-desc muted">Bir kriter seçince ne anlama geldiği burada görünür.</div>`}
-        <div class="pf-lbl">Puan</div>
-        <div class="pf-chips">${[1, 2, 3, 5].map(n => `<button type="button" class="pf-chip pf-pt${g.pts === n ? " on" : ""}" onclick="perfGiveSet('pts',${n})">${sg}${n}</button>`).join("")}</div>
-        <div class="field" style="margin-top:12px;"><label>Gün</label><input type="date" id="pf-give-date" value="${escHtml(g.date || todayKey())}" max="${todayKey()}"/></div>
-        <div class="field"><label>Kısa not (isteğe bağlı)</label><input type="text" id="pf-give-note" maxlength="140" placeholder="Örn. müşteriyle çok iyi ilgilendi" value="${escHtml(g.note || "")}"/></div>
-        <div class="pf-hint">Personel kendi performans sayfasında kriteri ve notu görür. Puanlar her ay sıfırlanır.</div>`;
+        <div class="field" style="margin:10px 0 4px;"><label>Gün</label><input type="date" id="pf-give-date" value="${escHtml(g.date || todayKey())}" max="${todayKey()}"/></div>
+        <div class="pf-cr-sum">${cnt ? `${cnt} kriter seçili · <span class="p">+${nP}</span> · <span class="m">−${nM}</span>` : "Her kritere ayrı puan seçin, en sonda Kaydet’e basın."}</div>
+        ${rows}
+        <div class="pf-hint">Seçilen her kriter ayrı kayıt olur. Artı/Eksi düğmesi yalnızca puan yönünü değiştirir, seçimler korunur. Personel bunu “Performans değerlendirmesi” olarak görür, kimin verdiği görünmez. Puanlar her ay sıfırlanır.</div>`;
+      if (mb) mb.scrollTop = st;
     }
-    function perfGiveSet(k, v) {
+    function perfGiveMode(sign) {
+      if (!_perfGive) return;
+      perfGiveSyncInputs();
+      _perfGive.sign = sign > 0 ? 1 : -1;
+      renderPerfGiveBody();
+    }
+    function perfGiveSet(idEnc, v) {
       const g = _perfGive;
       if (!g) return;
-      g[k] = v;
-      if (k === "sign") {
-        const c = PERF_CRITS.find(x => x.id === g.crit);
-        if (c && !(v > 0 ? c.plus : c.minus)) g.crit = "";
-      }
+      perfGiveSyncInputs();
+      const id = decodeURIComponent(idEnc || "");
+      g.vals[id] = Math.round(Number(v) || 0);
       renderPerfGiveBody();
     }
     async function savePerfGive() {
       const g = _perfGive;
       if (!g) return false;
-      if (!g.crit) { showToast("Bir kriter seçin", "warn"); return false; }
+      perfGiveSyncInputs();
       const key = String(document.getElementById("pf-give-date")?.value || todayKey()).slice(0, 10);
       if (!parseYMDLocal(key) || key > todayKey()) { showToast("Geçerli bir gün seçin", "warn"); return false; }
-      const note = String(document.getElementById("pf-give-note")?.value || "").trim().slice(0, 140);
-      const entry = {
-        id: "pa" + genId(), sign: g.sign, crit: g.crit, pts: g.pts, note,
-        by: currentUser?.id || "", byName: currentUser?.name || "", at: new Date().toISOString(), src: "manual",
-      };
-      const ok = await perfAdjWrite(g.uid, key, list => [...list, entry]);
+      const at = new Date().toISOString();
+      const entries = getPerfCrits().filter(c => Number(g.vals[c.id])).map(c => {
+        const v = Math.round(Number(g.vals[c.id]));
+        return {
+          id: "pa" + genId(), sign: v > 0 ? 1 : -1, crit: c.id, critName: c.label, pts: Math.min(20, Math.abs(v)),
+          note: String(g.notes[c.id] || "").trim().slice(0, 140),
+          by: currentUser?.id || "", byName: currentUser?.name || "", at, src: "manual",
+        };
+      });
+      if (!entries.length) { showToast("En az bir kritere puan seçin", "warn"); return false; }
+      const ok = await perfAdjWrite(g.uid, key, list => [...list, ...entries]);
       if (!ok) return false;
       _perfGive = null;
-      showToast((entry.sign > 0 ? "+" : "−") + entry.pts + " puan yazıldı ✓");
+      const net = entries.reduce((a, e) => a + e.sign * e.pts, 0);
+      showToast(entries.length + " kriter kaydedildi (" + perfPtsTxt(net) + ") ✓");
       try {
         void enqueueUserNotifs([{
           userId: g.uid,
-          id: "ct-perf-" + entry.id,
-          title: entry.sign > 0 ? "Artı puan" : "Eksi puan",
-          body: (entry.sign > 0 ? "+" : "−") + entry.pts + " · " + perfCritLabel(entry.crit, entry.sign) + (note ? " · " + note : ""),
+          id: "ct-perf-" + entries[0].id,
+          title: "Performans değerlendirmesi",
+          body: entries.map(e => e.critName + " " + perfPtsTxt(e.sign * e.pts)).join(" · "),
           kind: "perf",
         }]);
       } catch (e) {}
@@ -28472,7 +28603,7 @@ service cloud.firestore {
       (s.short || []).forEach(x => add(x.key, -(x.cost || 0), "Çalışma süresi", "Plan " + x.expectedH.toFixed(1) + " sa, çalışılan " + x.actualH.toFixed(1) + " sa", { auto: true }));
       if (s.taskMode === "month") (s.taskOpen || []).forEach(x => add(x.key, -(x.cost || 0), perfCritLabel("gorev", -1), "Açık görev: " + x.text, { auto: true }));
       (s.reqHits || []).forEach(x => { if (!x.within) add(x.key, -(x.cost || 0), "Talep sınırı", perfReqTypeLabel(x.type) + " · ücretsiz talep sınırı aşıldı", { auto: true }); });
-      (s.manual || []).forEach(m => add(m.key, m.sign * m.pts, perfCritLabel(m.crit, m.sign), m.note || (m.src === "help" ? "Vardiya dışında yardıma geldi" : ""), { manual: true, id: m.id, byName: m.byName }));
+      (s.manual || []).forEach(m => add(m.key, m.sign * m.pts, perfCritLabel(m.crit, m.sign, m.critName), m.note || (m.src === "help" ? "Vardiya dışında yardıma geldi" : "Performans değerlendirmesi"), { manual: true, id: m.id, byName: m.byName }));
       return items.filter(i => i.pts !== 0 || i.manual);
     }
     function perfPtsTxt(n) {
@@ -28490,7 +28621,7 @@ service cloud.firestore {
         const plus = i.pts > 0;
         const del = edit && i.manual && i.id
           ? `<button type="button" class="pf-del" title="Sil" onclick="perfAdjDelete('${perfEnc(uid)}','${perfEnc(i.key)}','${perfEnc(i.id)}')">×</button>` : "";
-        const by = i.manual ? (i.byName ? " · " + i.byName : "") : " · otomatik";
+        const by = i.manual ? (edit && i.byName ? " · " + i.byName : "") : " · otomatik";
         return `<div class="pf-it">
           <span class="pf-dot ${plus ? "p" : "m"}">${plus ? "+" : "−"}</span>
           <div class="pf-it-body">
@@ -28520,12 +28651,13 @@ service cloud.firestore {
     function perfInfoPanelHtml() {
       const L = getPerfLimits();
       const li = t => `<li>${t}</li>`;
-      const critLi = c => `<li><b>${escHtml(c.label)}</b>${c.minus && c.plus ? " (±)" : " (+)"}<br><span>${escHtml(c.desc)}${c.plusDesc ? " Artı: " + escHtml(c.plusDesc) : ""}</span></li>`;
+      const critLi = c => `<li><b>${escHtml(c.label)}</b> (±)<br><span>${escHtml(c.desc || "")}</span></li>`;
+      const yd = PERF_CRITS.find(x => x.id === "yardim");
       return `<details class="pf-more pf-info">
         <summary>Puan nasıl hesaplanır?</summary>
         <div class="pf-more-body pf-info-body">
           <p><b>Aylık puan.</b> Her ay başında puan sıfırlanır; ay boyunca yazılan artı ve eksiler o ayın puanını oluşturur. Şimdilik yalnızca takip içindir, ücrete etkisi yoktur.</p>
-          <p><b>Formül:</b> otomatik puan (100 üzerinden) + patron artıları − patron eksileri. Toplam 0 ile 150 arasında kalır.</p>
+          <p><b>Formül:</b> otomatik puan (100 üzerinden) + değerlendirme artıları − değerlendirme eksileri. Toplam 0 ile 150 arasında kalır.</p>
           <div class="pf-info-h">Otomatik puan (100'den başlar)</div>
           <ul>
             ${li(`<b>Geç giriş:</b> ${L.late} dk'ya kadar puan düşmez. Aşan kısım için ${L.lateBase} puan + her ${L.lateStep} dk için 1 puan, günlük en çok ${L.lateCap}.`)}
@@ -28538,12 +28670,12 @@ service cloud.firestore {
             ${li(`<b>Fazla mesai:</b> aynı gün geç kalma/erken çıkış eksiğini kapatır${L.otRecoverMin ? " (her " + L.otRecoverMin + " dk = 1 puan)" : ""}; kalan saat başına +${L.otPerHour}, ayda en çok +${L.otCap}.`)}
             ${li(`Gerekçeli sayılan (İstisna) kayıtlar puan düşürmez.`)}
           </ul>
-          <div class="pf-info-h">Patron artı / eksisi</div>
-          <p>Patron bir kriter seçip 1, 2, 3 veya 5 puan ekler ya da düşer; nedenini kısa notla yazabilir. Personel bunu günlük listesinde kriter adı ve notuyla görür. Yardıma gelme onaylanınca ${getHelpVisitPoints()} puan (onayda değiştirilebilir) eklenir.</p>
+          <div class="pf-info-h">Değerlendirme artı / eksisi</div>
+          <p>Her kriter için ayrı ayrı 1, 2, 3 veya 5 puan eklenir ya da düşülür; her birine kısa not yazılabilir. Günlük listede kriter adı ve notuyla “Performans değerlendirmesi” olarak görünür. Artı ve eksi aynı kriter listesini kullanır. Yardıma gelme onaylanınca ${getHelpVisitPoints()} puan (onayda değiştirilebilir) eklenir.</p>
           <div class="pf-info-h">Dereceler</div>
           ${perfGradesTableHtml()}
           <div class="pf-info-h">Kriterler ne demek?</div>
-          <ul class="pf-crit-list">${PERF_CRITS.map(critLi).join("")}</ul>
+          <ul class="pf-crit-list">${getPerfCrits().map(critLi).join("")}${yd ? `<li><b>${escHtml(yd.label)}</b> (+, sistem)<br><span>${escHtml(yd.desc)}</span></li>` : ""}</ul>
         </div>
       </details>`;
     }
@@ -28573,6 +28705,172 @@ service cloud.firestore {
         <details class="pf-help-p"><summary><span class="pf-name">${escHtml(x.w.name)}</span><span class="pf-meta">${x.sum.visits} yardım · ${escHtml(perfFmtMin(x.sum.mins))} · <span class="p">+${x.sum.pts}</span></span></summary>${perfHelpRowsHtml(x.list)}</details>`).join("");
       return `<details class="pf-more"><summary>Yardım analizi · ${tot.v} kayıt · ${escHtml(perfFmtMin(tot.m))} · +${tot.p} puan</summary>
         <div class="pf-more-body">${body || `<div class="pf-empty">Bu ay yardım kaydı yok.</div>`}</div></details>`;
+    }
+    // ── AY SONU PERFORMANS RAPORU (istemci tarafı) ──
+    function perfPrevMonth(y, m) { const d = new Date(y, m - 1, 1); return { year: d.getFullYear(), month: d.getMonth() }; }
+    function perfMonthReportData(w, year, month) {
+      const s = collectWorkerPerformance(w, year, month);
+      const items = perfTimelineItems(s);
+      const byCrit = {};
+      items.forEach(i => {
+        const k = i.crit || "Diğer";
+        const b = byCrit[k] || (byCrit[k] = { name: k, plus: 0, minus: 0, n: 0 });
+        if (i.pts > 0) b.plus += i.pts; else b.minus += -i.pts;
+        b.n++;
+      });
+      const ot = (s.cuts || []).find(c => c.id === "ot");
+      if (ot && ot.points > 0) byCrit["Fazla mesai"] = { name: "Fazla mesai", plus: ot.points, minus: 0, n: 1 };
+      const crits = Object.values(byCrit).map(c => ({ ...c, net: c.plus - c.minus })).filter(c => c.plus || c.minus).sort((a, b) => b.net - a.net);
+      const plus = crits.reduce((a, c) => a + c.plus, 0), minus = crits.reduce((a, c) => a + c.minus, 0);
+      const days = getAllDaysOfMonth(year, month).map(({ key }) => ({ key, net: items.filter(i => i.key === key).reduce((a, i) => a + i.pts, 0) }));
+      const p = perfPrevMonth(year, month);
+      let prev = null;
+      try { prev = collectWorkerPerformance(w, p.year, p.month).score; } catch (e) {}
+      const help = perfHelpSummary(perfHelpVisits(w.id, year, month));
+      const best = crits.filter(c => c.net > 0)[0] || null;
+      const neg = crits.filter(c => c.net < 0);
+      const worst = neg.length ? neg[neg.length - 1] : null;
+      return { s, crits, plus, minus, days, prev, help, best, worst, late: (s.late || []).length, soft: (s.soft || []).length };
+    }
+    function perfTrendSvg(days) {
+      const n = days.length || 1, max = Math.max(1, ...days.map(d => Math.abs(d.net)));
+      const W = n * 10, H = 64, mid = 32;
+      const bars = days.map((d, i) => {
+        if (!d.net) return `<rect x="${i * 10 + 2}" y="${mid - 0.5}" width="6" height="1" style="fill:rgba(128,128,128,0.35)"/>`;
+        const h = Math.max(2, Math.round(Math.abs(d.net) / max * 29));
+        return `<rect x="${i * 10 + 2}" y="${d.net > 0 ? mid - h : mid}" width="6" height="${h}" rx="1.5" style="fill:${d.net > 0 ? "var(--green)" : "var(--red)"}"><title>${escHtml(fmtDateTR(d.key) || d.key)}: ${perfPtsTxt(d.net)}</title></rect>`;
+      }).join("");
+      return `<svg class="pf-trend" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${bars}</svg><div class="pf-trend-ax"><span>1</span><span>${Math.ceil(n / 2)}</span><span>${n}</span></div>`;
+    }
+    function perfAnonRank(w, year, month, score) {
+      if (score == null) return null;
+      try {
+        const scores = (getWorkersForMonth(year, month) || []).filter(x => x.role === "calisan" || x.id === w.id)
+          .map(x => (x.id === w.id ? score : collectWorkerPerformance(x, year, month).score)).filter(v => v != null);
+        if (scores.length < 2) return null;
+        return { place: scores.filter(v => v > score).length + 1, total: scores.length };
+      } catch (e) { return null; }
+    }
+    function perfDiffHtml(cur, prev) {
+      if (cur == null || prev == null) return "";
+      const d = cur - prev;
+      return `<span style="color:${d > 0 ? "var(--green)" : (d < 0 ? "var(--red)" : "var(--text3)")}">${d > 0 ? "▲ +" + d : (d < 0 ? "▼ −" + (-d) : "= 0")}</span>`;
+    }
+    function perfMonthReportHtml(w, year, month, self) {
+      const d = perfMonthReportData(w, year, month);
+      const s = d.s;
+      if (s.score == null && !d.crits.length) return `<div class="pf-empty">${escHtml(MONTH_NAMES[month] + " " + year)} için kayıt yok.</div>`;
+      const color = perfScoreColor(s.score);
+      const rank = perfAnonRank(w, year, month, s.score);
+      const p = perfPrevMonth(year, month);
+      const critRows = d.crits.map(c => `<div class="pf-rep-row"><span class="pf-rep-n">${escHtml(c.name)}</span><span class="p">${c.plus ? "+" + c.plus : ""}</span><span class="m">${c.minus ? "−" + c.minus : ""}</span><b style="color:${c.net > 0 ? "var(--green)" : (c.net < 0 ? "var(--red)" : "var(--text3)")}">${perfPtsTxt(c.net)}</b></div>`).join("");
+      return `<div class="pf-rep">
+        <div class="pf-hero-top">
+          <div style="min-width:0;">
+            <div class="pf-kicker">${escHtml(MONTH_NAMES[month] + " " + year)}${self ? "" : " · " + escHtml(w.name)}</div>
+            <div class="pf-title">${escHtml(perfVerdict(s.score))}</div>
+            <div class="pf-sub">${d.prev != null ? escHtml(MONTH_NAMES[p.month]) + " ayına göre " + perfDiffHtml(s.score, d.prev) + " (" + d.prev + ")" : "Önceki ay verisi yok"}${rank ? " · " + rank.total + " kişi içinde " + rank.place + ". sıra" : ""}</div>
+          </div>
+          <div class="pf-ring" style="--c:${color}"><b>${s.score == null ? "—" : s.score}</b><span>puan</span></div>
+        </div>
+        <div class="pf-mini">
+          ${perfMini("Artı", "+" + d.plus, "var(--green)")}
+          ${perfMini("Eksi", (d.minus ? "−" : "") + d.minus, d.minus ? "var(--red)" : "")}
+          ${perfMini("Geç giriş", String(d.late) + (d.soft ? " <small>(+" + d.soft + " sınır içi)</small>" : ""), d.late ? "var(--red)" : "")}
+          ${perfMini("Yardım", d.help.visits ? d.help.visits + " · " + escHtml(perfFmtMin(d.help.mins)) : "0")}
+        </div>
+        <div class="pf-rep-bw">
+          <div class="pf-rep-card p"><span>En iyi kriter</span><b>${d.best ? escHtml(d.best.name) + " " + perfPtsTxt(d.best.net) : "—"}</b></div>
+          <div class="pf-rep-card m"><span>En zayıf kriter</span><b>${d.worst ? escHtml(d.worst.name) + " " + perfPtsTxt(d.worst.net) : "—"}</b></div>
+        </div>
+        <div class="pf-section">Günlük gidişat</div>
+        ${perfTrendSvg(d.days)}
+        <div class="pf-section">Kriterlere göre</div>
+        ${critRows ? `<div class="pf-rep-tbl">${critRows}</div>` : `<div class="pf-empty">Bu ay artı ya da eksi yok.</div>`}
+        ${d.help.visits ? `<div class="pf-hint">Yardıma gelme: ${d.help.visits} kez, toplam ${escHtml(perfFmtMin(d.help.mins))}, +${d.help.pts} puan.</div>` : ""}
+      </div>`;
+    }
+    function openPerfMonthReport(year, month, uidEnc) {
+      const uid = uidEnc ? decodeURIComponent(uidEnc) : (currentUser?.id || "");
+      const w = uid === currentUser?.id ? ((DB.users || []).find(u => u.id === uid) || currentUser) : (DB.users || []).find(u => u.id === uid);
+      if (!w) return;
+      if (uid !== currentUser?.id && !canEditPerformance()) return;
+      openInfoModal("Performans raporu · " + escHtml(MONTH_NAMES[month] + " " + year), perfMonthReportHtml(w, year, month, uid === currentUser?.id));
+    }
+    function openPerfTeamReport(year, month) {
+      if (!canEditPerformance()) return;
+      const workers = getWorkersForMonth(year, month) || [];
+      const rows = workers.map(w => ({ w, d: perfMonthReportData(w, year, month) })).sort((a, b) => (b.d.s.score ?? -1) - (a.d.s.score ?? -1));
+      const scored = rows.filter(r => r.d.s.score != null);
+      const avg = scored.length ? Math.round(scored.reduce((a, r) => a + r.d.s.score, 0) / scored.length) : null;
+      const prevS = scored.filter(r => r.d.prev != null);
+      const prevAvg = prevS.length ? Math.round(prevS.reduce((a, r) => a + r.d.prev, 0) / prevS.length) : null;
+      const team = {};
+      rows.forEach(r => r.d.crits.forEach(c => { const t = team[c.name] || (team[c.name] = { name: c.name, net: 0, plus: 0, minus: 0 }); t.net += c.net; t.plus += c.plus; t.minus += c.minus; }));
+      const tl = Object.values(team).sort((a, b) => b.net - a.net);
+      const best = tl.filter(c => c.net > 0)[0], worstL = tl.filter(c => c.net < 0), worst = worstL[worstL.length - 1];
+      const late = rows.reduce((a, r) => a + r.d.late, 0);
+      const help = rows.reduce((a, r) => ({ v: a.v + r.d.help.visits, m: a.m + r.d.help.mins }), { v: 0, m: 0 });
+      let place = 0;
+      const list = rows.map(r => {
+        const sc = r.d.s.score;
+        if (sc != null) place++;
+        return `<button type="button" class="pf-rep-person" onclick="openPerfMonthReport(${year},${month},'${perfEnc(r.w.id)}')">
+          <span class="pf-place${sc != null && place <= 3 ? " top" + place : ""}">${sc != null ? place : "—"}</span>
+          <span class="pf-mid"><span class="pf-name">${escHtml(r.w.name)}</span><span class="pf-meta">${sc == null ? "Kayıt yok" : escHtml(perfVerdict(sc))} · <span class="p">+${r.d.plus}</span> <span class="m">−${r.d.minus}</span>${r.d.late ? " · " + r.d.late + " geç" : ""}${r.d.worst ? " · zayıf: " + escHtml(r.d.worst.name) : ""}</span></span>
+          <span class="pf-score" style="color:${perfScoreColor(sc)}">${sc == null ? "—" : sc}</span>
+          <span class="pf-rep-diff">${perfDiffHtml(sc, r.d.prev)}</span>
+        </button>`;
+      }).join("");
+      const html = `<div class="pf-rep">
+        <div class="pf-hero-top">
+          <div style="min-width:0;"><div class="pf-kicker">${escHtml(MONTH_NAMES[month] + " " + year)} · tüm personel</div>
+          <div class="pf-title">Ortalama ${avg == null ? "—" : avg}</div>
+          <div class="pf-sub">${prevAvg != null ? "Önceki ay " + prevAvg + " · " + perfDiffHtml(avg, prevAvg) : "Önceki ay verisi yok"}</div></div>
+          <div class="pf-ring" style="--c:${perfScoreColor(avg)}"><b>${avg == null ? "—" : avg}</b><span>ort.</span></div>
+        </div>
+        <div class="pf-mini">
+          ${perfMini("Personel", String(rows.length))}
+          ${perfMini("Geç giriş", String(late), late ? "var(--red)" : "")}
+          ${perfMini("Yardım", help.v ? help.v + " · " + escHtml(perfFmtMin(help.m)) : "0")}
+        </div>
+        <div class="pf-rep-bw">
+          <div class="pf-rep-card p"><span>Ekipte en iyi</span><b>${best ? escHtml(best.name) + " " + perfPtsTxt(best.net) : "—"}</b></div>
+          <div class="pf-rep-card m"><span>Ekipte en zayıf</span><b>${worst ? escHtml(worst.name) + " " + perfPtsTxt(worst.net) : "—"}</b></div>
+        </div>
+        <div class="pf-section">Personel · kişiye dokun, raporu aç</div>
+        <div class="pf-list">${list || `<div class="pf-empty">Personel yok.</div>`}</div>
+      </div>`;
+      openInfoModal("Ay sonu raporu · " + escHtml(MONTH_NAMES[month] + " " + year), html);
+    }
+    let _perfRepTries = 0;
+    function maybePerfMonthReport() {
+      try {
+        if (window.__inlineWidgetHost || !currentUser) return;
+        const role = currentUser.role;
+        if (role !== "calisan" && role !== "patron") return;
+        const now = new Date();
+        const p = perfPrevMonth(now.getFullYear(), now.getMonth());
+        const ym = p.year + "-" + String(p.month + 1).padStart(2, "0");
+        const k = "ct_perf_report_" + currentUser.id;
+        if (localStorage.getItem(k) === ym) return;
+        if (document.querySelector("#modal-container .modal-overlay")) { setTimeout(maybePerfMonthReport, 5000); return; }
+        let has = false;
+        if (role === "calisan") has = collectWorkerPerformance(currentUser, p.year, p.month).score != null;
+        else has = (getWorkersForMonth(p.year, p.month) || []).some(w => collectWorkerPerformance(w, p.year, p.month).score != null);
+        if (!has) {
+          if (++_perfRepTries < 4) { setTimeout(maybePerfMonthReport, 10000); return; }
+          localStorage.setItem(k, ym);
+          return;
+        }
+        localStorage.setItem(k, ym);
+        const title = MONTH_NAMES[p.month] + " performans raporu";
+        const body = role === "calisan" ? "Geçen ayın puanı, kriterleri ve gidişatı hazır." : "Tüm personelin geçen ay özeti hazır.";
+        const tag = "ct-perfrep-" + ym;
+        try { void notifyDeviceNow(title, body, tag); } catch (e) {}
+        try { pushWorkerFeed({ title, body, kind: "perf", tag }); } catch (e) {}
+        if (role === "calisan") openPerfMonthReport(p.year, p.month); else openPerfTeamReport(p.year, p.month);
+      } catch (e) { console.warn("perf report", e); }
     }
     function perfInitials(name) {
       return String(name || "?").split(" ").filter(Boolean).map(x => x[0]).join("").slice(0, 2).toUpperCase() || "?";
@@ -28664,7 +28962,7 @@ service cloud.firestore {
         }
       });
       (row.manual || []).filter(m => m.key === key).forEach(m => {
-        push(m.sign * m.pts, perfCritLabel(m.crit, m.sign) + (m.note ? ": " + m.note : "") + ".");
+        push(m.sign * m.pts, perfCritLabel(m.crit, m.sign, m.critName) + (m.note ? ": " + m.note : "") + ".");
       });
       const pending = !first && !todayTasks.length && !todayReqs.length && delta === 0;
       // Günlük 100 üzerinden puan yok; sadece o günün ± etkisi (aylık 100'e yazılır)
@@ -28731,6 +29029,7 @@ service cloud.firestore {
               <div class="pf-kicker">${escHtml(MONTH_NAMES[month] + " " + year)}</div>
               <div class="pf-title">Aylık puanın</div>
               <div class="pf-sub">${s.score == null ? "Bu ay henüz kayıt yok" : escHtml(perfVerdict(s.score))} · her ay sıfırlanır</div>
+              <button type="button" class="btn btn-secondary btn-sm pf-rep-btn" onclick="openPerfMonthReport(${year},${month})">📊 Ay raporu</button>
             </div>
             <div class="pf-ring" style="--c:${color}"><b>${s.score == null ? "—" : s.score}</b><span>puan</span></div>
           </div>
@@ -28809,6 +29108,12 @@ service cloud.firestore {
             ${perfField("perf-help-pts", "Yardım başına artı puan", getHelpVisitPoints(), 1, 20, "puan")}
             <div class="perf-ledger-sub">Onaylarken bu puanı kişiye göre değiştirebilirsiniz.</div>
           </div>
+          <div class="perf-rule-group pf-crit-group">
+            <div class="perf-rule-title">Kriterler (artı ve eksi için aynı liste)</div>
+            <div id="perf-crit-rows">${getPerfCrits().map(perfCritRowHtml).join("")}</div>
+            <div class="perf-ledger-sub">Adı ve açıklamayı değiştirebilir, ↑ ↓ ile sıralayabilir, × ile silebilirsiniz. Eski kayıtlar verildiği andaki adıyla kalır. Saate uyma otomatik, yardıma gelme QR ile çalışmaya devam eder.</div>
+            <button type="button" class="btn btn-secondary btn-sm" style="margin-top:6px;" onclick="perfCritAddRow()">+ Kriter ekle</button>
+          </div>
           <div class="perf-rule-group pf-grade-group">
             <div class="perf-rule-title">Dereceler (isim ve alt puan)</div>
             <div id="perf-grades-rows">${perfGradeRowsHtml()}</div>
@@ -28843,13 +29148,14 @@ service cloud.firestore {
           <div class="pf-meter lg"><i style="width:${Math.max(0, Math.min(100, s.score || 0))}%;background:${color};color:${color}"></i></div>
           <div class="pf-mini">
             ${perfMini("Otomatik", s.autoScore == null ? "—" : s.autoScore)}
-            ${perfMini("Patron artısı", "+" + (s.manualPlus || 0), "var(--green)")}
-            ${perfMini("Patron eksisi", (s.manualMinus ? "−" : "") + (s.manualMinus || 0), s.manualMinus ? "var(--red)" : "")}
+            ${perfMini("Artı", "+" + (s.manualPlus || 0), "var(--green)")}
+            ${perfMini("Eksi", (s.manualMinus ? "−" : "") + (s.manualMinus || 0), s.manualMinus ? "var(--red)" : "")}
           </div>
           ${edit ? `<div class="pf-give-row">
             <button type="button" class="btn btn-primary pf-give-btn" onclick="openPerfGive('${perfEnc(s.w.id)}',1)">＋ Puan ver</button>
             <button type="button" class="btn btn-secondary pf-give-btn minus" onclick="openPerfGive('${perfEnc(s.w.id)}',-1)">− Eksi yaz</button>
           </div>` : ""}
+          <button type="button" class="btn btn-secondary btn-sm pf-rep-btn" onclick="openPerfMonthReport(${year},${month},'${perfEnc(s.w.id)}')">📊 Ay raporu</button>
         </div>
         <div class="pf-section">Günlük artı / eksi</div>
         ${perfTimelineHtml(s, edit)}
@@ -28889,10 +29195,10 @@ service cloud.firestore {
           </div>
           <div class="pf-mini">
             ${perfMini("Personel", String(rows.length))}
-            ${perfMini("Patron artısı", "+" + plusPts, "var(--green)")}
-            ${perfMini("Patron eksisi", (minusPts ? "−" : "") + minusPts, minusPts ? "var(--red)" : "")}
+            ${perfMini("Artı", "+" + plusPts, "var(--green)")}
+            ${perfMini("Eksi", (minusPts ? "−" : "") + minusPts, minusPts ? "var(--red)" : "")}
           </div>
-          ${edit ? `<div class="pf-hero-actions"><button type="button" class="btn btn-secondary btn-sm" onclick="togglePerfRules()">${perfRulesOpen ? "Kuralları gizle" : "Otomatik puan kuralları"}</button></div>` : ""}
+          ${edit ? `<div class="pf-hero-actions"><button type="button" class="btn btn-secondary btn-sm" onclick="openPerfTeamReport(${year},${month})">📊 Ay raporu</button> <button type="button" class="btn btn-secondary btn-sm" onclick="togglePerfRules()">${perfRulesOpen ? "Kuralları gizle" : "Otomatik puan kuralları"}</button></div>` : ""}
           ${edit && perfRulesOpen ? perfRulesPanel(limits) : ""}
         </div>`;
       if (!rows.length) return html + `<div class="pf-empty" style="margin-top:12px;">Bu ay personel yok.</div>`;
