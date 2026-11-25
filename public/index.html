@@ -7660,84 +7660,110 @@
     /* ── Performans (yeni görünüm) ── */
     .pf-hero { position: relative; overflow: hidden; background: linear-gradient(145deg, rgba(91,156,246,0.10), rgba(16,185,129,0.04) 60%, transparent), var(--bg2); border: 1px solid rgba(91,156,246,0.28); }
     .pf-hero-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-    .pf-kicker { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--text3); }
-    .pf-title { font-size: 20px; font-weight: 800; color: var(--text); line-height: 1.2; }
+    .pf-kicker { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--text3); }
+    .pf-title { font-family: var(--font-display); font-weight: 800; font-size: 20px; font-weight: 600; color: var(--text); line-height: 1.2; }
     .pf-sub { font-size: 12px; color: var(--text3); margin-top: 3px; line-height: 1.4; }
     .pf-avg { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; }
-    .pf-avg b { font-size: 34px; font-weight: 900; line-height: 1; text-shadow: 0 0 18px currentColor; }
+    .pf-avg b { font-family: var(--font-display); font-weight: 800; font-size: 34px; font-weight: 600; line-height: 1; text-shadow: 0 0 18px currentColor; }
     .pf-avg span { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; margin-top: 4px; }
     .pf-mini { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 14px; }
     .pf-mini > div { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 8px 10px; min-width: 0; }
     .pf-mini span { display: block; font-size: 10px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .pf-mini b { display: block; font-size: 16px; font-weight: 800; margin-top: 2px; }
+    .pf-mini b { font-family: var(--font-display); font-weight: 800; display: block; font-size: 16px; font-weight: 600; margin-top: 2px; }
     .pf-hero-actions { margin-top: 12px; display: flex; justify-content: flex-end; }
     .pf-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
     .pf-card { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 12px; color: var(--text); cursor: pointer; font: inherit; transition: border-color .15s, transform .1s, box-shadow .15s; }
     .pf-card:hover { border-color: rgba(91,156,246,0.5); box-shadow: 0 0 16px rgba(91,156,246,0.12); }
     .pf-card:active { transform: scale(.99); }
-    .pf-place { width: 26px; height: 26px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: var(--text3); background: var(--bg3); flex-shrink: 0; }
+    .pf-place { font-family: var(--font-display); font-weight: 800; width: 26px; height: 26px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: var(--text3); background: var(--bg3); flex-shrink: 0; }
     .pf-place.top1 { color: #1a1205; background: linear-gradient(135deg, #fde68a, #f59e0b); box-shadow: 0 0 12px rgba(245,158,11,0.5); }
     .pf-place.top2 { color: #111; background: linear-gradient(135deg, #f3f4f6, #9ca3af); }
     .pf-place.top3 { color: #1a0d05; background: linear-gradient(135deg, #fdba74, #c2410c); }
-    .pf-av { --c: #5b9cf6; width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color: var(--c); background: rgba(91,156,246,0.14); background: color-mix(in srgb, var(--c) 16%, transparent); border: 1px solid color-mix(in srgb, var(--c) 40%, transparent); flex-shrink: 0; }
+    .pf-av { font-family: var(--font-display); font-weight: 800; --c: #5b9cf6; width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px; color: var(--c); background: rgba(91,156,246,0.14); background: color-mix(in srgb, var(--c) 16%, transparent); border: 1px solid color-mix(in srgb, var(--c) 40%, transparent); flex-shrink: 0; }
     .pf-av.lg { width: 52px; height: 52px; font-size: 17px; border-radius: 16px; }
     .pf-mid { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-    .pf-name { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pf-name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .pf-meta { font-size: 11px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .pf-meta .p { color: var(--green); font-weight: 800; }
-    .pf-meta .m { color: var(--red); font-weight: 800; }
+    .pf-meta .p { color: var(--green); font-weight: 600; }
+    .pf-meta .m { color: var(--red); font-weight: 600; }
     .pf-meter { display: block; height: 5px; border-radius: 99px; background: var(--bg3); overflow: hidden; margin-top: 3px; }
     .pf-meter i { display: block; height: 100%; border-radius: 99px; box-shadow: 0 0 10px currentColor; }
     .pf-meter.lg { height: 8px; margin-top: 14px; }
-    .pf-score { font-size: 24px; font-weight: 900; min-width: 44px; text-align: right; text-shadow: 0 0 14px currentColor; flex-shrink: 0; }
+    .pf-score { font-family: var(--font-display); font-weight: 800; font-size: 24px; font-weight: 600; min-width: 44px; text-align: right; text-shadow: 0 0 14px currentColor; flex-shrink: 0; }
     .pf-chev { color: var(--text3); font-size: 20px; flex-shrink: 0; }
-    .pf-back { background: none; border: none; color: var(--accent); font: inherit; font-weight: 700; font-size: 14px; padding: 4px 0 10px; cursor: pointer; }
+    .pf-back { background: none; border: none; color: var(--accent); font: inherit; font-weight: 600; font-size: 14px; padding: 4px 0 10px; cursor: pointer; }
     .pf-dtop { display: flex; align-items: center; gap: 12px; }
     .pf-dname { flex: 1; min-width: 0; }
     .pf-ring { --c: var(--accent); width: 74px; height: 74px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 3px solid var(--c); box-shadow: 0 0 18px color-mix(in srgb, var(--c) 45%, transparent), inset 0 0 14px color-mix(in srgb, var(--c) 20%, transparent); flex-shrink: 0; }
-    .pf-ring b { font-size: 24px; font-weight: 900; color: var(--c); line-height: 1; }
+    .pf-ring b { font-family: var(--font-display); font-weight: 800; font-size: 24px; font-weight: 600; color: var(--c); line-height: 1; }
     .pf-ring span { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; margin-top: 2px; }
     .pf-give-row { display: flex; gap: 8px; margin-top: 14px; }
-    .pf-give-btn { flex: 1; justify-content: center; min-height: 44px; font-weight: 800; }
+    .pf-give-btn { flex: 1; justify-content: center; min-height: 44px; font-weight: 600; }
     .pf-give-btn.minus { color: var(--red); border-color: rgba(239,68,68,0.45); }
-    .pf-section { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--text3); margin: 18px 2px 8px; }
+    .pf-section { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--text3); margin: 18px 2px 8px; }
     .pf-day { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 8px; overflow: hidden; }
-    .pf-day-hd { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 9px 12px; background: rgba(255,255,255,0.025); border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 700; color: var(--text); }
-    .pf-net { font-weight: 900; font-size: 13px; }
+    .pf-day-hd { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 9px 12px; background: rgba(255,255,255,0.025); border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 600; color: var(--text); }
+    .pf-net { font-family: var(--font-display); font-weight: 800; font-weight: 600; font-size: 13px; }
     .pf-it { display: flex; align-items: flex-start; gap: 10px; padding: 9px 12px; }
     .pf-it + .pf-it { border-top: 1px solid rgba(255,255,255,0.05); }
-    .pf-dot { width: 22px; height: 22px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 900; flex-shrink: 0; margin-top: 1px; }
+    .pf-dot { font-family: var(--font-display); font-weight: 800; width: 22px; height: 22px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0; margin-top: 1px; }
     .pf-dot.p { color: var(--green); background: rgba(16,185,129,0.15); }
     .pf-dot.m { color: var(--red); background: rgba(239,68,68,0.15); }
     .pf-it-body { flex: 1; min-width: 0; }
-    .pf-it-crit { font-size: 13px; font-weight: 700; color: var(--text); }
+    .pf-it-crit { font-size: 13px; font-weight: 600; color: var(--text); }
     .pf-it-note { font-size: 11px; color: var(--text3); margin-top: 2px; line-height: 1.35; word-break: break-word; }
-    .pf-it-pts { font-weight: 900; font-size: 14px; flex-shrink: 0; }
+    .pf-it-pts { font-family: var(--font-display); font-weight: 800; font-weight: 600; font-size: 14px; flex-shrink: 0; }
     .pf-del { background: none; border: none; color: var(--text3); font-size: 18px; line-height: 1; cursor: pointer; padding: 0 2px; flex-shrink: 0; }
     .pf-empty { padding: 18px; text-align: center; color: var(--text3); font-size: 12px; background: var(--bg2); border: 1px dashed var(--border); border-radius: 14px; }
     .pf-more { margin-top: 14px; background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 0 12px; }
-    .pf-more summary { cursor: pointer; padding: 12px 0; font-size: 12px; font-weight: 700; color: var(--text3); list-style: none; }
-    .pf-more summary::-webkit-details-marker { display: none; }
-    .pf-more summary::after { content: " ▾"; }
-    .pf-more[open] summary::after { content: " ▴"; }
+    .pf-more > summary { cursor: pointer; padding: 12px 0; font-size: 12px; font-weight: 600; color: var(--text3); list-style: none; }
+    .pf-more > summary::-webkit-details-marker { display: none; }
+    .pf-more > summary::after { content: " ▾"; }
+    .pf-more[open] > summary::after { content: " ▴"; }
+    .pf-hero .perf-rules { display: block; }
+    .pf-hero .perf-rule-group { min-width: 0; margin-bottom: 10px; }
+    .pf-hero .perf-field > span:first-child { min-width: 0; flex: 1; }
+    .pf-hero .perf-field input { width: 64px; }
+    .pf-hero .perf-field-in { flex-shrink: 0; }
     .pf-more-body { padding-bottom: 12px; }
     .pf-today { display: flex; align-items: center; gap: 12px; }
-    .pf-today-delta { font-size: 26px; font-weight: 900; min-width: 56px; text-align: center; text-shadow: 0 0 14px currentColor; }
+    .pf-today-delta { font-family: var(--font-display); font-weight: 800; font-size: 26px; font-weight: 600; min-width: 56px; text-align: center; text-shadow: 0 0 14px currentColor; }
     .pf-seg { display: flex; gap: 6px; background: var(--bg3); padding: 4px; border-radius: 12px; margin-bottom: 6px; }
-    .pf-seg-btn { flex: 1; border: none; background: none; color: var(--text3); font: inherit; font-weight: 800; padding: 10px; border-radius: 9px; cursor: pointer; }
+    .pf-seg-btn { flex: 1; border: none; background: none; color: var(--text3); font: inherit; font-weight: 600; padding: 10px; border-radius: 9px; cursor: pointer; }
     .pf-seg-btn.on.plus { background: rgba(16,185,129,0.18); color: var(--green); box-shadow: 0 0 12px rgba(16,185,129,0.25); }
     .pf-seg-btn.on.minus { background: rgba(239,68,68,0.18); color: var(--red); box-shadow: 0 0 12px rgba(239,68,68,0.25); }
-    .pf-lbl { display: block; font-size: 11px; font-weight: 700; color: var(--text3); margin: 12px 0 6px; }
+    .pf-lbl { display: block; font-size: 11px; font-weight: 600; color: var(--text3); margin: 12px 0 6px; }
     .pf-chips { display: flex; flex-wrap: wrap; gap: 6px; }
     .pf-chip { border: 1px solid var(--border); background: var(--bg2); color: var(--text); font: inherit; font-size: 12px; font-weight: 600; padding: 7px 11px; border-radius: 99px; cursor: pointer; }
     .pf-chip.on { border-color: var(--accent); color: var(--accent); background: rgba(91,156,246,0.14); box-shadow: 0 0 10px rgba(91,156,246,0.25); }
-    .pf-chip.pf-pt { min-width: 46px; text-align: center; font-weight: 800; }
+    .pf-chip.pf-pt { min-width: 46px; text-align: center; font-weight: 600; }
     .pf-hint { font-size: 11px; color: var(--text3); margin-top: 10px; line-height: 1.4; }
+    .pf-info-body { font-size: 12px; line-height: 1.5; color: var(--text2); }
+    .pf-info-body p { margin: 0 0 10px; }
+    .pf-info-body ul { margin: 0 0 10px; padding-left: 18px; }
+    .pf-info-body li { margin-bottom: 6px; }
+    .pf-info-body li span { color: var(--text3); }
+    .pf-info-h { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); margin: 12px 0 6px; }
+    .pf-grades { display: flex; flex-wrap: wrap; gap: 6px; }
+    .pf-grade-pill { font-size: 12px; padding: 5px 10px; border-radius: 99px; background: var(--bg2); border: 1px solid var(--border); color: var(--text3); }
+    .pf-grade-pill b { color: var(--text); font-weight: 600; margin-right: 4px; }
+    .pf-grade-row { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
+    .pf-grade-row input { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; color: var(--text); padding: 8px 10px; font: inherit; min-width: 0; }
+    .pf-grade-row .pf-g-min { width: 70px; flex-shrink: 0; }
+    .pf-grade-row .pf-g-name { flex: 1; }
+    .pf-desc { margin-top: 10px; padding: 9px 11px; border-radius: 10px; background: rgba(91,156,246,0.08); border: 1px solid rgba(91,156,246,0.25); font-size: 12px; line-height: 1.45; color: var(--text2); }
+    .pf-desc.muted { background: transparent; border-style: dashed; color: var(--text3); }
+    .pf-help-p { border-bottom: 1px solid var(--border); padding: 4px 0; }
+    .pf-help-p summary { display: flex; flex-direction: column; gap: 2px; cursor: pointer; list-style: none; padding: 8px 0; }
+    .pf-help-p summary::-webkit-details-marker { display: none; }
+    .pf-help-p .pf-meta { white-space: normal; }
+    .help-banner { position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); z-index: 9000; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border-radius: 16px; background: var(--bg2); border: 1px solid rgba(16,185,129,0.5); box-shadow: 0 0 20px rgba(16,185,129,0.25); color: var(--text); font-size: 13px; font-weight: 600; }
+    .help-banner button { border: none; border-radius: 12px; background: var(--green); color: #04130c; font: inherit; font-weight: 600; padding: 9px 14px; cursor: pointer; }
     .clockin-choice-ov { position: fixed; inset: 0; z-index: 2147483000; background: rgba(0,0,0,0.6); display: flex; align-items: flex-end; justify-content: center; padding: 16px; }
     .clockin-choice { width: 100%; max-width: 420px; background: var(--bg2); border: 1px solid rgba(91,156,246,0.35); border-radius: 20px; padding: 18px; box-shadow: 0 0 30px rgba(91,156,246,0.18); margin-bottom: env(safe-area-inset-bottom, 0); }
-    .clockin-choice h3 { margin: 0 0 6px; font-size: 17px; color: var(--text); }
+    .clockin-choice h3 { font-family: var(--font-display); font-weight: 800; margin: 0 0 6px; font-size: 17px; color: var(--text); }
     .clockin-choice p { margin: 0 0 14px; font-size: 13px; color: var(--text3); line-height: 1.45; }
-    .clockin-choice .btn { width: 100%; justify-content: center; min-height: 46px; margin-top: 8px; font-weight: 800; }
+    .clockin-choice .btn { width: 100%; justify-content: center; min-height: 46px; margin-top: 8px; font-weight: 600; }
     @media (max-width: 480px) {
       .pf-score { font-size: 21px; min-width: 36px; }
       .pf-title { font-size: 18px; }
@@ -10141,7 +10167,7 @@
 
   <!-- Firebase SDK: ağ bekletmesin diye dinamik yüklenir -->
   <script>
-    const APP_VERSION_FALLBACK = "1.1.29"; // release.ps1 tarafından otomatik güncellenir
+    const APP_VERSION_FALLBACK = "1.1.28"; // release.ps1 tarafından otomatik güncellenir
     const APP_VERSION = (function () {
       try { const v = window.AndroidUpdater && window.AndroidUpdater.getVersionName && window.AndroidUpdater.getVersionName(); if (v) return String(v); } catch (e) {}
       return APP_VERSION_FALLBACK;
@@ -23314,6 +23340,7 @@ service cloud.firestore {
       if (typeof _dashHold !== "undefined" && _dashHold) { _dashRenderPending = true; return; }
       _dashRenderPending = false;
       const u = currentUser;
+      try { syncHelpBanner(); } catch (e) {}
       const isPatron = u.role === "patron";
       document.getElementById("patron-dashboard").style.display = isPatron ? "" : "none";
       document.getElementById("calisan-dashboard").style.display = isPatron ? "none" : "";
@@ -23967,7 +23994,7 @@ service cloud.firestore {
             cellContent = `<span class="splan-cell-title" style="font-size:18px;color:var(--border2);">+</span>`;
           }
 
-          const isSwapDone = !!(assignedTpl && assignedTpl.fromSwap) || !!rec.fromSwap;
+          const isSwapDone = !!(assignedTpl && assignedTpl.fromSwap) || !!rec.fromSwap || !!(rec.swapMeta && (rec.swapOff || rec.offMoved || rec.swapOn));
           if (isSwapDone) {
             cellBorder = "rgba(217,70,239,0.65)";
             if (!isLeave && !isPubHol) cellBg = "rgba(232,121,249,0.16)";
@@ -24444,7 +24471,7 @@ service cloud.firestore {
         if (planHrRow && !isLeave) {
           subLines += `<div style="font-size:8px;font-weight:800;color:#c4b5fd;margin-top:2px;">${cur}${Number(planHrRow.rate).toFixed(0)}/s</div>`;
         }
-        const isSwapDone = !!(assignedTpl && assignedTpl.fromSwap) || !!rec.fromSwap;
+        const isSwapDone = !!(assignedTpl && assignedTpl.fromSwap) || !!rec.fromSwap || !!(rec.swapMeta && (rec.swapOff || rec.offMoved || rec.swapOn));
         if (isSwapDone) {
           border = "rgba(217,70,239,0.65)";
           if (!isLeave && !isPubHol) bg = "rgba(232,121,249,0.16)";
@@ -24595,7 +24622,7 @@ service cloud.firestore {
         ? getEffectiveShiftTemplate(dateKey, workerId) : null;
 
       const recForSwap = normalizeRec((DB.records[workerId] || {})[dateKey]);
-      const isSwapDone = !!(currentTpl && currentTpl.fromSwap) || !!recForSwap.fromSwap;
+      const isSwapDone = !!(currentTpl && currentTpl.fromSwap) || !!recForSwap.fromSwap || !!(recForSwap.swapMeta && (recForSwap.swapOff || recForSwap.offMoved || recForSwap.swapOn));
       const hasEphem = (settings.shiftTemplates || []).some(t =>
         isPlanCellShiftAssignment(t) && t.date === dateKey && String(t.userId) === String(workerId));
       const hasPlanHr = (settings.shiftPlanHourlyRates || []).some(r => r.date === dateKey && r.userId === workerId);
@@ -25395,6 +25422,7 @@ service cloud.firestore {
     }
 
     function renderTodayPage() {
+      try { syncHelpBanner(); } catch (e) {}
       if (currentUser?.role === "calisan" && canManageCompanyToday()) {
         const tsel = document.getElementById("today-worker-sel");
         if (tsel && !tsel.options.length) populateTodayWorkerSelect();
@@ -27640,13 +27668,45 @@ service cloud.firestore {
       const st = Math.max(1, Math.round(Number(step) || 15));
       return Math.min(Math.max(0, Math.round(Number(cap) || 0)), b + Math.floor(over / st));
     }
+    /** Derece listesi: ayarlardaki (perfGrades) özel adlar/aralıklar; yoksa eski eşiklerden varsayılan. En yüksek eşik önde. */
+    function getPerfGrades() {
+      const s = getSettings();
+      let list = [];
+      if (Array.isArray(s.perfGrades)) {
+        list = s.perfGrades.map(g => ({
+          min: Math.max(0, Math.min(150, Math.round(Number(g && g.min)))),
+          name: String((g && g.name) || "").trim().slice(0, 24),
+        })).filter(g => Number.isFinite(g.min) && g.name);
+      }
+      if (!list.length) {
+        const L = getPerfLimits();
+        list = [
+          { min: L.bandGood, name: "Güvenilir" },
+          { min: L.bandOk, name: "İdare eder" },
+          { min: L.bandWarn, name: "Dikkat" },
+          { min: 0, name: "Zayıf" },
+        ];
+      }
+      const seen = new Set();
+      list = list.sort((a, b) => b.min - a.min).filter(g => (seen.has(g.min) ? false : (seen.add(g.min), true)));
+      if (list[list.length - 1].min !== 0) list.push({ min: 0, name: list[list.length - 1].name });
+      return list;
+    }
+    function perfGradeIndex(score) {
+      const g = getPerfGrades();
+      for (let i = 0; i < g.length; i++) if (score >= g[i].min) return i;
+      return g.length - 1;
+    }
+    function perfGradeRangeText(grades, i) {
+      const lo = grades[i].min;
+      if (i === 0) return lo + "+";
+      const hi = grades[i - 1].min - 1;
+      return lo === hi ? String(lo) : lo + "–" + hi;
+    }
     function perfVerdict(score) {
       if (score == null) return "Veri yok";
-      const L = getPerfLimits();
-      if (score >= L.bandGood) return "Güvenilir";
-      if (score >= L.bandOk) return "İdare eder";
-      if (score >= L.bandWarn) return "Dikkat";
-      return "Zayıf";
+      const g = getPerfGrades();
+      return g[perfGradeIndex(score)].name;
     }
     function perfWeekdayName(key) {
       const d = parseYMDLocal(key);
@@ -27723,9 +27783,11 @@ service cloud.firestore {
     }
     function perfScoreColor(score) {
       if (score == null) return "var(--text3)";
-      if (score >= 85) return "var(--green)";
-      if (score >= 70) return "var(--accent)";
-      return "var(--red)";
+      const n = getPerfGrades().length;
+      const i = perfGradeIndex(score);
+      if (i === 0) return "var(--green)";
+      if (i === n - 1) return "var(--red)";
+      return "var(--accent)";
     }
     function perfRequestDate(r) {
       return String(r.dateKey || r.myDateKey || r.startDate || r.createdAt || "").slice(0, 10);
@@ -28110,15 +28172,39 @@ service cloud.firestore {
       s.perfOtCap = Math.min(20, read("perf-ot-cap", 6, 20));
       s.perfOtRecoverMin = read("perf-ot-recover-min", 30, 240);
       s.perfOtPerHour = readDec("perf-ot-per-hour", 1, 10, 0);
-      s.perfBandGood = read("perf-band-good", 90, 100, 1);
-      s.perfBandOk = read("perf-band-ok", 75, 99);
-      s.perfBandWarn = read("perf-band-warn", 60, 98);
-      if (s.perfBandOk >= s.perfBandGood) s.perfBandOk = Math.max(0, s.perfBandGood - 1);
-      if (s.perfBandWarn >= s.perfBandOk) s.perfBandWarn = Math.max(0, s.perfBandOk - 1);
+      s.helpVisitPoints = read("perf-help-pts", 3, 20, 1);
+      const gRows = [...document.querySelectorAll("#perf-grades-rows .pf-grade-row")];
+      if (gRows.length) {
+        const gl = gRows.map(r => ({
+          min: Math.max(0, Math.min(150, Math.round(Number(r.querySelector(".pf-g-min")?.value)))),
+          name: String(r.querySelector(".pf-g-name")?.value || "").trim().slice(0, 24),
+        })).filter(g => Number.isFinite(g.min) && g.name);
+        const used = new Set();
+        const uniq = gl.sort((a, b) => b.min - a.min).filter(g => (used.has(g.min) ? false : (used.add(g.min), true)));
+        if (!uniq.length) { showToast("En az bir derece adı girin", "warn"); return; }
+        uniq[uniq.length - 1].min = 0;
+        s.perfGrades = uniq;
+      }
       perfRulesOpen = true;
       await saveSettings();
       renderAnalyticsPage();
       showToast("Puan kuralları kaydedildi");
+    }
+    function getHelpVisitPoints() {
+      const n = Math.round(Number(getSettings().helpVisitPoints));
+      return Number.isFinite(n) && n >= 1 ? Math.min(20, n) : PERF_HELP_PTS;
+    }
+    function perfGradeRowHtml(g) {
+      return `<div class="pf-grade-row"><input type="number" class="pf-g-min" min="0" max="150" value="${g.min}" aria-label="Alt puan"/><input type="text" class="pf-g-name" maxlength="24" value="${escHtml(g.name)}" placeholder="Derece adı" aria-label="Derece adı"/><button type="button" class="pf-del" title="Sil" onclick="this.parentElement.remove()">×</button></div>`;
+    }
+    function perfGradeRowsHtml() {
+      return getPerfGrades().map(perfGradeRowHtml).join("");
+    }
+    function perfGradeAddRow() {
+      const box = document.getElementById("perf-grades-rows");
+      if (!box) return;
+      if (box.querySelectorAll(".pf-grade-row").length >= 8) { showToast("En fazla 8 derece", "warn"); return; }
+      box.insertAdjacentHTML("beforeend", perfGradeRowHtml({ min: 0, name: "" }));
     }
     function perfDraftOn(uid, key, kind, taskId) {
       const d = perfExcuseDraft;
@@ -28217,21 +28303,48 @@ service cloud.firestore {
         + notes + empty;
     }
     const PERF_CRITS = [
-      { id: "saat", label: "İşe giriş/çıkış saatine uyma", minus: 1, plus: 1 },
-      { id: "telefon", label: "Telefonla uğraşma", plusLabel: "Telefon disiplini", minus: 1, plus: 1 },
-      { id: "gorev", label: "Görevleri yerine getirme", minus: 1, plus: 1 },
-      { id: "musteri", label: "Müşterilerle ilgilenme", minus: 1, plus: 1 },
-      { id: "sorun", label: "Sorun çözme", minus: 1, plus: 1 },
-      { id: "ogrenme", label: "İşi ve programları öğrenebilme", minus: 1, plus: 1 },
-      { id: "etik", label: "İş ahlakı / etik kurallara uyma", minus: 1, plus: 1 },
-      { id: "uyum", label: "İş arkadaşlarıyla uyum", minus: 1, plus: 1 },
-      { id: "bosvardiya", label: "Boş vardiyayı doldurma", plus: 1 },
-      { id: "ovgu", label: "Müşteri övgüsü", plus: 1 },
-      { id: "inisiyatif", label: "İnisiyatif / ekstra iş", plus: 1 },
-      { id: "ogretme", label: "Yeni personele öğretme", plus: 1 },
-      { id: "duzen", label: "Düzen ve temizlik", plus: 1 },
-      { id: "yardim", label: "Yardıma gelme", plus: 1 },
+      { id: "saat", label: "İşe giriş/çıkış saatine uyma", minus: 1, plus: 1,
+        desc: "Vardiya başlangıç ve bitiş saatine uymak. Geç gelme, erken çıkma ve çıkış yapmamayı kapsar; sınırı aşan geç giriş sistem tarafından otomatik eksi yazılır.",
+        plusDesc: "Gerektiğinde saatinden önce gelmek ya da vardiyayı eksiksiz tamamlamak." },
+      { id: "telefon", label: "Telefonla uğraşma", plusLabel: "Telefon disiplini", minus: 1, plus: 1,
+        desc: "Çalışma saatinde kişisel telefonla gereksiz vakit geçirmek. Müşteri ya da iş varken telefona bakılması eksi sebebidir.",
+        plusDesc: "Çalışma boyunca telefonu işine engel olmayacak şekilde kullanmak." },
+      { id: "gorev", label: "Görevleri yerine getirme", minus: 1, plus: 1,
+        desc: "Verilen görev ve işleri zamanında, eksiksiz yapmak. Yapılmayan ya da yarım bırakılan işte eksi yazılır.",
+        plusDesc: "Görevleri eksiksiz ve zamanında tamamlamak." },
+      { id: "musteri", label: "Müşterilerle ilgilenme", minus: 1, plus: 1,
+        desc: "Müşteriyi karşılamak, soruyu yanıtlamak, işini görmek. Müşteriyi bekletmek ya da ilgisiz davranmak eksi sebebidir.",
+        plusDesc: "Müşteriyle güler yüzlü ve çözüm odaklı ilgilenmek." },
+      { id: "sorun", label: "Sorun çözme", minus: 1, plus: 1,
+        desc: "Karşılaşılan sorunu sahiplenip çözmeye çalışmak. Sorunu görmezden gelmek ya da başkasına atmak eksi sebebidir.",
+        plusDesc: "Bir sorunu kendi başına ya da doğru kişiyi bulup çözmek." },
+      { id: "ogrenme", label: "İşi ve programları öğrenebilme", minus: 1, plus: 1,
+        desc: "İş akışını, kasa/program ve ürün bilgisini öğrenme hızı. Aynı hatanın tekrarlanması ya da öğrenmeye isteksizlik eksi sebebidir.",
+        plusDesc: "Yeni işi, programı ya da bilgiyi hızlı öğrenmek." },
+      { id: "etik", label: "İş ahlakı / etik kurallara uyma", minus: 1, plus: 1,
+        desc: "Dürüstlük, işyeri kurallarına ve gizliliğe uyma. Kural ihlali, yalan ya da izinsiz davranış eksi sebebidir.",
+        plusDesc: "Dürüstlüğü ve kurallara uyumu ile öne çıkmak." },
+      { id: "uyum", label: "İş arkadaşlarıyla uyum", minus: 1, plus: 1,
+        desc: "Ekiple iyi geçinmek ve iş birliği. Tartışma, uyumsuzluk ya da ekibi aksatan davranış eksi sebebidir.",
+        plusDesc: "Ekip arkadaşlarına destek olmak, iş birliği yapmak." },
+      { id: "bosvardiya", label: "Boş vardiyayı doldurma", plus: 1,
+        desc: "Plandaki boş bir vardiyayı üstlenmek (başkası gelemediğinde, ek gün/saat)." },
+      { id: "ovgu", label: "Müşteri övgüsü", plus: 1,
+        desc: "Bir müşteri personeli övdüğünde ya da teşekkür ettiğinde." },
+      { id: "inisiyatif", label: "İnisiyatif / ekstra iş", plus: 1,
+        desc: "İstenmeden, işe yarar bir iş yapmak ya da görev dışı ek sorumluluk almak." },
+      { id: "ogretme", label: "Yeni personele öğretme", plus: 1,
+        desc: "Yeni başlayan arkadaşa işi göstermek, yetiştirmek." },
+      { id: "duzen", label: "Düzen ve temizlik", plus: 1,
+        desc: "Çalışma alanını düzenli ve temiz tutmak, kendiliğinden toparlamak." },
+      { id: "yardim", label: "Yardıma gelme", plus: 1,
+        desc: "Vardiya ya da izin gününde, çağrılmadan yardıma gelmek. QR ile \"Yardıma geldim\" seçilince kaydolur, patron onaylayınca puan yazılır." },
     ];
+    function perfCritDesc(id, sign) {
+      const c = PERF_CRITS.find(x => x.id === id);
+      if (!c) return "";
+      return sign > 0 && c.plusDesc ? c.plusDesc : (c.desc || "");
+    }
     const PERF_HELP_PTS = 3;
     function perfCritLabel(id, sign) {
       const c = PERF_CRITS.find(x => x.id === id);
@@ -28291,6 +28404,7 @@ service cloud.firestore {
         </div>
         <div class="pf-lbl">Kriter</div>
         <div class="pf-chips">${crits.map(c => `<button type="button" class="pf-chip${g.crit === c.id ? " on" : ""}" onclick="perfGiveSet('crit','${c.id}')">${escHtml(g.sign > 0 && c.plusLabel ? c.plusLabel : c.label)}</button>`).join("")}</div>
+        ${g.crit ? `<div class="pf-desc">${escHtml(perfCritDesc(g.crit, g.sign))}</div>` : `<div class="pf-desc muted">Bir kriter seçince ne anlama geldiği burada görünür.</div>`}
         <div class="pf-lbl">Puan</div>
         <div class="pf-chips">${[1, 2, 3, 5].map(n => `<button type="button" class="pf-chip pf-pt${g.pts === n ? " on" : ""}" onclick="perfGiveSet('pts',${n})">${sg}${n}</button>`).join("")}</div>
         <div class="field" style="margin-top:12px;"><label>Gün</label><input type="date" id="pf-give-date" value="${escHtml(g.date || todayKey())}" max="${todayKey()}"/></div>
@@ -28398,6 +28512,67 @@ service cloud.firestore {
       });
       if (!html) html = `<div class="pf-empty">Bu ay henüz artı veya eksi yok.</div>`;
       return html;
+    }
+    function perfGradesTableHtml() {
+      const g = getPerfGrades();
+      return `<div class="pf-grades">${g.map((x, i) => `<span class="pf-grade-pill"><b>${escHtml(x.name)}</b> ${escHtml(perfGradeRangeText(g, i))}</span>`).join("")}</div>`;
+    }
+    function perfInfoPanelHtml() {
+      const L = getPerfLimits();
+      const li = t => `<li>${t}</li>`;
+      const critLi = c => `<li><b>${escHtml(c.label)}</b>${c.minus && c.plus ? " (±)" : " (+)"}<br><span>${escHtml(c.desc)}${c.plusDesc ? " Artı: " + escHtml(c.plusDesc) : ""}</span></li>`;
+      return `<details class="pf-more pf-info">
+        <summary>Puan nasıl hesaplanır?</summary>
+        <div class="pf-more-body pf-info-body">
+          <p><b>Aylık puan.</b> Her ay başında puan sıfırlanır; ay boyunca yazılan artı ve eksiler o ayın puanını oluşturur. Şimdilik yalnızca takip içindir, ücrete etkisi yoktur.</p>
+          <p><b>Formül:</b> otomatik puan (100 üzerinden) + patron artıları − patron eksileri. Toplam 0 ile 150 arasında kalır.</p>
+          <div class="pf-info-h">Otomatik puan (100'den başlar)</div>
+          <ul>
+            ${li(`<b>Geç giriş:</b> ${L.late} dk'ya kadar puan düşmez. Aşan kısım için ${L.lateBase} puan + her ${L.lateStep} dk için 1 puan, günlük en çok ${L.lateCap}.`)}
+            ${li(`<b>Erken çıkış:</b> ${L.early} dk'ya kadar düşmez; aşarsa aynı ölçekle, günlük en çok ${L.earlyCap}.`)}
+            ${li(`<b>Gelmeme:</b> planlı günde hiç giriş yoksa en az ${L.missFloor} puan.`)}
+            ${li(`<b>Eksik süre:</b> planlı süreden az çalışırsa ${L.shortLight} puan; ${L.shortHours} saatten fazla eksikse ${L.shortHeavy} puan.`)}
+            ${li(`<b>Çıkış yapılmamış:</b> gün bitince çıkış yoksa ${L.openCost} puan.`)}
+            ${li(`<b>Açık görev:</b> süresi geçmiş yapılmamış görev için ${L.taskCost} puan.`)}
+            ${li(`<b>Talepler:</b> ayda ${L.requests} talep ücretsiz; fazlası için talep başına ${L.reqCost} puan.`)}
+            ${li(`<b>Fazla mesai:</b> aynı gün geç kalma/erken çıkış eksiğini kapatır${L.otRecoverMin ? " (her " + L.otRecoverMin + " dk = 1 puan)" : ""}; kalan saat başına +${L.otPerHour}, ayda en çok +${L.otCap}.`)}
+            ${li(`Gerekçeli sayılan (İstisna) kayıtlar puan düşürmez.`)}
+          </ul>
+          <div class="pf-info-h">Patron artı / eksisi</div>
+          <p>Patron bir kriter seçip 1, 2, 3 veya 5 puan ekler ya da düşer; nedenini kısa notla yazabilir. Personel bunu günlük listesinde kriter adı ve notuyla görür. Yardıma gelme onaylanınca ${getHelpVisitPoints()} puan (onayda değiştirilebilir) eklenir.</p>
+          <div class="pf-info-h">Dereceler</div>
+          ${perfGradesTableHtml()}
+          <div class="pf-info-h">Kriterler ne demek?</div>
+          <ul class="pf-crit-list">${PERF_CRITS.map(critLi).join("")}</ul>
+        </div>
+      </details>`;
+    }
+    function perfHelpVisits(uid, year, month) {
+      const b = getMonthYmdBounds(year, month);
+      return getRequests().filter(r => r && r.type === "help_visit" && r.userId === uid && r.status !== "rejected" && r.dateKey >= b.start && r.dateKey <= b.end)
+        .sort((a, c) => String(c.dateKey).localeCompare(String(a.dateKey)) || String(c.startTime || c.time || "").localeCompare(String(a.startTime || a.time || "")));
+    }
+    function perfHelpSummary(list) {
+      const done = list.filter(r => r.status === "approved");
+      const mins = list.reduce((a, r) => a + (helpVisitMinutes(r) || 0), 0);
+      const pts = done.reduce((a, r) => a + (Math.round(Number(r.pts)) || 0), 0);
+      return { visits: list.length, approved: done.length, mins, pts };
+    }
+    function perfHelpRowsHtml(list) {
+      if (!list.length) return `<div class="pf-empty">Bu ay yardım kaydı yok.</div>`;
+      return `<div class="pf-day">${list.map(r => {
+        const hrs = helpVisitHoursText(r);
+        const st = r.status === "approved" ? `<span style="color:var(--green)">+${Math.round(Number(r.pts) || 0)}</span>` : `<span style="color:var(--text3)">onay bekliyor</span>`;
+        return `<div class="pf-it"><span class="pf-dot p">🤝</span><div class="pf-it-body"><div class="pf-it-crit">${escHtml(fmtDateTR(r.dateKey) || r.dateKey)}</div><div class="pf-it-note">${escHtml(helpVisitRangeText(r))}${hrs ? " · " + escHtml(hrs) : ""}</div></div><span class="pf-it-pts">${st}</span></div>`;
+      }).join("")}</div>`;
+    }
+    function perfHelpAnalysisHtml(workers, year, month) {
+      const rows = workers.map(w => ({ w, list: perfHelpVisits(w.id, year, month) })).map(x => ({ ...x, sum: perfHelpSummary(x.list) }));
+      const tot = rows.reduce((a, x) => ({ v: a.v + x.sum.visits, m: a.m + x.sum.mins, p: a.p + x.sum.pts }), { v: 0, m: 0, p: 0 });
+      const body = rows.filter(x => x.sum.visits).sort((a, b) => b.sum.mins - a.sum.mins).map(x => `
+        <details class="pf-help-p"><summary><span class="pf-name">${escHtml(x.w.name)}</span><span class="pf-meta">${x.sum.visits} yardım · ${escHtml(perfFmtMin(x.sum.mins))} · <span class="p">+${x.sum.pts}</span></span></summary>${perfHelpRowsHtml(x.list)}</details>`).join("");
+      return `<details class="pf-more"><summary>Yardım analizi · ${tot.v} kayıt · ${escHtml(perfFmtMin(tot.m))} · +${tot.p} puan</summary>
+        <div class="pf-more-body">${body || `<div class="pf-empty">Bu ay yardım kaydı yok.</div>`}</div></details>`;
     }
     function perfInitials(name) {
       return String(name || "?").split(" ").filter(Boolean).map(x => x[0]).join("").slice(0, 2).toUpperCase() || "?";
@@ -28563,7 +28738,7 @@ service cloud.firestore {
           <div class="pf-mini">
             ${perfMini("Otomatik", s.autoScore == null ? "—" : s.autoScore)}
             ${perfMini("Artı", "+" + (s.manualPlus || 0), "var(--green)")}
-            ${perfMini("Eksi", "−" + (s.manualMinus || 0), "var(--red)")}
+            ${perfMini("Eksi", (s.manualMinus ? "−" : "") + (s.manualMinus || 0), s.manualMinus ? "var(--red)" : "")}
           </div>
         </div>`;
       let today = "";
@@ -28579,7 +28754,9 @@ service cloud.firestore {
           ${!t.leave && reasons.length ? `<div style="margin-top:10px;">${perfTodayReasonHtml(reasons)}</div>` : ""}
         </div>`;
       }
-      return hero + today + `<div class="pf-section">Günlük artı / eksi</div>` + perfTimelineHtml(s, false);
+      const myHelp = perfHelpVisits(s.w.id, year, month);
+      const helpSec = myHelp.length ? (() => { const sm = perfHelpSummary(myHelp); return `<div class="pf-section">Yardım kayıtları · ${sm.visits} · ${escHtml(perfFmtMin(sm.mins))} · +${sm.pts}</div>` + perfHelpRowsHtml(myHelp); })() : "";
+      return hero + today + `<div class="pf-section">Günlük artı / eksi</div>` + perfTimelineHtml(s, false) + helpSec + perfInfoPanelHtml();
     }
     function togglePerfRules() {
       perfRulesOpen = !perfRulesOpen;
@@ -28628,10 +28805,15 @@ service cloud.firestore {
             ${perfField("perf-ot-cap", "Artı tavanı", limits.otCap, 0, 20, "puan")}
           </div>
           <div class="perf-rule-group">
-            <div class="perf-rule-title">Derece</div>
-            ${perfField("perf-band-good", "Güvenilir", limits.bandGood, 1, 100, "puan")}
-            ${perfField("perf-band-ok", "İdare eder", limits.bandOk, 0, 99, "puan")}
-            ${perfField("perf-band-warn", "Dikkat", limits.bandWarn, 0, 98, "puan")}
+            <div class="perf-rule-title">Yardıma gelme</div>
+            ${perfField("perf-help-pts", "Yardım başına artı puan", getHelpVisitPoints(), 1, 20, "puan")}
+            <div class="perf-ledger-sub">Onaylarken bu puanı kişiye göre değiştirebilirsiniz.</div>
+          </div>
+          <div class="perf-rule-group pf-grade-group">
+            <div class="perf-rule-title">Dereceler (isim ve alt puan)</div>
+            <div id="perf-grades-rows">${perfGradeRowsHtml()}</div>
+            <div class="perf-ledger-sub">Her satır: bu puan ve üstü bu isimle gösterilir. En alttaki satır her zaman 0'dan başlar. Örn. 0 · Zayıf, 50 · Orta, 80 · Çok iyi.</div>
+            <button type="button" class="btn btn-secondary btn-sm" style="margin-top:6px;" onclick="perfGradeAddRow()">+ Derece ekle</button>
           </div>
         </div>
         <div class="perf-ledger-sub" style="margin-top:8px;">Aynı gün fazla mesai önce o günün geç kalma/erken çıkış eksiğini kapatır (0 dk = telafi kapalı). Kalan saat artı puan yazar. Giriş-çıkış adedi puan yazmaz.</div>
@@ -28662,7 +28844,7 @@ service cloud.firestore {
           <div class="pf-mini">
             ${perfMini("Otomatik", s.autoScore == null ? "—" : s.autoScore)}
             ${perfMini("Patron artısı", "+" + (s.manualPlus || 0), "var(--green)")}
-            ${perfMini("Patron eksisi", "−" + (s.manualMinus || 0), "var(--red)")}
+            ${perfMini("Patron eksisi", (s.manualMinus ? "−" : "") + (s.manualMinus || 0), s.manualMinus ? "var(--red)" : "")}
           </div>
           ${edit ? `<div class="pf-give-row">
             <button type="button" class="btn btn-primary pf-give-btn" onclick="openPerfGive('${perfEnc(s.w.id)}',1)">＋ Puan ver</button>
@@ -28671,10 +28853,12 @@ service cloud.firestore {
         </div>
         <div class="pf-section">Günlük artı / eksi</div>
         ${perfTimelineHtml(s, edit)}
+        ${(() => { const hl = perfHelpVisits(s.w.id, year, month); const sm = perfHelpSummary(hl); return `<div class="pf-section">Yardım kayıtları · ${sm.visits} · ${escHtml(perfFmtMin(sm.mins))} · +${sm.pts}</div>` + perfHelpRowsHtml(hl); })()}
         <details class="pf-more"${moreOpen ? " open" : ""} ontoggle="window._pfMoreOpen=this.open">
           <summary>Ayrıntılı kayıtlar ve istisnalar</summary>
           <div class="pf-more-body">${perfPersonDetail(s, true)}</div>
         </details>
+        ${perfInfoPanelHtml()}
       </div>`;
     }
     function renderPerformanceAnalytics(workers, year, month) {
@@ -28706,13 +28890,14 @@ service cloud.firestore {
           <div class="pf-mini">
             ${perfMini("Personel", String(rows.length))}
             ${perfMini("Patron artısı", "+" + plusPts, "var(--green)")}
-            ${perfMini("Patron eksisi", "−" + minusPts, "var(--red)")}
+            ${perfMini("Patron eksisi", (minusPts ? "−" : "") + minusPts, minusPts ? "var(--red)" : "")}
           </div>
           ${edit ? `<div class="pf-hero-actions"><button type="button" class="btn btn-secondary btn-sm" onclick="togglePerfRules()">${perfRulesOpen ? "Kuralları gizle" : "Otomatik puan kuralları"}</button></div>` : ""}
           ${edit && perfRulesOpen ? perfRulesPanel(limits) : ""}
         </div>`;
       if (!rows.length) return html + `<div class="pf-empty" style="margin-top:12px;">Bu ay personel yok.</div>`;
-      html += `<div class="pf-list">`;
+      html += `<div class="pf-section">Dereceler</div>${perfGradesTableHtml()}`;
+      html += `<div class="pf-section">Personel</div><div class="pf-list">`;
       rows.forEach(s => {
         const color = perfScoreColor(s.score);
         const wc = s.w.color || "#5b9cf6";
@@ -28732,7 +28917,7 @@ service cloud.firestore {
           <span class="pf-chev">›</span>
         </button>`;
       });
-      html += `</div>`;
+      html += `</div>` + perfHelpAnalysisHtml(rows.map(r => r.w), year, month) + perfInfoPanelHtml();
       return html;
     }
     // ── ANALYTICS PAGE ──
@@ -33740,10 +33925,32 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
         document.body.appendChild(ov);
       });
     }
+    function helpVisitMinutes(r) {
+      const st = toMins(r && (r.startTime || r.time)), en = toMins(r && r.endTime);
+      if (st == null || en == null) return null;
+      let d = en - st;
+      if (d < 0) d += 1440;
+      return d;
+    }
+    function helpVisitHoursText(r) {
+      const m = helpVisitMinutes(r);
+      return m == null ? "" : perfFmtMin(m);
+    }
+    function helpVisitRangeText(r) {
+      const st = r.startTime || r.time || "";
+      return st ? (st + "–" + (r.endTime || "devam ediyor")) : "";
+    }
+    function findOpenHelpVisit(uid) {
+      const t = todayKey();
+      const y = parseYMDLocal(t);
+      let yk = t;
+      if (y) { y.setDate(y.getDate() - 1); yk = keyFromDate(y); }
+      return getRequests().filter(r => r && r.type === "help_visit" && r.userId === uid && r.status !== "rejected" && !r.endTime && (r.dateKey === t || r.dateKey === yk))
+        .sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")))[0] || null;
+    }
     async function createHelpVisitRequest(user, dateKey, timeHHMM) {
       if (!DB.requests) DB.requests = [];
-      const dup = DB.requests.find(r => r && r.type === "help_visit" && r.userId === user.id && r.dateKey === dateKey && r.status !== "rejected");
-      if (dup) return { ok: false, dup: true };
+      if (findOpenHelpVisit(user.id)) return { ok: false, dup: true };
       const req = {
         id: "r" + genId(),
         type: "help_visit",
@@ -33753,6 +33960,8 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
         status: "pending",
         dateKey,
         time: timeHHMM,
+        startTime: timeHHMM,
+        endTime: "",
         note: "Vardiya dışında yardıma geldi",
         createdAt: new Date().toISOString(),
       };
@@ -33765,10 +33974,75 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
         localCacheSave();
         return { ok: false, error: e };
       }
-      try { pushWorkerFeed({ title: "Yardım kaydı", body: `Yardıma geldin (${timeHHMM}). Patron onayı bekleniyor.`, kind: "request_help" }); } catch (e) {}
+      try { pushWorkerFeed({ title: "Yardım kaydı", body: `Yardıma geldin (${timeHHMM}). Bitirince çıkış kodunu okut ya da "Yardımı bitir"e bas.`, kind: "request_help" }); } catch (e) {}
       try { enqueueNewStaffRequest(req); } catch (e) {}
       try { updateReqNotifDot(); } catch (e) {}
+      try { syncHelpBanner(); } catch (e) {}
       return { ok: true, req };
+    }
+    function helpPerfNote(r) {
+      const rng = helpVisitRangeText(r);
+      const hrs = helpVisitHoursText(r);
+      return "Vardiya dışında yardıma geldi" + (rng ? " · " + rng : "") + (hrs ? " (" + hrs + ")" : "");
+    }
+    async function endHelpVisit(rid, silentUi) {
+      const r = getRequests().find(x => x.id === rid && x.type === "help_visit");
+      if (!r || r.endTime) return false;
+      const prev = { endTime: r.endTime, minutes: r.minutes };
+      r.endTime = getNow();
+      r.minutes = helpVisitMinutes(r);
+      r.endedAt = new Date().toISOString();
+      localCacheSave();
+      try {
+        await fsSetDoc("requests", r.id, r);
+      } catch (e) {
+        r.endTime = prev.endTime; r.minutes = prev.minutes; delete r.endedAt;
+        localCacheSave();
+        if (!silentUi) showToast("Yardım bitişi kaydedilemedi", "warn");
+        return false;
+      }
+      if (r.status === "approved") {
+        try {
+          const hk = String(r.dateKey || "").slice(0, 10);
+          await perfAdjWrite(r.userId, hk, list => list.map(e => (e && e.reqId === r.id ? { ...e, note: helpPerfNote(r) } : e)));
+        } catch (e) {}
+      }
+      try { syncHelpBanner(); } catch (e) {}
+      if (!silentUi) showToast("Yardım bitti · " + (helpVisitHoursText(r) || r.endTime));
+      if (currentPage === "my-requests") renderMyRequestsPage();
+      return true;
+    }
+    function syncHelpBanner() {
+      const old = document.getElementById("help-banner");
+      const u = currentUser;
+      const hv = u && u.role === "calisan" ? findOpenHelpVisit(u.id) : null;
+      if (!hv) { if (old) old.remove(); return; }
+      const html = `<span>🤝 Yardımdasın · ${escHtml(hv.startTime || hv.time || "")}</span><button type="button" onclick="endHelpVisit('${escHtml(hv.id)}')">Yardımı bitir</button>`;
+      if (old) { old.innerHTML = html; return; }
+      const el = document.createElement("div");
+      el.id = "help-banner";
+      el.className = "help-banner";
+      el.innerHTML = html;
+      document.body.appendChild(el);
+    }
+    function openApproveHelpModal(r) {
+      const worker = (DB.users || []).find(u => u.id === r.userId);
+      const pts = r.pts != null ? r.pts : getHelpVisitPoints();
+      openModal("Yardım kaydını onayla", `
+        <div style="font-size:13px;font-weight:600;margin-bottom:6px;">${escHtml(worker?.name || "Personel")} · ${escHtml(fmtDateTR(r.dateKey) || r.dateKey || "")}</div>
+        <div class="req-detail" style="margin-bottom:10px;">Giriş: <b>${escHtml(r.startTime || r.time || "—")}</b>${r.endTime ? " · Bitiş: <b>" + escHtml(r.endTime) + "</b> (" + escHtml(helpVisitHoursText(r)) + ")" : " · Bitiş henüz yok"}</div>
+        ${r.endTime ? "" : `<div class="field"><label>Bitiş saati (isteğe bağlı)</label><input type="time" id="help-appr-end" value=""/></div>`}
+        <div class="field"><label>Verilecek artı puan</label><input type="number" id="help-appr-pts" min="1" max="20" step="1" value="${pts}"/>
+        <div style="font-size:10px;color:var(--text3);margin-top:6px;">Varsayılan ${getHelpVisitPoints()} puan (Performans › kurallardan değişir). Ücrete etkisi yoktur.</div></div>
+      `, () => {
+        const p = Math.round(Number(document.getElementById("help-appr-pts")?.value));
+        if (!Number.isFinite(p) || p < 1 || p > 20) { showToast("Puan 1–20 arası olmalı", "warn"); return false; }
+        const endV = String(document.getElementById("help-appr-end")?.value || "").trim();
+        r.pts = p;
+        if (endV && !r.endTime) { r.endTime = endV; r.minutes = helpVisitMinutes(r); }
+        finalizeApproveRequest(r);
+        return true;
+      });
     }
     async function handleQRResult(raw) {
       const rawTrim = String(raw || "").trim().replace(/\0/g, "");
@@ -33870,9 +34144,29 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
           localCacheSave();
         };
 
+        const explicitIn = strictEntry || act === "in" || act === "giris" || act === "giriş";
+        const endHelpByScan = async () => {
+          const hv = findOpenHelpVisit(uid);
+          if (!hv) return false;
+          const okEnd = await endHelpVisit(hv.id, true);
+          if (okEnd) {
+            const hrs = helpVisitHoursText(hv);
+            showQRScanResult("out", `✅ Yardım bitti: ${hv.endTime}${hrs ? " · " + hrs : ""}`);
+            showQrSuccessOverlay("out", hv.endTime);
+          } else {
+            showQRScanResult("error", "❌ Yardım bitişi kaydedilemedi.");
+          }
+          return true;
+        };
         const doIn = async () => {
           if (hasOpen) {
             showQrWarningOverlay("in");
+            return;
+          }
+          const hvOpen = findOpenHelpVisit(uid);
+          if (hvOpen) {
+            if (explicitIn) showQRScanResult("error", "Açık bir yardım kaydın var. Bitirmek için çıkış kodunu okut ya da \"Yardımı bitir\"e bas.");
+            else await endHelpByScan();
             return;
           }
           const gate = clockInGateCheck(currentUser, today, now);
@@ -33881,7 +34175,7 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
             if (choice === "help") {
               const hr = await createHelpVisitRequest(currentUser, today, now);
               if (hr.ok) {
-                showQRScanResult("in", `🤝 Yardım kaydın alındı (${now}). Patron onaylayınca puanına eklenir.`);
+                showQRScanResult("in", `🤝 Yardım başladı: ${now}. Bitirince çıkış kodunu okut. Patron onaylayınca puanına eklenir.`);
                 try { await fsAddLog({ type: "qr_help", userId: uid, companyId: currentUser.companyId, atLocal: now }); } catch (_) {}
               } else if (hr.dup) {
                 showQRScanResult("error", "Bugün için yardım kaydın zaten var.");
@@ -33922,6 +34216,7 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
         };
         const doOut = async () => {
           if (!openShift) {
+            if (await endHelpByScan()) return;
             showQrWarningOverlay("out");
             return;
           }
@@ -34914,11 +35209,12 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
       }
       DB.records[uid][key] = next;
     }
-    function clearSwapDayPlan(uid, key) {
+    function clearSwapDayPlan(uid, key, meta) {
       if (!DB.records[uid]) DB.records[uid] = {};
       const rec = normalizeRec(DB.records[uid][key]);
       const next = swapRecBase(rec);
       next.swapOff = true;
+      if (meta) next.swapMeta = meta;
       DB.records[uid][key] = next;
       upsertDailyShiftAssignment(uid, key, null);
     }
@@ -34953,13 +35249,88 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
       } else {
         putSwapDayPlan(r.userId, peerKey, bForA);
         putSwapDayPlan(r.peerId, myKey, aForB);
-        clearSwapDayPlan(r.userId, myKey);
-        clearSwapDayPlan(r.peerId, peerKey);
+        clearSwapDayPlan(r.userId, myKey, { ...baseMeta, otherId: r.peerId });
+        clearSwapDayPlan(r.peerId, peerKey, { ...baseMeta, otherId: r.userId });
       }
       r.appliedAt = new Date().toISOString();
       saveSettings();
       try { saveUserRecords(r.userId); } catch (e) {}
       if (r.peerId !== r.userId) { try { saveUserRecords(r.peerId); } catch (e) {} }
+    }
+    /** Takas geri alma: hücreyi, takas öncesi anlık görüntüye (snap) döndürür. natural=true: günlük atamayı ve takas izlerini silip doğal plana döner. */
+    function restoreSwapCell(uid, key, snap, natural) {
+      const settings = getSettings();
+      settings.shiftTemplates = (settings.shiftTemplates || []).filter(t => !(t.type === "daily" && t.date === key && t.userId === uid));
+      if (!DB.records[uid]) DB.records[uid] = {};
+      const o = swapRecBase(normalizeRec(DB.records[uid][key]));
+      DB.records[uid][key] = o;
+      if (natural || !snap) {
+        if (!natural) {
+          // Boş gün isteniyorsa ve doğal planda vardiya varsa gizle
+          const nat0 = getEffectiveShiftTemplate(key, uid);
+          if (nat0 && nat0.startTime) o.swapOff = true;
+        }
+        return;
+      }
+      if (snap.isLeave && snap.leaveType) {
+        o.leaveType = snap.leaveType;
+        if (snap.leaveMeta) { const lm = { ...snap.leaveMeta }; delete lm.fromSwap; o.leaveMeta = lm; }
+        return;
+      }
+      const nat = getEffectiveShiftTemplate(key, uid);
+      const natHas = !!(nat && nat.startTime);
+      if (snap.startTime) {
+        const same = natHas && nat.startTime === snap.startTime && String(nat.endTime || "") === String(snap.endTime || "");
+        if (!same) {
+          upsertDailyShiftAssignment(uid, key, { ...snap, swapMeta: null });
+          const d = (settings.shiftTemplates || []).find(t => t.type === "daily" && t.date === key && t.userId === uid);
+          if (d) { delete d.fromSwap; delete d.swapMeta; delete d.swapId; if (!d.name || d.name === "Değişim") d.name = snap.name || "Vardiya"; }
+        }
+      } else if (natHas) {
+        o.swapOff = true;
+      }
+    }
+    function revertShiftSwap(rid) {
+      if (!canManageCompanyShifts()) { showToast("Bu işlem için yetkiniz yok", "warn"); return false; }
+      const r = getRequests().find(x => x.id === rid && x.type === "shift_swap");
+      if (!r) { showToast("Takas kaydı bulunamadı", "warn"); return false; }
+      if (r.revertedAt) { showToast("Bu takas zaten geri alınmış", "warn"); return false; }
+      if (r.status !== "approved") { showToast("Yalnızca işlenmiş takas geri alınır", "warn"); return false; }
+      if (!confirm("Bu takas geri alınsın mı? Günler takas öncesi haline döner.")) return false;
+      const aId = r.userId, bId = r.peerId;
+      const myKey = r.myDateKey, peerKey = r.peerDateKey || r.myDateKey;
+      const aSnap = r.myDaySnap || r.myShiftSnap || null;
+      const bSnap = r.peerDaySnap || r.peerShiftSnap || null;
+      const cells = [{ workerId: aId, dateKey: myKey }, { workerId: aId, dateKey: peerKey }, { workerId: bId, dateKey: peerKey }, { workerId: bId, dateKey: myKey }]
+        .map(c => ({ ...c, action: "swap", extra: "geri alındı" }));
+      try { beginShiftPlanNotifCells(cells, "swap"); } catch (e) {}
+      const samePerson = aId === bId;
+      if (samePerson) {
+        restoreSwapCell(aId, myKey, aSnap, false);
+        restoreSwapCell(aId, peerKey, bSnap, false);
+      } else if (myKey === peerKey) {
+        restoreSwapCell(aId, myKey, aSnap, false);
+        restoreSwapCell(bId, peerKey, bSnap, false);
+      } else {
+        restoreSwapCell(aId, myKey, aSnap, false);
+        restoreSwapCell(bId, peerKey, bSnap, false);
+        restoreSwapCell(aId, peerKey, null, true);
+        restoreSwapCell(bId, myKey, null, true);
+      }
+      r.revertedAt = new Date().toISOString();
+      r.revertedBy = currentUser?.id || "";
+      saveSettings();
+      localCacheSave();
+      saveUserRecords(aId);
+      if (bId !== aId) saveUserRecords(bId);
+      fsSetDoc("requests", r.id, r).catch(e => console.warn(e));
+      try { pruneRevertedShiftPlanNotifs(cells); } catch (e) {}
+      try { closeModal(); } catch (e) {}
+      try { closeShiftCtxMenu(); } catch (e) {}
+      showToast("Takas geri alındı ✓");
+      if (currentPage === "shifts") renderShiftPlanPage();
+      if (currentPage === "requests") renderRequestsPage();
+      return true;
     }
     function getPendingShiftSwapsForCell(workerId, dateKey) {
       return getRequests().filter(r =>
@@ -35023,6 +35394,9 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
         exchangeHtml,
         note: r?.note || meta?.note || "",
         byPatron: !!(r?.byPatron || meta?.byPatron),
+        reqId: r?.id || "",
+        reverted: !!r?.revertedAt,
+        canRevert: !!(r && r.status === "approved" && !r.revertedAt),
       };
     }
     function buildShiftSwapDetailCardHtml(workerId, dateKey) {
@@ -35045,6 +35419,7 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
         ${info.byPatron ? `<div style="font-size:10px;color:var(--text3);margin-top:7px;">Patron tarafından yapıldı</div>` : ""}
         ${info.exchangeHtml || ""}
         ${info.note ? line("Not", escHtml(info.note)) : ""}
+        ${info.canRevert && canManageCompanyShifts() ? `<button type="button" class="btn btn-secondary btn-sm" style="width:100%;justify-content:center;margin-top:12px;border-color:#e879f9;color:#e879f9;" onclick="revertShiftSwap('${escHtml(info.reqId)}')">↺ Takası geri al</button>` : ""}
       </div>`;
     }
     function buildShiftSwapDetailButtonHtml(workerId, dateKey) {
@@ -38590,8 +38965,12 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
         if (r.note) detailHtml += `<div class="req-detail">📝 ${escHtml(r.note)}</div>`;
         detailHtml += buildShiftSwapProgressHtml(r);
       } else if (r.type === "help_visit") {
-        detailHtml = `<div class="req-detail">🤝 <b>${escHtml(fmtDateTR(r.dateKey) || r.dateKey || "")}</b>${r.time ? " · " + escHtml(r.time) : ""} — vardiya dışında yardıma geldi</div>`;
-        detailHtml += `<div class="req-detail" style="color:var(--text3);">Onaylanırsa performansa +${PERF_HELP_PTS} puan (Yardıma gelme) yazılır. Ücrete etkisi yok.</div>`;
+        const hrs = helpVisitHoursText(r);
+        detailHtml = `<div class="req-detail">🤝 <b>${escHtml(fmtDateTR(r.dateKey) || r.dateKey || "")}</b>${helpVisitRangeText(r) ? " · " + escHtml(helpVisitRangeText(r)) : ""}${hrs ? " · <b>" + escHtml(hrs) + "</b>" : ""} — vardiya dışında yardıma geldi</div>`;
+        detailHtml += `<div class="req-detail" style="color:var(--text3);">${r.status === "approved" ? "Verilen puan: +" + (r.pts != null ? r.pts : getHelpVisitPoints()) : "Onaylanırsa performansa artı puan (Yardıma gelme) yazılır; ücrete etkisi yok."}</div>`;
+        if (!showActions && r.userId === currentUser?.id && !r.endTime && r.status !== "rejected") {
+          detailHtml += `<div class="req-actions"><button type="button" class="btn btn-primary btn-sm" onclick="endHelpVisit('${escHtml(r.id)}')">Yardımı bitir</button></div>`;
+        }
       } else {
         const cur = getCurrency();
         detailHtml = `<div class="req-detail">💰 Tutar: <b>${cur}${Number(r.amount).toLocaleString("tr-TR")}</b></div>`;
@@ -38680,6 +39059,10 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
         openApproveLeaveRequestModal(r);
         return;
       }
+      if (r.type === "help_visit") {
+        openApproveHelpModal(r);
+        return;
+      }
       finalizeApproveRequest(r);
     }
 
@@ -38721,9 +39104,11 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
         applyApprovedLeaveRange(r.userId, r.leaveTypeId || "annual", r.startDate, r.endDate, leavePay);
       } else if (r.type === "help_visit") {
         const hk = String(r.dateKey || "").slice(0, 10) || todayKey();
+        const hp = Math.max(1, Math.min(20, Math.round(Number(r.pts != null ? r.pts : getHelpVisitPoints())) || PERF_HELP_PTS));
+        r.pts = hp;
         const entry = {
-          id: "pa" + genId(), sign: 1, crit: "yardim", pts: PERF_HELP_PTS,
-          note: "Vardiya dışında yardıma geldi" + (r.time ? " · " + r.time : ""),
+          id: "pa" + genId(), sign: 1, crit: "yardim", pts: hp,
+          note: helpPerfNote(r),
           by: currentUser?.id || "", byName: currentUser?.name || "", at: new Date().toISOString(), src: "help", reqId: r.id,
         };
         void perfAdjWrite(r.userId, hk, list => (list.some(e => e && e.reqId === r.id) ? list : [...list, entry]));
@@ -39754,6 +40139,8 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
     window.pasteEphemeralShiftToTargets = pasteEphemeralShiftToTargets;
     window.applyShiftTemplateToTargets = applyShiftTemplateToTargets;
     window.performPatronShiftSwap = performPatronShiftSwap;
+    window.revertShiftSwap = revertShiftSwap;
+    window.endHelpVisit = endHelpVisit;
     window.openShiftPlanLeaveModalForTargets = openShiftPlanLeaveModalForTargets;
     window.clearShiftCellsFromMenu = clearShiftCellsFromMenu;
     window.removePlanCellEphemeralShift = removePlanCellEphemeralShift;
