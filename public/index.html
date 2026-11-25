@@ -7656,6 +7656,96 @@
     }
     .splan-day-short { display: none; }
 
+
+    /* ── Performans (yeni görünüm) ── */
+    .pf-hero { position: relative; overflow: hidden; background: linear-gradient(145deg, rgba(91,156,246,0.10), rgba(16,185,129,0.04) 60%, transparent), var(--bg2); border: 1px solid rgba(91,156,246,0.28); }
+    .pf-hero-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .pf-kicker { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--text3); }
+    .pf-title { font-size: 20px; font-weight: 800; color: var(--text); line-height: 1.2; }
+    .pf-sub { font-size: 12px; color: var(--text3); margin-top: 3px; line-height: 1.4; }
+    .pf-avg { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; }
+    .pf-avg b { font-size: 34px; font-weight: 900; line-height: 1; text-shadow: 0 0 18px currentColor; }
+    .pf-avg span { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; margin-top: 4px; }
+    .pf-mini { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 14px; }
+    .pf-mini > div { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 8px 10px; min-width: 0; }
+    .pf-mini span { display: block; font-size: 10px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pf-mini b { display: block; font-size: 16px; font-weight: 800; margin-top: 2px; }
+    .pf-hero-actions { margin-top: 12px; display: flex; justify-content: flex-end; }
+    .pf-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+    .pf-card { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 12px; color: var(--text); cursor: pointer; font: inherit; transition: border-color .15s, transform .1s, box-shadow .15s; }
+    .pf-card:hover { border-color: rgba(91,156,246,0.5); box-shadow: 0 0 16px rgba(91,156,246,0.12); }
+    .pf-card:active { transform: scale(.99); }
+    .pf-place { width: 26px; height: 26px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: var(--text3); background: var(--bg3); flex-shrink: 0; }
+    .pf-place.top1 { color: #1a1205; background: linear-gradient(135deg, #fde68a, #f59e0b); box-shadow: 0 0 12px rgba(245,158,11,0.5); }
+    .pf-place.top2 { color: #111; background: linear-gradient(135deg, #f3f4f6, #9ca3af); }
+    .pf-place.top3 { color: #1a0d05; background: linear-gradient(135deg, #fdba74, #c2410c); }
+    .pf-av { --c: #5b9cf6; width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color: var(--c); background: rgba(91,156,246,0.14); background: color-mix(in srgb, var(--c) 16%, transparent); border: 1px solid color-mix(in srgb, var(--c) 40%, transparent); flex-shrink: 0; }
+    .pf-av.lg { width: 52px; height: 52px; font-size: 17px; border-radius: 16px; }
+    .pf-mid { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+    .pf-name { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pf-meta { font-size: 11px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pf-meta .p { color: var(--green); font-weight: 800; }
+    .pf-meta .m { color: var(--red); font-weight: 800; }
+    .pf-meter { display: block; height: 5px; border-radius: 99px; background: var(--bg3); overflow: hidden; margin-top: 3px; }
+    .pf-meter i { display: block; height: 100%; border-radius: 99px; box-shadow: 0 0 10px currentColor; }
+    .pf-meter.lg { height: 8px; margin-top: 14px; }
+    .pf-score { font-size: 24px; font-weight: 900; min-width: 44px; text-align: right; text-shadow: 0 0 14px currentColor; flex-shrink: 0; }
+    .pf-chev { color: var(--text3); font-size: 20px; flex-shrink: 0; }
+    .pf-back { background: none; border: none; color: var(--accent); font: inherit; font-weight: 700; font-size: 14px; padding: 4px 0 10px; cursor: pointer; }
+    .pf-dtop { display: flex; align-items: center; gap: 12px; }
+    .pf-dname { flex: 1; min-width: 0; }
+    .pf-ring { --c: var(--accent); width: 74px; height: 74px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 3px solid var(--c); box-shadow: 0 0 18px color-mix(in srgb, var(--c) 45%, transparent), inset 0 0 14px color-mix(in srgb, var(--c) 20%, transparent); flex-shrink: 0; }
+    .pf-ring b { font-size: 24px; font-weight: 900; color: var(--c); line-height: 1; }
+    .pf-ring span { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; margin-top: 2px; }
+    .pf-give-row { display: flex; gap: 8px; margin-top: 14px; }
+    .pf-give-btn { flex: 1; justify-content: center; min-height: 44px; font-weight: 800; }
+    .pf-give-btn.minus { color: var(--red); border-color: rgba(239,68,68,0.45); }
+    .pf-section { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--text3); margin: 18px 2px 8px; }
+    .pf-day { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 8px; overflow: hidden; }
+    .pf-day-hd { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 9px 12px; background: rgba(255,255,255,0.025); border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 700; color: var(--text); }
+    .pf-net { font-weight: 900; font-size: 13px; }
+    .pf-it { display: flex; align-items: flex-start; gap: 10px; padding: 9px 12px; }
+    .pf-it + .pf-it { border-top: 1px solid rgba(255,255,255,0.05); }
+    .pf-dot { width: 22px; height: 22px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 900; flex-shrink: 0; margin-top: 1px; }
+    .pf-dot.p { color: var(--green); background: rgba(16,185,129,0.15); }
+    .pf-dot.m { color: var(--red); background: rgba(239,68,68,0.15); }
+    .pf-it-body { flex: 1; min-width: 0; }
+    .pf-it-crit { font-size: 13px; font-weight: 700; color: var(--text); }
+    .pf-it-note { font-size: 11px; color: var(--text3); margin-top: 2px; line-height: 1.35; word-break: break-word; }
+    .pf-it-pts { font-weight: 900; font-size: 14px; flex-shrink: 0; }
+    .pf-del { background: none; border: none; color: var(--text3); font-size: 18px; line-height: 1; cursor: pointer; padding: 0 2px; flex-shrink: 0; }
+    .pf-empty { padding: 18px; text-align: center; color: var(--text3); font-size: 12px; background: var(--bg2); border: 1px dashed var(--border); border-radius: 14px; }
+    .pf-more { margin-top: 14px; background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 0 12px; }
+    .pf-more summary { cursor: pointer; padding: 12px 0; font-size: 12px; font-weight: 700; color: var(--text3); list-style: none; }
+    .pf-more summary::-webkit-details-marker { display: none; }
+    .pf-more summary::after { content: " ▾"; }
+    .pf-more[open] summary::after { content: " ▴"; }
+    .pf-more-body { padding-bottom: 12px; }
+    .pf-today { display: flex; align-items: center; gap: 12px; }
+    .pf-today-delta { font-size: 26px; font-weight: 900; min-width: 56px; text-align: center; text-shadow: 0 0 14px currentColor; }
+    .pf-seg { display: flex; gap: 6px; background: var(--bg3); padding: 4px; border-radius: 12px; margin-bottom: 6px; }
+    .pf-seg-btn { flex: 1; border: none; background: none; color: var(--text3); font: inherit; font-weight: 800; padding: 10px; border-radius: 9px; cursor: pointer; }
+    .pf-seg-btn.on.plus { background: rgba(16,185,129,0.18); color: var(--green); box-shadow: 0 0 12px rgba(16,185,129,0.25); }
+    .pf-seg-btn.on.minus { background: rgba(239,68,68,0.18); color: var(--red); box-shadow: 0 0 12px rgba(239,68,68,0.25); }
+    .pf-lbl { display: block; font-size: 11px; font-weight: 700; color: var(--text3); margin: 12px 0 6px; }
+    .pf-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .pf-chip { border: 1px solid var(--border); background: var(--bg2); color: var(--text); font: inherit; font-size: 12px; font-weight: 600; padding: 7px 11px; border-radius: 99px; cursor: pointer; }
+    .pf-chip.on { border-color: var(--accent); color: var(--accent); background: rgba(91,156,246,0.14); box-shadow: 0 0 10px rgba(91,156,246,0.25); }
+    .pf-chip.pf-pt { min-width: 46px; text-align: center; font-weight: 800; }
+    .pf-hint { font-size: 11px; color: var(--text3); margin-top: 10px; line-height: 1.4; }
+    .clockin-choice-ov { position: fixed; inset: 0; z-index: 2147483000; background: rgba(0,0,0,0.6); display: flex; align-items: flex-end; justify-content: center; padding: 16px; }
+    .clockin-choice { width: 100%; max-width: 420px; background: var(--bg2); border: 1px solid rgba(91,156,246,0.35); border-radius: 20px; padding: 18px; box-shadow: 0 0 30px rgba(91,156,246,0.18); margin-bottom: env(safe-area-inset-bottom, 0); }
+    .clockin-choice h3 { margin: 0 0 6px; font-size: 17px; color: var(--text); }
+    .clockin-choice p { margin: 0 0 14px; font-size: 13px; color: var(--text3); line-height: 1.45; }
+    .clockin-choice .btn { width: 100%; justify-content: center; min-height: 46px; margin-top: 8px; font-weight: 800; }
+    @media (max-width: 480px) {
+      .pf-score { font-size: 21px; min-width: 36px; }
+      .pf-title { font-size: 18px; }
+      .pf-ring { width: 64px; height: 64px; }
+      .pf-ring b { font-size: 21px; }
+      .pf-card { padding: 10px; gap: 8px; }
+      .pf-av { width: 34px; height: 34px; }
+    }
     .splan-cell-inner.splan-drag-src { opacity: 0.5; }
     .splan-cell-inner.splan-drop-ok {
       outline: 2px solid var(--accent) !important;
@@ -7754,6 +7844,8 @@
     .splan-tpl-empty { padding: 0 12px 8px; font-size: 11px; color: var(--text3); line-height: 1.4; border-bottom: 1px solid var(--border); }
     body.splan-swapping { cursor: grabbing; user-select: none; }
     body.splan-swapping .shift-plan-scroll { touch-action: none; }
+    body.splan-swapping, body.splan-swapping * { -webkit-user-select: none !important; user-select: none !important; }
+    .shift-plan-scroll .splan-cell-inner { -webkit-touch-callout: none; -webkit-user-select: none; }
     .splan-cell-inner {
       position: relative;
       outline: none !important;
@@ -15661,9 +15753,12 @@ service cloud.firestore {
     }
 
     function buildPatronRequestNotif(r) {
-      if (!r || (r.type !== "hour" && r.type !== "adv" && r.type !== "leave" && r.type !== "shift_swap")) return null;
+      if (!r || (r.type !== "hour" && r.type !== "adv" && r.type !== "leave" && r.type !== "shift_swap" && r.type !== "help_visit")) return null;
       const worker = DB.users.find(u => u.id === r.userId);
       const name = worker?.name || "Çalışan";
+      if (r.type === "help_visit") {
+        return { title: "Yardım kaydı", body: `${name} vardiya dışında yardıma geldi${r.time ? " (" + r.time + ")" : ""}. Onayın bekleniyor.` };
+      }
       const cur = getCurrency();
       let title = "";
       let body = "";
@@ -15709,7 +15804,7 @@ service cloud.firestore {
       if (!n) return;
       void notifyDeviceNow(n.title, n.body, "ct-req-" + r.id);
       try { showToast(n.title + " — " + n.body); } catch (e) {}
-      const kind = r.type === "adv" ? "request_adv" : r.type === "leave" ? "request_leave" : r.type === "shift_swap" ? "request_shift_swap" : "request_hour";
+      const kind = r.type === "adv" ? "request_adv" : r.type === "leave" ? "request_leave" : r.type === "shift_swap" ? "request_shift_swap" : r.type === "help_visit" ? "request_help" : "request_hour";
       pushWorkerFeed({ title: n.title, body: n.body, kind });
     }
     function enqueueNewStaffRequest(r) {
@@ -18902,7 +18997,7 @@ service cloud.firestore {
       if (dateKey > todayKey()) return null;
       const { year, month, day } = parseKey(dateKey);
       const wd = new Date(year, month, day).getDay();
-      if (!getWorkerWeeklyOff(worker.id).includes(wd)) return null;
+      if (!effWeeklyOffOn(worker, dateKey)) return null;
       const rec = normalizeRec(record || {});
       if (rec.leaveType) return null;
       let tpl = getEffectiveShiftTemplate(dateKey, worker.id);
@@ -18971,7 +19066,7 @@ service cloud.firestore {
       let boostEarn = 0;
       const { year, month, day } = parseKey(dateKey);
       const wd = new Date(year, month, day).getDay();
-      const isWeeklyOff = getWorkerWeeklyOff(worker).includes(wd);
+      const isWeeklyOff = effWeeklyOffOn(worker, dateKey);
 
       if (isWeeklyOff) {
         const weeklyMode = getWorkerPayBoostMode(worker, "weeklyOff");
@@ -19027,7 +19122,7 @@ service cloud.firestore {
       let boostEarn = 0;
       const { year, month, day } = parseKey(dateKey);
       const wd = new Date(year, month, day).getDay();
-      const isWeeklyOff = getWorkerWeeklyOff(worker).includes(wd);
+      const isWeeklyOff = effWeeklyOffOn(worker, dateKey);
       const baseEarn = hours * rate;
       if (isWeeklyOff) {
         const weeklyBoostPerHour = getPayBoostPerHour(rate, getWorkerPayBoostMode(worker, "weeklyOff"), getWorkerPayBoostValue(worker, "weeklyOff"));
@@ -19112,7 +19207,7 @@ service cloud.firestore {
         };
       }
 
-      const isWeeklyOff = getWorkerWeeklyOff(worker).includes(wd);
+      const isWeeklyOff = effWeeklyOffOn(worker, dateKey);
       const workedH = calcDayHours(rec);
       if (isWeeklyOff && workedH <= 0) {
         const allowance = getWeeklyOffRestAllowance(worker, dateKey, rec);
@@ -19262,10 +19357,22 @@ service cloud.firestore {
     }
     function isWorkerWeeklyOffDate(uid, dateKey) {
       if (!uid || !dateKey) return false;
-      const parsed = parseKey(dateKey);
+      return effWeeklyOffOn(uid, dateKey);
+    }
+    /** Haftalık izin (gün takası dahil): aynı personelin hafta tatili başka güne taşındıysa kayıttaki işaret geçerli olur. */
+    function baseWeeklyOffOn(workerOrId, dateKey) {
+      const parsed = dateKey ? parseKey(dateKey) : null;
       if (!parsed) return false;
       const wd = new Date(parsed.year, parsed.month, parsed.day).getDay();
-      return (getWorkerWeeklyOff(uid) || []).map(Number).includes(wd);
+      const wo = getWorkerWeeklyOff(workerOrId) || (getSettings().weeklyOff || []);
+      return (wo || []).map(Number).includes(wd);
+    }
+    function effWeeklyOffOn(workerOrId, dateKey) {
+      const uid = workerOrId && typeof workerOrId === "object" ? workerOrId.id : workerOrId;
+      const r = uid && DB.records && DB.records[uid] ? DB.records[uid][dateKey] : null;
+      if (r && r.offMoved === true) return true;
+      if (r && r.swapOn === true) return false;
+      return baseWeeklyOffOn(workerOrId, dateKey);
     }
     function shiftTplAppliesToUser(t, uid) {
       const ids = getShiftTplUserIds(t);
@@ -19399,6 +19506,7 @@ service cloud.firestore {
       // Priority: daily > weekplan (specific week) > weekly (recurring) > monthly
       // Personel ataması: userIds (çoklu) veya eski userId; boş = tüm çalışanlar. Özel atama, "tümü"nün önüne geçer.
       let t = pickTplForUser(templates.filter(x => x.type === "daily" && x.date === dateKey), uid);
+      if (!t && uid && DB.records && DB.records[uid] && DB.records[uid][dateKey] && DB.records[uid][dateKey].swapOff === true) return null;
       if (!t) {
         const wk = getISOWeekKey(dateObj);
         t = pickTplForUser(templates.filter(x => x.type === "weekplan" && x.weekKey === wk &&
@@ -19469,7 +19577,7 @@ service cloud.firestore {
       const { year, month, day } = parseKey(dateKey);
       const wd = new Date(year, month, day).getDay();
       const settings = getSettings();
-      const isWeeklyOff = (getWorkerWeeklyOff(uid) || getSettings().weeklyOff).includes(wd);
+      const isWeeklyOff = effWeeklyOffOn(uid, dateKey);
       if (rec.leaveType) return null;
 
       const filledShifts = rec.shifts.filter(s => s.start);
@@ -22974,7 +23082,7 @@ service cloud.firestore {
             const worker = DB.users.find(u=>u.id===r.userId);
             const col = worker?.color||"#5b9cf6";
             const init = (worker?.name||"?").split(" ").map(c=>c[0]).join("").slice(0,2).toUpperCase();
-            const typeLabel = r.type === "adv" ? "Avans" : r.type === "leave" ? "İzin" : "Saat";
+            const typeLabel = r.type === "adv" ? "Avans" : r.type === "leave" ? "İzin" : r.type === "help_visit" ? "Yardım" : r.type === "shift_swap" ? "Takas" : "Saat";
             const val = r.type === "adv" ? fmtMoney(r.amount) : r.type === "leave" ? `${r.startDate || "—"} → ${r.endDate || "—"}` : ((r.hours || "") + "s");
             return `<div class="pdb-req-row">
               <div class="pdb-req-av" style="background:${col}22;color:${col};">${init}</div>
@@ -23793,7 +23901,7 @@ service cloud.firestore {
         const wo = getWorkerWeeklyOff(w.id);
 
         const cells = weekDays.map(d => {
-          const isOff = wo.includes(d.jsWd);
+          const isOff = effWeeklyOffOn(w.id, d.key);
           const rec = normalizeRec((DB.records[w.id]||{})[d.key]);
           const isLeave = !!rec.leaveType;
           const isWorking = rec.shifts.some(s=>s.start&&!s.end);
@@ -24282,7 +24390,7 @@ service cloud.firestore {
       function buildDayCell(dateKey, jsWd, dayNum, isToday) {
         const rec = normalizeRec((DB.records[w.id]||{})[dateKey]);
         const isLeave = !!rec.leaveType;
-        const isOff = wo.includes(jsWd);
+        const isOff = effWeeklyOffOn(w.id, dateKey);
         const tpl = typeof getEffectiveShiftTemplate==="function" ? getEffectiveShiftTemplate(dateKey, w.id) : null;
         const assignedTpl = tpl && tpl.startTime ? tpl : null;
         const planHrRow = (settings.shiftPlanHourlyRates||[]).find(r => r.date===dateKey && r.userId===w.id);
@@ -25492,6 +25600,8 @@ service cloud.firestore {
       const before = DB.records[uid][targetKey] != null ? JSON.parse(JSON.stringify(DB.records[uid][targetKey])) : undefined;
       if (dir === "in") {
         if (open) { showToast("Açık bir giriş var. Önce çıkış yapın.", "warn"); return; }
+        const gate = currentUser.role === "calisan" ? clockInGateCheck(currentUser, today, now) : null;
+        if (gate && gate.outside && !gate.allowNormal) { showToast(gate.msg || "Şu an giriş yapamazsın.", "warn"); return; }
         const shift = { start: now, end: "" };
         if (silent) shift.silent = true;
         DB.records[uid][today] = { ...rec, shifts: [...rec.shifts, shift] };
@@ -25613,7 +25723,7 @@ service cloud.firestore {
       const today = todayKey();
       const isToday = key === today;
       const hours = isToday ? calcDayHoursLive(record) : calcDayHours(record);
-      const isWeeklyOff = getWorkerWeeklyOff(worker).includes(wd);
+      const isWeeklyOff = effWeeklyOffOn(worker, key);
       const lt = rec.leaveType ? resolveLeaveType(rec.leaveType, rec) : null;
       const isFuture = key > today;
       const filledShifts = rec.shifts.filter(s => s.start);
@@ -25755,7 +25865,7 @@ service cloud.firestore {
       panelDirty = false;
       const { year, month, day } = parseKey(key);
       const wd = new Date(year, month, day).getDay();
-      const isWeeklyOff = getWorkerWeeklyOff(panelUserId).includes(wd);
+      const isWeeklyOff = effWeeklyOffOn(panelUserId, key);
       document.getElementById("panel-title").textContent = fmtDateTR(key, true);
       document.getElementById("panel-date-sub").textContent = `${key}${isWeeklyOff && !panelDraft.leaveType ? " · Haftalık İzin" : ""}`;
       buildPanelBody();
@@ -26120,7 +26230,7 @@ service cloud.firestore {
       // Count missing days (days with template but no record)
       const missingDays = allDays.filter(({ key, wd }) => {
         const isFuture = key > todayKey();
-        const isWeeklyOff = getWorkerWeeklyOff(worker.id).includes(wd);
+        const isWeeklyOff = effWeeklyOffOn(worker.id, key);
         if (isFuture || isWeeklyOff) return false;
         const tpl = getEffectiveShiftTemplate(key, worker.id);
         if (!tpl) return false;
@@ -26632,7 +26742,8 @@ service cloud.firestore {
           ? `<button class="btn btn-primary btn-sm" onclick="openRehireEmployeeModal('${w.id}')">Tekrar İşe Al</button>
             <button class="btn btn-secondary btn-sm" onclick="openEditEmployeeModal('${w.id}')">Kayıtlar / Düzenle</button>
             <button class="btn btn-secondary btn-sm" style="border-color:var(--red);color:var(--red);" onclick="deleteEmployeePermanently('${w.id}')">Kalıcı Sil</button>`
-          : `<button class="btn btn-secondary btn-sm" onclick="openEditEmployeeModal('${w.id}')">Düzenle</button>
+          : `${canEditPerformance() ? `<button class="btn btn-secondary btn-sm" onclick="openPerfGive('${perfEnc(w.id)}',1)">Puan ver</button>` : ""}
+            <button class="btn btn-secondary btn-sm" onclick="openEditEmployeeModal('${w.id}')">Düzenle</button>
             <button class="btn btn-secondary btn-sm" style="border-color:var(--red);color:var(--red);" onclick="openTerminateEmployeeModal('${w.id}')">İşten Çıkar</button>`}
       </div>
     </div>`;
@@ -27101,6 +27212,21 @@ service cloud.firestore {
       ${buildPayWoffScopeHtml(w, false)}
     </div>
     <div class="emp-edit-section emp-collapsible collapsed">
+      <div class="emp-edit-section-hd" onclick="this.parentElement.classList.toggle('collapsed')">Giriş kuralları</div>
+      <div class="field">
+        <label>Vardiyadan en fazla kaç dakika önce giriş yapabilir</label>
+        <input type="number" id="emp-early-in-max" min="0" max="720" step="5" placeholder="Boş = sınırsız" value="${readEarlyClockInMaxMin(w) != null ? readEarlyClockInMaxMin(w) : ""}"/>
+        <div style="font-size:10px;color:var(--text3);margin-top:6px;line-height:1.4;">Örn. 15 yazarsan 17:00 vardiyası için 16:45'ten önce QR ile giriş yapamaz. Boş bırakırsan sınır yok.</div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:700;color:var(--text);">Hafta tatilinde giriş yapabilir</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:4px;line-height:1.45;">Kapalıyken hafta tatilinde normal mesai girişi reddedilir; "Yardıma geldim" seçeneği açık kalır.</div>
+        </div>
+        <div id="emp-allow-dayoff-in" class="wsp-switch${w.allowDayOffClockIn !== false ? " on" : ""}" onclick="this.classList.toggle('on')" role="switch" style="flex-shrink:0;cursor:pointer;" title="Aç / kapat"><div class="wsp-switch-knob"></div></div>
+      </div>
+    </div>
+    <div class="emp-edit-section emp-collapsible collapsed">
       <div class="emp-edit-section-hd" onclick="this.parentElement.classList.toggle('collapsed')">Avans kuralları</div>
       <div style="font-size:10px;color:var(--text3);margin-bottom:10px;line-height:1.45;">Bu personel için avans talebi ve limitleri. Patron manuel eklerken limit aşımında onay sorulur.</div>
       ${(() => {
@@ -27201,6 +27327,19 @@ service cloud.firestore {
       const annualLeaveDays = parseInt(document.getElementById("emp-annual-leave-days")?.value, 10);
       if (isNaN(annualLeaveDays) || annualLeaveDays < 0 || annualLeaveDays > 365) { showToast("Yıllık izin 0–365 gün arasında olmalı", "warn"); return false; }
       const weeklyOff = JSON.parse(document.getElementById("emp-wo-val").value || "[]");
+      const earlyRaw = String(document.getElementById("emp-early-in-max")?.value ?? "").trim();
+      let earlyClockInMaxMin = w.earlyClockInMaxMin ?? null;
+      if (document.getElementById("emp-early-in-max")) {
+        if (earlyRaw === "") earlyClockInMaxMin = null;
+        else {
+          const en = Math.round(Number(earlyRaw));
+          if (!Number.isFinite(en) || en < 0 || en > 720) { showToast("Erken giriş sınırı 0–720 dk olmalı", "warn"); return false; }
+          earlyClockInMaxMin = en;
+        }
+      }
+      const allowDayOffClockIn = document.getElementById("emp-allow-dayoff-in")
+        ? !!document.getElementById("emp-allow-dayoff-in").classList.contains("on")
+        : w.allowDayOffClockIn !== false;
       const color = getSelectedPresetColor("#emp-color-presets", w.color || "#5b9cf6");
       const navIds = ["dashboard","today","month","advances","leaves","jobtasks","my-shifts","my-perf","my-requests","worker-notifications","settings","wishbox"];
       const hiddenMenuIds = navIds.filter(id => !document.getElementById("emp-nav-" + id)?.classList.contains("on"));
@@ -27269,7 +27408,7 @@ service cloud.firestore {
       if (String(w.username || "").toLowerCase() !== uname) {
         previousUsernames.push({ username: w.username, at: new Date().toISOString() });
       }
-      const updated = { ...w, name, jobTitle, username: uname, previousUsernames: previousUsernames.slice(-20), password: pass, hourlyRate, rateHistory, rateEffectiveFrom, wageChangeLog, phone, tcNo: tcNo || null, address, weeklyOff, color, hiddenMenuIds, managerPermissions, managerPages, managerNotifPrefs, bossDashCards, workerNotificationPermissions, patronNotificationsEnabled, annualLeaveDays, hideTodayEarn: !!document.getElementById("emp-hide-today-earn")?.classList.contains("on"), allowSwapPrivacy: !!document.getElementById("emp-allow-swap-privacy")?.classList.contains("on"), showWorkHoursAnalysis: !!document.getElementById("emp-show-hours-analysis")?.classList.contains("on"), overtimePayBoostMode, overtimePayBoostValue, weeklyOffPayBoostMode, weeklyOffPayBoostValue, payWeeklyOffDays, payWeeklyOffFrom, hiredAt: hiredRaw || null, terminatedAt, terminationNote, advancePolicy: readAdvancePolicyFromEmpForm(), branchId: document.getElementById("emp-branch-id")?.value || normalizeUserBranchId(w) };
+      const updated = { ...w, name, jobTitle, username: uname, previousUsernames: previousUsernames.slice(-20), password: pass, hourlyRate, rateHistory, rateEffectiveFrom, wageChangeLog, phone, tcNo: tcNo || null, address, weeklyOff, earlyClockInMaxMin, allowDayOffClockIn, color, hiddenMenuIds, managerPermissions, managerPages, managerNotifPrefs, bossDashCards, workerNotificationPermissions, patronNotificationsEnabled, annualLeaveDays, hideTodayEarn: !!document.getElementById("emp-hide-today-earn")?.classList.contains("on"), allowSwapPrivacy: !!document.getElementById("emp-allow-swap-privacy")?.classList.contains("on"), showWorkHoursAnalysis: !!document.getElementById("emp-show-hours-analysis")?.classList.contains("on"), overtimePayBoostMode, overtimePayBoostValue, weeklyOffPayBoostMode, weeklyOffPayBoostValue, payWeeklyOffDays, payWeeklyOffFrom, hiredAt: hiredRaw || null, terminatedAt, terminationNote, advancePolicy: readAdvancePolicyFromEmpForm(), branchId: document.getElementById("emp-branch-id")?.value || normalizeUserBranchId(w) };
       DB.users[idx] = updated;
       if (currentUser?.id === uid) currentUser = updated;
       localCacheSave();
@@ -27606,6 +27745,7 @@ service cloud.firestore {
       if (type === "leave") return "İzin talebi";
       if (type === "adv") return "Avans talebi";
       if (type === "shift_swap") return "Vardiya takası";
+      if (type === "help_visit") return "Yardım";
       return "Talep";
     }
     function perfKindLabel(kind) {
@@ -27742,7 +27882,7 @@ service cloud.firestore {
       const bounds = getMonthYmdBounds(year, month);
       const reqHits = [], reqExcused = [];
       getRequests().forEach(r => {
-        if (!r || r.userId !== w.id || r.type === "wish") return;
+        if (!r || r.userId !== w.id || r.type === "wish" || r.type === "help_visit") return;
         if (r.companyId && currentUser && r.companyId !== currentUser.companyId) return;
         if (!perfRequestInMonth(r, bounds)) return;
         const note = r.perfExcuse && String(r.perfExcuse.note || "").trim();
@@ -27797,6 +27937,17 @@ service cloud.firestore {
       const otPts = otHoursLeft > 0.08 && otRate > 0
         ? Math.min(limits.otCap, Math.floor(otHoursLeft * otRate + 1e-9))
         : 0;
+      const manual = [];
+      getAllDaysOfMonth(year, month).forEach(({ key }) => {
+        perfAdjList(records[key]).forEach(e => manual.push({
+          key, id: String(e.id || ""), sign: e.sign > 0 ? 1 : -1,
+          pts: Math.max(1, Math.min(20, Math.round(Number(e.pts) || 0))),
+          crit: String(e.crit || ""), note: String(e.note || "").slice(0, 140),
+          byName: String(e.byName || ""), at: String(e.at || ""), src: String(e.src || "manual"),
+        }));
+      });
+      const manualPlus = manual.filter(m => m.sign > 0).reduce((a, m) => a + m.pts, 0);
+      const manualMinus = manual.filter(m => m.sign < 0).reduce((a, m) => a + m.pts, 0);
       const cuts = [];
       const pushCut = (id, label, points, detail) => { if (points) cuts.push({ id, label, points, detail }); };
       pushCut("miss", "Gelmedi", -sumCost(missed), missed.length + " gün");
@@ -27809,8 +27960,13 @@ service cloud.firestore {
       pushCut("ot", "Fazla mesai artısı", otPts, fmtH(otHoursLeft) + (otRate !== 1 ? " · saatte +" + otRate : ""));
       const penalty = cuts.reduce((a, c) => a + (c.points < 0 ? -c.points : 0), 0);
       const bonus = cuts.reduce((a, c) => a + (c.points > 0 ? c.points : 0), 0);
-      const hasWork = scheduled > 0 || sureDays > 0 || taskDen > 0 || reqHits.length;
-      const score = hasWork ? Math.max(0, Math.min(100, 100 - penalty + bonus)) : null;
+      const autoWork = scheduled > 0 || sureDays > 0 || taskDen > 0 || reqHits.length;
+      const hasWork = autoWork || manual.length > 0;
+      const autoScore = autoWork ? Math.max(0, Math.min(100, 100 - penalty + bonus)) : 100;
+      // Patron artı/eksileri otomatik puanın üstüne eklenir (100 üstüne çıkabilir, tavan 150)
+      const score = hasWork ? Math.max(0, Math.min(150, autoScore + manualPlus - manualMinus)) : null;
+      pushCut("adjPlus", "Patron artısı", manualPlus, manual.filter(m => m.sign > 0).length + " kayıt");
+      pushCut("adjMinus", "Patron eksisi", -manualMinus, manual.filter(m => m.sign < 0).length + " kayıt");
       const overMin = late.reduce((a, x) => a + x.over, 0);
       return {
         w, score, cuts, limits, scheduled, arrived, beforePlan, late, soft, missed, early, excused,
@@ -27819,6 +27975,7 @@ service cloud.firestore {
         overMin, avgOver: late.length ? overMin / late.length : 0,
         taskMode, taskAssigned, taskDone, taskPending, taskOpen, taskExcused,
         weeklyAssigned, weeklyDone, taskNum, taskDen,
+        manual, manualPlus, manualMinus, autoScore: autoWork ? autoScore : null,
       };
     }
     function togglePerfDetail(id) {
@@ -28059,6 +28216,202 @@ service cloud.firestore {
         + perfSection("Fazla mesai", otBody)
         + notes + empty;
     }
+    const PERF_CRITS = [
+      { id: "saat", label: "İşe giriş/çıkış saatine uyma", minus: 1, plus: 1 },
+      { id: "telefon", label: "Telefonla uğraşma", plusLabel: "Telefon disiplini", minus: 1, plus: 1 },
+      { id: "gorev", label: "Görevleri yerine getirme", minus: 1, plus: 1 },
+      { id: "musteri", label: "Müşterilerle ilgilenme", minus: 1, plus: 1 },
+      { id: "sorun", label: "Sorun çözme", minus: 1, plus: 1 },
+      { id: "ogrenme", label: "İşi ve programları öğrenebilme", minus: 1, plus: 1 },
+      { id: "etik", label: "İş ahlakı / etik kurallara uyma", minus: 1, plus: 1 },
+      { id: "uyum", label: "İş arkadaşlarıyla uyum", minus: 1, plus: 1 },
+      { id: "bosvardiya", label: "Boş vardiyayı doldurma", plus: 1 },
+      { id: "ovgu", label: "Müşteri övgüsü", plus: 1 },
+      { id: "inisiyatif", label: "İnisiyatif / ekstra iş", plus: 1 },
+      { id: "ogretme", label: "Yeni personele öğretme", plus: 1 },
+      { id: "duzen", label: "Düzen ve temizlik", plus: 1 },
+      { id: "yardim", label: "Yardıma gelme", plus: 1 },
+    ];
+    const PERF_HELP_PTS = 3;
+    function perfCritLabel(id, sign) {
+      const c = PERF_CRITS.find(x => x.id === id);
+      if (!c) return "Diğer";
+      return sign > 0 && c.plusLabel ? c.plusLabel : c.label;
+    }
+    function perfAdjList(rec) {
+      const arr = rec && Array.isArray(rec.perfAdj) ? rec.perfAdj : [];
+      return arr.filter(e => e && typeof e === "object" && (e.sign === 1 || e.sign === -1) && Number(e.pts) > 0);
+    }
+    /** Personel günlük kaydına patron artı/eksisini yazar (perfExcuse ile aynı yol: records/{uid}). */
+    async function perfAdjWrite(uid, key, mutate) {
+      if (!uid || !key) return false;
+      if (!DB.records[uid]) DB.records[uid] = {};
+      const before = DB.records[uid][key] != null ? JSON.parse(JSON.stringify(DB.records[uid][key])) : undefined;
+      const rec = normalizeRec(DB.records[uid][key]);
+      const cur = Array.isArray(rec.perfAdj) ? rec.perfAdj.slice() : [];
+      const next = mutate(cur) || [];
+      const out = { ...rec };
+      if (next.length) out.perfAdj = next; else delete out.perfAdj;
+      DB.records[uid][key] = out;
+      localCacheSave();
+      const ok = await saveUserRecords(uid);
+      if (!ok) {
+        if (before === undefined) delete DB.records[uid][key];
+        else DB.records[uid][key] = before;
+        localCacheSave();
+        showToast("Puan kaydedilemedi", "warn");
+        return false;
+      }
+      return true;
+    }
+    let _perfGive = null;
+    function openPerfGive(uidEnc, sign) {
+      if (!canEditPerformance()) return;
+      const uid = decodeURIComponent(uidEnc || "");
+      const w = (DB.users || []).find(u => u.id === uid);
+      if (!w) return;
+      _perfGive = { uid, sign: sign === -1 ? -1 : 1, crit: "", pts: 2, note: "", date: todayKey() };
+      openModal("Puan ver · " + escHtml(w.name), `<div id="pf-give-body"></div>`, () => savePerfGive());
+      renderPerfGiveBody();
+    }
+    function renderPerfGiveBody() {
+      const el = document.getElementById("pf-give-body");
+      const g = _perfGive;
+      if (!el || !g) return;
+      const noteEl = document.getElementById("pf-give-note");
+      const dateEl = document.getElementById("pf-give-date");
+      if (noteEl) g.note = noteEl.value;
+      if (dateEl && dateEl.value) g.date = dateEl.value;
+      const crits = PERF_CRITS.filter(c => g.sign > 0 ? c.plus : c.minus);
+      const sg = g.sign > 0 ? "+" : "−";
+      el.innerHTML = `
+        <div class="pf-seg">
+          <button type="button" class="pf-seg-btn${g.sign > 0 ? " on plus" : ""}" onclick="perfGiveSet('sign',1)">＋ Artı</button>
+          <button type="button" class="pf-seg-btn${g.sign < 0 ? " on minus" : ""}" onclick="perfGiveSet('sign',-1)">− Eksi</button>
+        </div>
+        <div class="pf-lbl">Kriter</div>
+        <div class="pf-chips">${crits.map(c => `<button type="button" class="pf-chip${g.crit === c.id ? " on" : ""}" onclick="perfGiveSet('crit','${c.id}')">${escHtml(g.sign > 0 && c.plusLabel ? c.plusLabel : c.label)}</button>`).join("")}</div>
+        <div class="pf-lbl">Puan</div>
+        <div class="pf-chips">${[1, 2, 3, 5].map(n => `<button type="button" class="pf-chip pf-pt${g.pts === n ? " on" : ""}" onclick="perfGiveSet('pts',${n})">${sg}${n}</button>`).join("")}</div>
+        <div class="field" style="margin-top:12px;"><label>Gün</label><input type="date" id="pf-give-date" value="${escHtml(g.date || todayKey())}" max="${todayKey()}"/></div>
+        <div class="field"><label>Kısa not (isteğe bağlı)</label><input type="text" id="pf-give-note" maxlength="140" placeholder="Örn. müşteriyle çok iyi ilgilendi" value="${escHtml(g.note || "")}"/></div>
+        <div class="pf-hint">Personel kendi performans sayfasında kriteri ve notu görür. Puanlar her ay sıfırlanır.</div>`;
+    }
+    function perfGiveSet(k, v) {
+      const g = _perfGive;
+      if (!g) return;
+      g[k] = v;
+      if (k === "sign") {
+        const c = PERF_CRITS.find(x => x.id === g.crit);
+        if (c && !(v > 0 ? c.plus : c.minus)) g.crit = "";
+      }
+      renderPerfGiveBody();
+    }
+    async function savePerfGive() {
+      const g = _perfGive;
+      if (!g) return false;
+      if (!g.crit) { showToast("Bir kriter seçin", "warn"); return false; }
+      const key = String(document.getElementById("pf-give-date")?.value || todayKey()).slice(0, 10);
+      if (!parseYMDLocal(key) || key > todayKey()) { showToast("Geçerli bir gün seçin", "warn"); return false; }
+      const note = String(document.getElementById("pf-give-note")?.value || "").trim().slice(0, 140);
+      const entry = {
+        id: "pa" + genId(), sign: g.sign, crit: g.crit, pts: g.pts, note,
+        by: currentUser?.id || "", byName: currentUser?.name || "", at: new Date().toISOString(), src: "manual",
+      };
+      const ok = await perfAdjWrite(g.uid, key, list => [...list, entry]);
+      if (!ok) return false;
+      _perfGive = null;
+      showToast((entry.sign > 0 ? "+" : "−") + entry.pts + " puan yazıldı ✓");
+      try {
+        void enqueueUserNotifs([{
+          userId: g.uid,
+          id: "ct-perf-" + entry.id,
+          title: entry.sign > 0 ? "Artı puan" : "Eksi puan",
+          body: (entry.sign > 0 ? "+" : "−") + entry.pts + " · " + perfCritLabel(entry.crit, entry.sign) + (note ? " · " + note : ""),
+          kind: "perf",
+        }]);
+      } catch (e) {}
+      if (currentPage === "analytics") renderAnalyticsPage();
+      return true;
+    }
+    async function perfAdjDelete(uidEnc, keyEnc, idEnc) {
+      if (!canEditPerformance()) return;
+      const uid = decodeURIComponent(uidEnc || ""), key = decodeURIComponent(keyEnc || ""), id = decodeURIComponent(idEnc || "");
+      if (!confirm("Bu puan kaydı silinsin mi?")) return;
+      const ok = await perfAdjWrite(uid, key, list => list.filter(e => !e || String(e.id) !== id));
+      if (ok) {
+        showToast("Puan kaydı silindi");
+        if (currentPage === "analytics") renderAnalyticsPage();
+      }
+    }
+    function perfTimelineItems(s) {
+      const items = [];
+      const add = (key, pts, crit, text, extra) => {
+        if (!key) return;
+        items.push(Object.assign({ key, pts: Math.round(Number(pts) || 0), crit, text: text || "" }, extra || {}));
+      };
+      const SAAT = perfCritLabel("saat", -1);
+      (s.late || []).forEach(x => add(x.key, -(x.cost || 0), SAAT, "Geç geldi · plan " + x.plan + ", giriş " + x.actual + " (" + x.over + " dk aşım)" + (x.recovered ? " · " + x.recovered + " puan fazla mesaiyle kapandı" : ""), { auto: true }));
+      (s.early || []).forEach(x => add(x.key, -(x.cost || 0), SAAT, "Erken çıktı · plan " + x.plan + ", çıkış " + x.actual + (x.recovered ? " · " + x.recovered + " puan fazla mesaiyle kapandı" : ""), { auto: true }));
+      (s.openShifts || []).forEach(x => add(x.key, -(x.cost || 0), SAAT, "Çıkış yapılmamış", { auto: true }));
+      (s.missed || []).forEach(x => add(x.key, -(x.cost || 0), "Devam", "İşe gelmedi" + (x.plan ? " · plan " + x.plan : ""), { auto: true }));
+      (s.short || []).forEach(x => add(x.key, -(x.cost || 0), "Çalışma süresi", "Plan " + x.expectedH.toFixed(1) + " sa, çalışılan " + x.actualH.toFixed(1) + " sa", { auto: true }));
+      if (s.taskMode === "month") (s.taskOpen || []).forEach(x => add(x.key, -(x.cost || 0), perfCritLabel("gorev", -1), "Açık görev: " + x.text, { auto: true }));
+      (s.reqHits || []).forEach(x => { if (!x.within) add(x.key, -(x.cost || 0), "Talep sınırı", perfReqTypeLabel(x.type) + " · ücretsiz talep sınırı aşıldı", { auto: true }); });
+      (s.manual || []).forEach(m => add(m.key, m.sign * m.pts, perfCritLabel(m.crit, m.sign), m.note || (m.src === "help" ? "Vardiya dışında yardıma geldi" : ""), { manual: true, id: m.id, byName: m.byName }));
+      return items.filter(i => i.pts !== 0 || i.manual);
+    }
+    function perfPtsTxt(n) {
+      n = Math.round(Number(n) || 0);
+      return n > 0 ? "+" + n : (n < 0 ? "−" + (-n) : "0");
+    }
+    function perfTimelineHtml(s, edit) {
+      const items = perfTimelineItems(s);
+      const otCut = (s.cuts || []).find(c => c.id === "ot");
+      const byDay = {};
+      items.forEach(i => { (byDay[i.key] = byDay[i.key] || []).push(i); });
+      const days = Object.keys(byDay).sort((a, b) => b.localeCompare(a));
+      const uid = s.w.id;
+      const itemHtml = i => {
+        const plus = i.pts > 0;
+        const del = edit && i.manual && i.id
+          ? `<button type="button" class="pf-del" title="Sil" onclick="perfAdjDelete('${perfEnc(uid)}','${perfEnc(i.key)}','${perfEnc(i.id)}')">×</button>` : "";
+        const by = i.manual ? (i.byName ? " · " + i.byName : "") : " · otomatik";
+        return `<div class="pf-it">
+          <span class="pf-dot ${plus ? "p" : "m"}">${plus ? "+" : "−"}</span>
+          <div class="pf-it-body">
+            <div class="pf-it-crit">${escHtml(i.crit)}</div>
+            <div class="pf-it-note">${escHtml((i.text || "") + by)}</div>
+          </div>
+          <span class="pf-it-pts" style="color:${plus ? "var(--green)" : "var(--red)"}">${perfPtsTxt(i.pts)}</span>${del}
+        </div>`;
+      };
+      let html = "";
+      if (otCut && otCut.points) {
+        html += `<div class="pf-day"><div class="pf-day-hd"><span>Ay geneli</span><span class="pf-net" style="color:var(--green)">${perfPtsTxt(otCut.points)}</span></div>
+          <div class="pf-it"><span class="pf-dot p">+</span><div class="pf-it-body"><div class="pf-it-crit">Fazla mesai</div><div class="pf-it-note">${escHtml(otCut.detail || "")}</div></div><span class="pf-it-pts" style="color:var(--green)">${perfPtsTxt(otCut.points)}</span></div></div>`;
+      }
+      days.forEach(k => {
+        const list = byDay[k];
+        const net = list.reduce((a, i) => a + i.pts, 0);
+        html += `<div class="pf-day"><div class="pf-day-hd"><span>${escHtml(fmtDateTR(k) || k)}</span><span class="pf-net" style="color:${net > 0 ? "var(--green)" : (net < 0 ? "var(--red)" : "var(--text3)")}">${perfPtsTxt(net)}</span></div>${list.map(itemHtml).join("")}</div>`;
+      });
+      if (!html) html = `<div class="pf-empty">Bu ay henüz artı veya eksi yok.</div>`;
+      return html;
+    }
+    function perfInitials(name) {
+      return String(name || "?").split(" ").filter(Boolean).map(x => x[0]).join("").slice(0, 2).toUpperCase() || "?";
+    }
+    function perfMini(label, value, color) {
+      return `<div><span>${escHtml(label)}</span><b style="color:${color || "var(--text)"}">${value}</b></div>`;
+    }
+    function perfOpenPerson(idEnc) {
+      perfDetailId = idEnc ? decodeURIComponent(idEnc) : "";
+      perfExcuseDraft = null;
+      window._pfMoreOpen = false;
+      renderAnalyticsPage();
+      try { window.scrollTo(0, 0); const sc = document.querySelector(".main-content, #main-content, .content"); if (sc) sc.scrollTop = 0; } catch (e) {}
+    }
     function perfTodayImpact(w, monthRow, year, month) {
       const key = todayKey();
       const d = parseYMDLocal(key);
@@ -28135,6 +28488,9 @@ service cloud.firestore {
           push(0, fmtH(x.h) + " fazla mesai. Kalan süre artı yazar (saatte +" + (limits.otPerHour || 0) + ", tavan +" + (limits.otCap || 0) + ").");
         }
       });
+      (row.manual || []).filter(m => m.key === key).forEach(m => {
+        push(m.sign * m.pts, perfCritLabel(m.crit, m.sign) + (m.note ? ": " + m.note : "") + ".");
+      });
       const pending = !first && !todayTasks.length && !todayReqs.length && delta === 0;
       // Günlük 100 üzerinden puan yok; sadece o günün ± etkisi (aylık 100'e yazılır)
       return { key, leave: false, pending, score: null, delta, reasons };
@@ -28191,30 +28547,39 @@ service cloud.firestore {
       </div>`;
     }
     function perfStaffHtml(s, year, month) {
-      const came = Math.max(0, s.scheduled - s.missed.length);
-      const dropped = (s.cuts || []).reduce((n, c) => n + (c.points < 0 ? -c.points : 0), 0);
-      const taskTxt = s.taskDen ? (s.taskNum + "/" + s.taskDen) : "—";
-      const stat = (label, value, tone) => `<div class="perf-stat"><span>${escHtml(label)}</span><b style="color:${tone || "var(--text)"}">${value}</b></div>`;
-      const monthCard = s.score == null
-        ? `<div class="card"><div class="perf-head-title" style="font-size:22px;">Henüz puan yok</div><div class="perf-row-sub" style="margin-top:8px;">Bu ay için iş kaydı oluşunca aylık puan (100 üzerinden) burada görünür.</div></div>`
-        : `<div class="card">
-          <div class="perf-head">
-            <div>
-              <div class="perf-kicker">${escHtml(MONTH_NAMES[month] + " " + year)} · aylık 100</div>
-              <div class="perf-head-title">${escHtml(perfVerdict(s.score))}</div>
+      const color = perfScoreColor(s.score);
+      const nowD = new Date();
+      const isCur = nowD.getFullYear() === year && nowD.getMonth() === month;
+      const hero = `<div class="card pf-hero">
+          <div class="pf-hero-top">
+            <div style="min-width:0;">
+              <div class="pf-kicker">${escHtml(MONTH_NAMES[month] + " " + year)}</div>
+              <div class="pf-title">Aylık puanın</div>
+              <div class="pf-sub">${s.score == null ? "Bu ay henüz kayıt yok" : escHtml(perfVerdict(s.score))} · her ay sıfırlanır</div>
             </div>
-            <div class="perf-mine-score" style="color:${perfScoreColor(s.score)}">${s.score}</div>
+            <div class="pf-ring" style="--c:${color}"><b>${s.score == null ? "—" : s.score}</b><span>puan</span></div>
           </div>
-          <div class="perf-meter"><span style="width:${Math.max(0, Math.min(100, s.score))}%;background:${perfScoreColor(s.score)}"></span></div>
-          <div class="perf-stats">
-            ${stat("Geldi", came + "/" + (s.scheduled || 0))}
-            ${stat("Aşan gün", String(s.late.length), s.late.length ? "var(--red)" : "var(--green)")}
-            ${stat("Görev", escHtml(taskTxt))}
-            ${stat("Düşen", String(dropped), dropped ? "var(--red)" : "var(--green)")}
+          <div class="pf-meter lg"><i style="width:${Math.max(0, Math.min(100, s.score || 0))}%;background:${color};color:${color}"></i></div>
+          <div class="pf-mini">
+            ${perfMini("Otomatik", s.autoScore == null ? "—" : s.autoScore)}
+            ${perfMini("Artı", "+" + (s.manualPlus || 0), "var(--green)")}
+            ${perfMini("Eksi", "−" + (s.manualMinus || 0), "var(--red)")}
           </div>
-          <div class="perf-row-sub" style="margin-top:10px;">${dropped ? ("100 üzerinden " + dropped + " puan düştü · kalan " + s.score + ".") : "100 üzerinden puan düşmedi."}</div>
         </div>`;
-      return perfTodayCard(s.w, s, year, month) + `<div class="perf-section-label">Bu ay · 100 üzerinden</div>` + monthCard;
+      let today = "";
+      if (isCur) {
+        const t = perfTodayImpact(s.w, s, year, month);
+        const n = Math.round(Number(t.delta) || 0);
+        const reasons = (t.reasons || []).filter(r => r.pts || !t.pending);
+        today = `<div class="pf-section">Bugün</div><div class="card">
+          <div class="pf-today">
+            <div class="pf-today-delta" style="color:${perfTodayDeltaColor(n)}">${t.leave ? "İzin" : perfPtsTxt(n)}</div>
+            <div class="pf-sub" style="margin:0;">${t.leave ? "Bugün izinli gün, puana yazılmaz." : (t.pending ? "Bugün henüz puanı etkileyen bir hareket yok." : "Bugünkü artı / eksi toplamın.")}</div>
+          </div>
+          ${!t.leave && reasons.length ? `<div style="margin-top:10px;">${perfTodayReasonHtml(reasons)}</div>` : ""}
+        </div>`;
+      }
+      return hero + today + `<div class="pf-section">Günlük artı / eksi</div>` + perfTimelineHtml(s, false);
     }
     function togglePerfRules() {
       perfRulesOpen = !perfRulesOpen;
@@ -28278,6 +28643,40 @@ service cloud.firestore {
     function perfCameLine(s) {
       return s.scheduled ? Math.max(0, s.scheduled - s.missed.length) + "/" + s.scheduled + " gün" : "plan yok";
     }
+    function perfDetailView(s, year, month, edit) {
+      const color = perfScoreColor(s.score);
+      const wc = s.w.color || "#5b9cf6";
+      const moreOpen = !!(window._pfMoreOpen || perfExcuseDraft);
+      return `<div class="pf-detail">
+        <button type="button" class="pf-back" onclick="perfOpenPerson('')">‹ Tüm personel</button>
+        <div class="card pf-hero">
+          <div class="pf-dtop">
+            <span class="pf-av lg" style="--c:${wc}">${escHtml(perfInitials(s.w.name))}</span>
+            <div class="pf-dname">
+              <div class="pf-title">${escHtml(s.w.name)}</div>
+              <div class="pf-sub">${escHtml(MONTH_NAMES[month] + " " + year)} · ${escHtml(perfVerdict(s.score))}${s.place ? " · " + s.place + ". sıra" : ""}</div>
+            </div>
+            <div class="pf-ring" style="--c:${color}"><b>${s.score == null ? "—" : s.score}</b><span>puan</span></div>
+          </div>
+          <div class="pf-meter lg"><i style="width:${Math.max(0, Math.min(100, s.score || 0))}%;background:${color};color:${color}"></i></div>
+          <div class="pf-mini">
+            ${perfMini("Otomatik", s.autoScore == null ? "—" : s.autoScore)}
+            ${perfMini("Patron artısı", "+" + (s.manualPlus || 0), "var(--green)")}
+            ${perfMini("Patron eksisi", "−" + (s.manualMinus || 0), "var(--red)")}
+          </div>
+          ${edit ? `<div class="pf-give-row">
+            <button type="button" class="btn btn-primary pf-give-btn" onclick="openPerfGive('${perfEnc(s.w.id)}',1)">＋ Puan ver</button>
+            <button type="button" class="btn btn-secondary pf-give-btn minus" onclick="openPerfGive('${perfEnc(s.w.id)}',-1)">− Eksi yaz</button>
+          </div>` : ""}
+        </div>
+        <div class="pf-section">Günlük artı / eksi</div>
+        ${perfTimelineHtml(s, edit)}
+        <details class="pf-more"${moreOpen ? " open" : ""} ontoggle="window._pfMoreOpen=this.open">
+          <summary>Ayrıntılı kayıtlar ve istisnalar</summary>
+          <div class="pf-more-body">${perfPersonDetail(s, true)}</div>
+        </details>
+      </div>`;
+    }
     function renderPerformanceAnalytics(workers, year, month) {
       const rows = workers.map(w => collectWorkerPerformance(w, year, month)).sort((a, b) => {
         const an = String(a.w.name || ""), bn = String(b.w.name || "");
@@ -28287,87 +28686,53 @@ service cloud.firestore {
         return b.score - a.score || a.late.length - b.late.length || an.localeCompare(bn, "tr");
       });
       const scored = rows.filter(r => r.score != null);
-      const rest = rows.filter(r => r.score == null);
       scored.forEach((s, i) => { s.place = i + 1; });
+      const edit = canEditPerformance();
+      const picked = perfDetailId ? rows.find(r => r.w.id === perfDetailId) : null;
+      if (picked) return perfDetailView(picked, year, month, edit);
       const avg = scored.length ? Math.round(scored.reduce((a, r) => a + r.score, 0) / scored.length) : null;
-      const topScore = scored[0] || null;
-      const lowScore = scored.length ? scored[scored.length - 1] : null;
-      const lateDays = rows.reduce((a, r) => a + r.late.length, 0);
+      const plusPts = rows.reduce((a, r) => a + (r.manualPlus || 0), 0);
+      const minusPts = rows.reduce((a, r) => a + (r.manualMinus || 0), 0);
       const limits = getPerfLimits();
-      const podium = scored.slice(0, 3);
-      const list = scored.slice(podium.length);
-      const podiumClass = podium.length <= 1 ? "one" : podium.length === 2 ? "two" : "";
-      const podiumOrder = podium.length >= 3 ? [podium[1], podium[0], podium[2]] : podium;
-      const stat = (label, value, color) => `<div class="perf-stat"><span>${escHtml(label)}</span><b style="color:${color || "var(--text)"}">${value}</b></div>`;
-      let html = `
-        <div class="card">
-          <div class="perf-head">
-            <div>
-              <div class="perf-kicker">${escHtml(MONTH_NAMES[month] + " " + year)}</div>
-              <div class="perf-head-title">Sıralama</div>
+      let html = `<div class="card pf-hero">
+          <div class="pf-hero-top">
+            <div style="min-width:0;">
+              <div class="pf-kicker">${escHtml(MONTH_NAMES[month] + " " + year)}</div>
+              <div class="pf-title">Performans</div>
+              <div class="pf-sub">Her ay sıfırlanır · kişiye dokun, detay ve puan ver</div>
             </div>
-            ${canEditPerformance() ? `<button type="button" class="btn btn-secondary btn-sm" onclick="togglePerfRules()">${perfRulesOpen ? "Kuralları gizle" : "Puan kuralları"}</button>` : ""}
+            <div class="pf-avg"><b style="color:${perfScoreColor(avg)}">${avg == null ? "—" : avg}</b><span>ortalama</span></div>
           </div>
-          <div class="perf-stats">
-            ${stat("Ortalama", avg == null ? "—" : avg, perfScoreColor(avg))}
-            ${stat("1. sıra", topScore ? escHtml(String(topScore.w.name || "").split(" ")[0]) : "—", topScore ? perfScoreColor(topScore.score) : "")}
-            ${stat("Son sıra", lowScore ? String(lowScore.score) : "—", lowScore ? perfScoreColor(lowScore.score) : "")}
-            ${stat("Aşan gün", String(lateDays), lateDays ? "var(--red)" : "var(--green)")}
+          <div class="pf-mini">
+            ${perfMini("Personel", String(rows.length))}
+            ${perfMini("Patron artısı", "+" + plusPts, "var(--green)")}
+            ${perfMini("Patron eksisi", "−" + minusPts, "var(--red)")}
           </div>
-          ${perfRulesPanel(limits)}
+          ${edit ? `<div class="pf-hero-actions"><button type="button" class="btn btn-secondary btn-sm" onclick="togglePerfRules()">${perfRulesOpen ? "Kuralları gizle" : "Otomatik puan kuralları"}</button></div>` : ""}
+          ${edit && perfRulesOpen ? perfRulesPanel(limits) : ""}
         </div>`;
-      if (podium.length) {
-        html += `<div class="perf-podium ${podiumClass}">`;
-        podiumOrder.forEach(s => {
-          const color = perfScoreColor(s.score);
-          const open = perfDetailId === s.w.id;
-          html += `<div class="card perf-pod rank-${s.place}${open ? " is-open" : ""}" onclick="togglePerfDetail('${s.w.id}')">
-            <div class="perf-place">${String(s.place).padStart(2, "0")}</div>
-            <div class="perf-pod-name">${escHtml(s.w.name)}</div>
-            <div class="perf-row-sub">${escHtml(perfVerdict(s.score))} · ${escHtml(perfCameLine(s))}</div>
-            <div class="perf-pod-score" style="color:${color}">${s.score}</div>
-            <div class="perf-meter"><span style="width:${s.score}%;background:${color}"></span></div>
-          </div>`;
-        });
-        html += `</div>`;
-        const picked = podium.find(s => perfDetailId === s.w.id);
-        if (picked) html += `<div class="card">${perfPersonDetail(picked, true)}</div>`;
-      }
-      if (list.length) {
-        html += `<div class="perf-section-label">Devam</div>`;
-        list.forEach(s => {
-          const color = perfScoreColor(s.score);
-          const open = perfDetailId === s.w.id;
-          html += `<div class="card perf-rank-card${open ? " is-open" : ""}" onclick="togglePerfDetail('${s.w.id}')">
-            <div class="perf-row">
-              <div class="perf-row-place">${String(s.place).padStart(2, "0")}</div>
-              <div style="min-width:0;">
-                <div class="perf-row-name">${escHtml(s.w.name)}</div>
-                <div class="perf-row-sub">${escHtml(perfVerdict(s.score))} · ${escHtml(perfCameLine(s))}</div>
-                <div class="perf-meter"><span style="width:${s.score}%;background:${color}"></span></div>
-              </div>
-              <div class="perf-row-score" style="color:${color}">${s.score}</div>
-            </div>
-            ${open ? perfPersonDetail(s) : ""}
-          </div>`;
-        });
-      }
-      if (rest.length) {
-        html += `<div class="perf-section-label">Sırasız</div>`;
-        rest.forEach(s => {
-          html += `<div class="card perf-rank-card">
-            <div class="perf-row">
-              <div class="perf-row-place">—</div>
-              <div>
-                <div class="perf-row-name">${escHtml(s.w.name)}</div>
-                <div class="perf-row-sub">Bu ay puan yazılacak çalışma yok</div>
-              </div>
-              <div class="perf-row-score" style="color:var(--text3)">—</div>
-            </div>
-          </div>`;
-        });
-      }
-      if (!rows.length) html += `<div class="card perf-empty">Bu ay personel yok.</div>`;
+      if (!rows.length) return html + `<div class="pf-empty" style="margin-top:12px;">Bu ay personel yok.</div>`;
+      html += `<div class="pf-list">`;
+      rows.forEach(s => {
+        const color = perfScoreColor(s.score);
+        const wc = s.w.color || "#5b9cf6";
+        const pc = (s.manual || []).filter(m => m.sign > 0).length;
+        const mc = (s.manual || []).filter(m => m.sign < 0).length;
+        const tags = (pc ? ` · <span class="p">+${s.manualPlus}</span>` : "") + (mc ? ` · <span class="m">−${s.manualMinus}</span>` : "");
+        const place = s.place || 0;
+        html += `<button type="button" class="pf-card" onclick="perfOpenPerson('${perfEnc(s.w.id)}')">
+          <span class="pf-place${place && place <= 3 ? " top" + place : ""}">${place || "—"}</span>
+          <span class="pf-av" style="--c:${wc}">${escHtml(perfInitials(s.w.name))}</span>
+          <span class="pf-mid">
+            <span class="pf-name">${escHtml(s.w.name)}</span>
+            <span class="pf-meta">${s.score == null ? "Bu ay kayıt yok" : escHtml(perfVerdict(s.score) + " · " + perfCameLine(s))}${tags}</span>
+            <span class="pf-meter"><i style="width:${Math.max(0, Math.min(100, s.score || 0))}%;background:${color};color:${color}"></i></span>
+          </span>
+          <span class="pf-score" style="color:${color}">${s.score == null ? "—" : s.score}</span>
+          <span class="pf-chev">›</span>
+        </button>`;
+      });
+      html += `</div>`;
       return html;
     }
     // ── ANALYTICS PAGE ──
@@ -28786,7 +29151,7 @@ service cloud.firestore {
         const pdfToday = todayKey();
         const allOffKeys = new Set();
         dayRows.forEach(r => {
-          if (workerWeeklyOff.includes(r.wd) && r.key <= pdfToday) allOffKeys.add(r.key);
+          if (effWeeklyOffOn(w.id, r.key) && r.key <= pdfToday) allOffKeys.add(r.key);
         });
         const allRows = dayRows.filter(r => {
           const isFuture = r.key > pdfToday;
@@ -28814,7 +29179,7 @@ service cloud.firestore {
 
         const rows = allRows.map((r, ri) => {
           const isZ = ri % 2 === 1;
-          const isWeeklyOffDay = workerWeeklyOff.includes(r.wd);
+          const isWeeklyOffDay = effWeeklyOffOn(w.id, r.key);
           const isLeave = !!(r.leaveTypeId || r.lt);
           const isOff = isWeeklyOffDay && r.h === 0 && !isLeave;
           const isWorkedOnOff = isWeeklyOffDay && r.h > 0;
@@ -33285,6 +33650,126 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
         console.warn("pullCompanyDocIntoDbForQr:", e);
       }
     }
+    /* ── Giriş kuralları: vardiyadan erken giriş sınırı, hafta tatilinde giriş, vardiya dışı "yardıma geldim" ── */
+    function readEarlyClockInMaxMin(u) {
+      const v = u ? u.earlyClockInMaxMin : null;
+      if (v === null || v === undefined || v === "") return null;
+      const n = Math.round(Number(v));
+      return Number.isFinite(n) && n >= 0 ? Math.min(n, 720) : null;
+    }
+    function fmtMinOfDay(m) {
+      m = ((Math.round(m) % 1440) + 1440) % 1440;
+      return String(Math.floor(m / 60)).padStart(2, "0") + ":" + String(m % 60).padStart(2, "0");
+    }
+    function clockInGateCheck(user, dateKey, nowHHMM) {
+      const res = { outside: false, dayOff: false, tooEarly: false, allowNormal: true, msg: "", tpl: null };
+      if (!user || !user.id) return res;
+      const uid = user.id;
+      const nowMin = toMins(nowHHMM);
+      if (nowMin == null) return res;
+      // Dünden taşan gece vardiyası içindeysek normal giriş
+      try {
+        const y = parseYMDLocal(dateKey);
+        if (y) {
+          y.setDate(y.getDate() - 1);
+          const yk = `${y.getFullYear()}-${String(y.getMonth() + 1).padStart(2, "0")}-${String(y.getDate()).padStart(2, "0")}`;
+          const yt = getEffectiveShiftTemplate(yk, uid);
+          if (yt && yt.startTime && yt.endTime) {
+            const ys = toMins(yt.startTime), ye = toMins(yt.endTime);
+            if (ys != null && ye != null && ye <= ys && nowMin < ye) return res;
+          }
+        }
+      } catch (e) {}
+      const rec = normalizeRec((DB.records[uid] || {})[dateKey]);
+      if (rec.leaveType) return res;
+      const tpl = getEffectiveShiftTemplate(dateKey, uid);
+      res.tpl = tpl;
+      const hasPlan = !!(tpl && tpl.startTime);
+      if (!hasPlan) {
+        if (effWeeklyOffOn(uid, dateKey)) {
+          res.dayOff = true;
+          res.outside = true;
+          res.allowNormal = user.allowDayOffClockIn !== false;
+          if (!res.allowNormal) res.msg = "Bugün hafta tatilin. Hafta tatilinde normal mesai girişi kapalı.";
+        }
+        return res;
+      }
+      const st = toMins(tpl.startTime);
+      let en = tpl.endTime ? toMins(tpl.endTime) : null;
+      if (st == null) return res;
+      if (en != null && en <= st) en += 1440;
+      const limit = readEarlyClockInMaxMin(user);
+      const earliest = st - (limit != null ? limit : 60);
+      if (nowMin < earliest) {
+        res.outside = true;
+        if (limit != null) {
+          res.tooEarly = true;
+          res.allowNormal = false;
+          res.msg = `Vardiyan ${tpl.startTime} başlıyor. En erken ${fmtMinOfDay(st - limit)} itibarıyla giriş yapabilirsin.`;
+        }
+      } else if (en != null && en <= 1440 && nowMin > en) {
+        res.outside = true;
+      }
+      return res;
+    }
+    function showClockInChoice(gate) {
+      return new Promise(resolve => {
+        const prev = document.getElementById("clockin-choice-ov");
+        if (prev) prev.remove();
+        const ov = document.createElement("div");
+        ov.id = "clockin-choice-ov";
+        ov.className = "clockin-choice-ov";
+        const title = gate.dayOff ? "Bugün hafta tatilin" : "Vardiya saatin dışındasın";
+        const info = gate.msg
+          ? gate.msg
+          : (gate.dayOff ? "Normal mesaiye mi başlıyorsun, yoksa yardıma mı geldin?" : "Normal mesaiye mi başlıyorsun, yoksa yardıma mı geldin?");
+        ov.innerHTML = `<div class="clockin-choice" role="dialog" aria-modal="true">
+          <h3>${escHtml(title)}</h3>
+          <p>${escHtml(info)}</p>
+          ${gate.allowNormal ? `<button type="button" class="btn btn-secondary" data-c="normal">Normal mesai</button>` : ""}
+          <button type="button" class="btn btn-primary" data-c="help">Yardıma geldim (puan)</button>
+          <button type="button" class="btn btn-secondary" data-c="cancel" style="opacity:.8;">Vazgeç</button>
+        </div>`;
+        const done = v => { try { ov.remove(); } catch (e) {} resolve(v); };
+        ov.addEventListener("click", ev => {
+          const c = ev.target.closest("[data-c]")?.getAttribute("data-c");
+          if (c === "normal") done("normal");
+          else if (c === "help") done("help");
+          else if (c === "cancel" || ev.target === ov) done(null);
+        });
+        document.body.appendChild(ov);
+      });
+    }
+    async function createHelpVisitRequest(user, dateKey, timeHHMM) {
+      if (!DB.requests) DB.requests = [];
+      const dup = DB.requests.find(r => r && r.type === "help_visit" && r.userId === user.id && r.dateKey === dateKey && r.status !== "rejected");
+      if (dup) return { ok: false, dup: true };
+      const req = {
+        id: "r" + genId(),
+        type: "help_visit",
+        userId: user.id,
+        companyId: user.companyId,
+        branchId: normalizeUserBranchId(user),
+        status: "pending",
+        dateKey,
+        time: timeHHMM,
+        note: "Vardiya dışında yardıma geldi",
+        createdAt: new Date().toISOString(),
+      };
+      DB.requests.push(req);
+      localCacheSave();
+      try {
+        await fsSetDoc("requests", req.id, req);
+      } catch (e) {
+        DB.requests = DB.requests.filter(r => r.id !== req.id);
+        localCacheSave();
+        return { ok: false, error: e };
+      }
+      try { pushWorkerFeed({ title: "Yardım kaydı", body: `Yardıma geldin (${timeHHMM}). Patron onayı bekleniyor.`, kind: "request_help" }); } catch (e) {}
+      try { enqueueNewStaffRequest(req); } catch (e) {}
+      try { updateReqNotifDot(); } catch (e) {}
+      return { ok: true, req };
+    }
     async function handleQRResult(raw) {
       const rawTrim = String(raw || "").trim().replace(/\0/g, "");
       try {
@@ -33389,6 +33874,30 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
           if (hasOpen) {
             showQrWarningOverlay("in");
             return;
+          }
+          const gate = clockInGateCheck(currentUser, today, now);
+          if (gate.outside) {
+            const choice = await showClockInChoice(gate);
+            if (choice === "help") {
+              const hr = await createHelpVisitRequest(currentUser, today, now);
+              if (hr.ok) {
+                showQRScanResult("in", `🤝 Yardım kaydın alındı (${now}). Patron onaylayınca puanına eklenir.`);
+                try { await fsAddLog({ type: "qr_help", userId: uid, companyId: currentUser.companyId, atLocal: now }); } catch (_) {}
+              } else if (hr.dup) {
+                showQRScanResult("error", "Bugün için yardım kaydın zaten var.");
+              } else {
+                showQRScanResult("error", "❌ Yardım kaydı gönderilemedi.");
+              }
+              return;
+            }
+            if (choice !== "normal") {
+              showQRScanResult("error", "İşlem iptal edildi.");
+              return;
+            }
+            if (!gate.allowNormal) {
+              showQRScanResult("error", "⏰ " + (gate.msg || "Şu an giriş yapamazsın."));
+              return;
+            }
           }
           const rec = normalizeRec(DB.records[uid][today]);
           const beforeToday = DB.records[uid][today] != null ? JSON.parse(JSON.stringify(DB.records[uid][today])) : undefined;
@@ -34116,7 +34625,7 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
         if (!tpl || !tpl.startTime) return;
         const { year, month, day } = parseKey(dateKey);
         const wd = new Date(year, month, day).getDay();
-        if ((getWorkerWeeklyOff(uid) || []).includes(wd)) return;
+        if (effWeeklyOffOn(uid, dateKey)) return;
         const clock = getShiftDayClockState(uid, dateKey);
         if (clock.leave) return;
 
@@ -34373,10 +34882,16 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
         settings.shiftTemplates.push(item);
       }
     }
-    function putSwapDayPlan(uid, key, snap) {
+    function swapRecBase(rec) {
+      const o = { ...rec, shifts: Array.isArray(rec.shifts) ? rec.shifts : [], note: rec.note || "" };
+      ["leaveType", "leaveMeta", "fromSwap", "swapMeta", "swapOff", "swapOn", "offMoved"].forEach(k => { delete o[k]; });
+      return o;
+    }
+    function putSwapDayPlan(uid, key, snap, opts) {
       if (!DB.records[uid]) DB.records[uid] = {};
       const rec = normalizeRec(DB.records[uid][key]);
-      const next = { shifts: Array.isArray(rec.shifts) ? rec.shifts : [], note: rec.note || "" };
+      const next = swapRecBase(rec);
+      const o = opts || {};
       const meta = snap && snap.swapMeta ? snap.swapMeta : null;
       if (snap && snap.isLeave && snap.leaveType) {
         next.leaveType = snap.leaveType;
@@ -34390,6 +34905,11 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
         if (snap && snap.startTime) {
           next.fromSwap = true;
           if (meta) next.swapMeta = meta;
+          if (o.workOnOff) next.swapOn = true;
+        } else {
+          next.swapOff = true;
+          if (meta) next.swapMeta = meta;
+          if (o.offMoved) next.offMoved = true;
         }
       }
       DB.records[uid][key] = next;
@@ -34397,7 +34917,9 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
     function clearSwapDayPlan(uid, key) {
       if (!DB.records[uid]) DB.records[uid] = {};
       const rec = normalizeRec(DB.records[uid][key]);
-      DB.records[uid][key] = { shifts: Array.isArray(rec.shifts) ? rec.shifts : [], note: rec.note || "" };
+      const next = swapRecBase(rec);
+      next.swapOff = true;
+      DB.records[uid][key] = next;
       upsertDailyShiftAssignment(uid, key, null);
     }
     function applyApprovedShiftSwap(r) {
@@ -34416,7 +34938,16 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
       };
       const bForA = { ...bSnap, swapMeta: { ...baseMeta, otherId: r.peerId } };
       const aForB = { ...aSnap, swapMeta: { ...baseMeta, otherId: r.userId } };
-      if (myKey === peerKey) {
+      if (r.userId === r.peerId) {
+        // Aynı personelin iki günü yer değiştirir (hafta tatili ↔ çalışma günü dahil)
+        const uid = r.userId;
+        const aOff = effWeeklyOffOn(uid, myKey) && !aSnap.startTime && !aSnap.isLeave;
+        const bOff = effWeeklyOffOn(uid, peerKey) && !bSnap.startTime && !bSnap.isLeave;
+        if (myKey !== peerKey) {
+          putSwapDayPlan(uid, myKey, bForA, { offMoved: bOff, workOnOff: aOff && !!bSnap.startTime });
+          putSwapDayPlan(uid, peerKey, aForB, { offMoved: aOff, workOnOff: bOff && !!aSnap.startTime });
+        }
+      } else if (myKey === peerKey) {
         putSwapDayPlan(r.userId, myKey, bForA);
         putSwapDayPlan(r.peerId, peerKey, aForB);
       } else {
@@ -34428,7 +34959,7 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
       r.appliedAt = new Date().toISOString();
       saveSettings();
       try { saveUserRecords(r.userId); } catch (e) {}
-      try { saveUserRecords(r.peerId); } catch (e) {}
+      if (r.peerId !== r.userId) { try { saveUserRecords(r.peerId); } catch (e) {} }
     }
     function getPendingShiftSwapsForCell(workerId, dateKey) {
       return getRequests().filter(r =>
@@ -34831,10 +35362,7 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
         return false;
       }
       if (myId === peerId && myDateKey === peerDateKey) return false;
-      if (myId === peerId) {
-        showToast("Aynı personelin günleri takas edilemez", "warn");
-        return false;
-      }
+      const samePerson = myId === peerId;
       const workers = getWorkers();
       const left = workers.find(w => w.id === myId) || (DB.users || []).find(u => u.id === myId);
       const peer = workers.find(w => w.id === peerId) || (DB.users || []).find(u => u.id === peerId);
@@ -34849,6 +35377,10 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
       const peerDay = snapDayForSwap(peerId, peerDateKey);
       if (!myDay.startTime && !peerDay.startTime && !myDay.isLeave && !peerDay.isLeave) {
         showToast("Seçilen günlerde planlı vardiya veya izin yok", "warn");
+        return false;
+      }
+      if (samePerson && (myDay.isLeave || peerDay.isLeave)) {
+        showToast("İzinli gün kendi içinde takas edilemez", "warn");
         return false;
       }
       const kind = (myDay.isLeave || peerDay.isLeave) ? "leave" : "shift";
@@ -34879,7 +35411,12 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
         peerShiftSnap: peerDay,
         note: note || "Patron tarafından yapıldı",
       };
-      const swapCells = myDateKey === peerDateKey
+      const swapCells = samePerson
+        ? [
+            { workerId: myId, dateKey: myDateKey, action: "swap", extra: "gün takası" },
+            { workerId: myId, dateKey: peerDateKey, action: "swap", extra: "gün takası" },
+          ]
+        : myDateKey === peerDateKey
         ? [
             { workerId: myId, dateKey: myDateKey, action: "swap", extra: peer.name },
             { workerId: peerId, dateKey: peerDateKey, action: "swap", extra: left.name },
@@ -34898,8 +35435,10 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
       updateReqNotifDot();
       pruneRevertedShiftPlanNotifs(swapCells);
       pushWorkerFeed({
-        title: "Personeller arası takas",
-        body: `${left.name} ↔ ${peer.name} (${myDateKey} ⇄ ${peerDateKey}) plana işlendi.`,
+        title: samePerson ? "Gün takası" : "Personeller arası takas",
+        body: samePerson
+          ? `${left.name}: ${myDateKey} ⇄ ${peerDateKey} plana işlendi.`
+          : `${left.name} ↔ ${peer.name} (${myDateKey} ⇄ ${peerDateKey}) plana işlendi.`,
         kind: "request_shift_swap",
       });
       showToast("Takas plana işlendi ✓");
@@ -34942,6 +35481,9 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
       window.removeEventListener("pointermove", onSplanSwapPointerMove, true);
       window.removeEventListener("pointerup", onSplanSwapPointerUp, true);
       window.removeEventListener("pointercancel", onSplanSwapPointerUp, true);
+      window.removeEventListener("touchmove", onSplanSwapTouchMove, true);
+      window.removeEventListener("touchend", onSplanSwapTouchEnd, true);
+      window.removeEventListener("touchcancel", onSplanSwapTouchEnd, true);
       if (st && st.active) {
         window._splanSuppressClick = true;
         setTimeout(() => { window._splanSuppressClick = false; }, 80);
@@ -34962,6 +35504,36 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
       document.body.appendChild(ghost);
       st.ghost = ghost;
       closeShiftCtxMenu();
+      if (st.touch) { try { navigator.vibrate && navigator.vibrate(18); } catch (e) {} }
+    }
+    function splanDragMoveTo(st, x, y) {
+      st.x = x; st.y = y;
+      if (st.ghost) { st.ghost.style.left = x + "px"; st.ghost.style.top = y + "px"; }
+      splanClearDropHighlights();
+      const over = document.elementFromPoint(x, y)?.closest?.(".splan-cell-inner");
+      if (over && over !== st.srcEl) over.classList.add("splan-drop-ok");
+      st.over = over && over !== st.srcEl ? over : null;
+    }
+    /* Dokunmatik: uzun basınca sürükleme başlar; sürüklerken touchmove engellenir ki sayfa kaymasın (pointercancel olmasın). */
+    function onSplanSwapTouchMove(ev) {
+      const st = _splanDrag;
+      if (!st || !st.touch) return;
+      const t = ev.touches && ev.touches[0];
+      if (!t) return;
+      if (!st.active) {
+        const dist = Math.hypot(t.clientX - st.x0, t.clientY - st.y0);
+        if (dist > 8 || ev.cancelable === false) splanEndDragState();
+        return;
+      }
+      if (ev.cancelable) ev.preventDefault();
+      splanDragMoveTo(st, t.clientX, t.clientY);
+    }
+    function onSplanSwapTouchEnd(ev) {
+      const st = _splanDrag;
+      if (!st || !st.touch) return;
+      const t = ev.changedTouches && ev.changedTouches[0];
+      if (st.active && ev.cancelable) ev.preventDefault();
+      splanFinishDrop(st, t ? t.clientX : st.x, t ? t.clientY : st.y);
     }
     function onSplanSwapPointerMove(ev) {
       const st = _splanDrag;
@@ -34975,22 +35547,27 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
         if (!st.active) return;
       }
       ev.preventDefault();
-      st.x = ev.clientX; st.y = ev.clientY;
-      if (st.ghost) { st.ghost.style.left = st.x + "px"; st.ghost.style.top = st.y + "px"; }
-      splanClearDropHighlights();
-      const over = document.elementFromPoint(ev.clientX, ev.clientY)?.closest?.(".splan-cell-inner");
-      if (over && over !== st.srcEl) over.classList.add("splan-drop-ok");
-      st.over = over && over !== st.srcEl ? over : null;
+      splanDragMoveTo(st, ev.clientX, ev.clientY);
     }
     function onSplanSwapPointerUp(ev) {
       const st = _splanDrag;
-      if (!st) return;
+      if (!st || st.touch) return;
       if (st.pointerId != null && ev && ev.pointerId !== st.pointerId) return;
+      splanFinishDrop(st, ev ? ev.clientX : st.x, ev ? ev.clientY : st.y);
+    }
+    function splanFinishDrop(st, cx, cy) {
       const wasActive = st.active;
       const srcEl = st.srcEl;
       const myId = st.workerId;
       const myDate = st.dateKey;
-      const over = wasActive ? (st.over || (ev && document.elementFromPoint(ev.clientX, ev.clientY)?.closest?.(".splan-cell-inner"))) : null;
+      let over = null;
+      if (wasActive) {
+        over = st.over;
+        if (!over && cx != null) {
+          const hit = document.elementFromPoint(cx, cy)?.closest?.(".splan-cell-inner");
+          over = hit && hit !== srcEl ? hit : null;
+        }
+      }
       splanEndDragState();
       if (!wasActive || !over || over === srcEl) return;
       const peerId = over.getAttribute("data-worker-id");
@@ -35001,6 +35578,13 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
       const b = (DB.users || []).find(u => u.id === peerId);
       const aSnap = formatSwapShiftSnap(snapDayForSwap(myId, myDate));
       const bSnap = formatSwapShiftSnap(snapDayForSwap(peerId, peerDate));
+      if (peerId === myId) {
+        const lab = (k, snapTxt) => escHtml(fmtDateTR(k) || k) + " · " + escHtml(snapTxt === "Boş gün" && effWeeklyOffOn(myId, k) ? "Hafta tatili" : snapTxt);
+        splanSwapConfirm(`<b>${escHtml(a?.name || "?")}</b> için günler yer değiştirsin mi?<br>${lab(myDate, aSnap)} ⇄ ${lab(peerDate, bSnap)}`, () => {
+          performPatronShiftSwap(myId, myDate, peerId, peerDate, "Gün takası (sürükle)");
+        });
+        return;
+      }
       const msg = `<b>${escHtml(a?.name || "?")}</b> (${escHtml(myDate)} · ${escHtml(aSnap)}) ↔ <b>${escHtml(b?.name || "?")}</b> (${escHtml(peerDate)} · ${escHtml(bSnap)}) takas edilsin mi?`;
       splanSwapConfirm(msg, () => {
         performPatronShiftSwap(myId, myDate, peerId, peerDate, "Sürükleyerek takas");
@@ -35017,7 +35601,9 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
       if (!workerId || !dateKey) return;
       if (_splanDrag) splanEndDragState();
       const isTouch = ev.pointerType === "touch" || ev.pointerType === "pen";
+      if (isTouch && document.querySelector("#shift-ctx-menu[style*='block']")) return;
       _splanDrag = {
+        touch: isTouch,
         pointerId: ev.pointerId,
         srcEl: cell,
         workerId,
@@ -35034,8 +35620,12 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
       };
       if (isTouch) {
         _splanDrag.lpTimer = setTimeout(() => {
-          if (_splanDrag) splanStartDrag(_splanDrag);
-        }, 300);
+          if (_splanDrag && !_splanDrag.active) splanStartDrag(_splanDrag);
+        }, 320);
+        window.addEventListener("touchmove", onSplanSwapTouchMove, { capture: true, passive: false });
+        window.addEventListener("touchend", onSplanSwapTouchEnd, { capture: true, passive: false });
+        window.addEventListener("touchcancel", onSplanSwapTouchEnd, { capture: true, passive: false });
+        return;
       }
       window.addEventListener("pointermove", onSplanSwapPointerMove, { capture: true, passive: false });
       window.addEventListener("pointerup", onSplanSwapPointerUp, true);
@@ -35045,6 +35635,10 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
       if (!root || root._splanSwapBound) return;
       root._splanSwapBound = true;
       root.addEventListener("pointerdown", onSplanSwapPointerDown);
+      // Uzun basışta Android/WebView bağlam menüsü / metin seçimi açılmasın
+      root.addEventListener("contextmenu", ev => {
+        if (ev.target.closest?.(".splan-cell-inner") && (_splanDrag || ev.pointerType === "touch" || (ev.sourceCapabilities && ev.sourceCapabilities.firesTouchEvents))) ev.preventDefault();
+      });
     }
     function openPatronShiftSwapModal() {
       if (currentUser?.role !== "patron") return;
@@ -37963,6 +38557,8 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
         ? `<span class="req-type-badge" style="background:rgba(244,114,182,0.12);color:#fb7185;border:1px solid rgba(244,114,182,0.35);">${r.isHourlyLeave ? "⏱ Saatlik İzin" : "🏖 İzin Talebi"}</span>`
         : r.type === "shift_swap"
         ? `<span class="req-type-badge" style="background:rgba(56,189,248,0.12);color:#38bdf8;border:1px solid rgba(56,189,248,0.35);">⇄ ${r.byPatron ? "Patron Takası" : (r.swapKind === "leave" ? "İzin Takası" : "Vardiya Değişimi")}</span>`
+        : r.type === "help_visit"
+        ? `<span class="req-type-badge" style="background:rgba(16,185,129,0.12);color:#34d399;border:1px solid rgba(16,185,129,0.35);">🤝 Yardım</span>`
         : `<span class="req-type-badge req-type-adv">💸 Avans Talebi</span>`;
 
       const statusMap = { pending: "Bekliyor", approved: "Onaylandı", rejected: "Reddedildi" };
@@ -37993,6 +38589,9 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
         detailHtml += `<div class="req-detail">${escHtml(peerName)}: ${escHtml(formatSwapShiftSnap(bSnap))} → ${escHtml(formatSwapShiftSnap(aSnap))}</div>`;
         if (r.note) detailHtml += `<div class="req-detail">📝 ${escHtml(r.note)}</div>`;
         detailHtml += buildShiftSwapProgressHtml(r);
+      } else if (r.type === "help_visit") {
+        detailHtml = `<div class="req-detail">🤝 <b>${escHtml(fmtDateTR(r.dateKey) || r.dateKey || "")}</b>${r.time ? " · " + escHtml(r.time) : ""} — vardiya dışında yardıma geldi</div>`;
+        detailHtml += `<div class="req-detail" style="color:var(--text3);">Onaylanırsa performansa +${PERF_HELP_PTS} puan (Yardıma gelme) yazılır. Ücrete etkisi yok.</div>`;
       } else {
         const cur = getCurrency();
         detailHtml = `<div class="req-detail">💰 Tutar: <b>${cur}${Number(r.amount).toLocaleString("tr-TR")}</b></div>`;
@@ -38120,6 +38719,14 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
         saveUserAdvances(r.userId); // data_ wrapper ile doğru kaydet
       } else if (r.type === "leave") {
         applyApprovedLeaveRange(r.userId, r.leaveTypeId || "annual", r.startDate, r.endDate, leavePay);
+      } else if (r.type === "help_visit") {
+        const hk = String(r.dateKey || "").slice(0, 10) || todayKey();
+        const entry = {
+          id: "pa" + genId(), sign: 1, crit: "yardim", pts: PERF_HELP_PTS,
+          note: "Vardiya dışında yardıma geldi" + (r.time ? " · " + r.time : ""),
+          by: currentUser?.id || "", byName: currentUser?.name || "", at: new Date().toISOString(), src: "help", reqId: r.id,
+        };
+        void perfAdjWrite(r.userId, hk, list => (list.some(e => e && e.reqId === r.id) ? list : [...list, entry]));
       }
 
       localCacheSave();
@@ -39129,9 +39736,6 @@ body { margin:0; background:#eee; font-family:Georgia,"Times New Roman",serif; }
     window.paNudgeDays = paNudgeDays;
     window.paRefreshDayPreview = paRefreshDayPreview;
     window.openLeaveRequestModal = openLeaveRequestModal;
-    window.patronAddTaskLine = patronAddTaskLine;
-    window.patronSaveJobTasks = patronSaveJobTasks;
-    window.patronRemoveTaskLine = patronRemoveTaskLine;
     window.patronApproveJobTask = patronApproveJobTask;
     window.patronRejectJobTask = patronRejectJobTask;
     window.patronSaveAllWeeklyTasks = patronSaveAllWeeklyTasks;
