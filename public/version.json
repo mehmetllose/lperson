@@ -1,6 +1,6 @@
 {
-    "version": "1.1.30",
-    "apkUrl": "https://lperson.web.app/lperson-latest.apk",
-    "notes": "## Patron\n- Takas geri alma düğmesi eklendi.\n- Performans kuralları açıklamalı; derece adları düzenlenebilir.\n- Yardım puanı ayarı, yardım süresi ve analizi.\n- Yazı kalınlığı düzeltildi.\n",
-    "publishedAt": "2026-11-25T17:06:19.608Z"
+    "version":  "1.1.31",
+    "apkUrl":  "https://lperson.web.app/lperson-latest.apk",
+    "notes":  "## Herkes\n- Ay sonu performans raporu.\n\n## Patron\n- Kriter bazlı ayrıntılı puanlama.\n- Kriterler özelleştirilebilir.\n",
+    "publishedAt":  "2026-11-25T19:57:21.5617174Z"
 }
