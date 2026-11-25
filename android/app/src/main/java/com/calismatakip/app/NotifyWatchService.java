@@ -40,6 +40,10 @@ import java.util.concurrent.Executors;
 public class NotifyWatchService extends Service {
     public static volatile boolean appInForeground = false;
     private static volatile boolean muteTrayBecauseFcm = false;
+    private static volatile Context appCtx;
+    private static volatile boolean alertedLoaded = false;
+    private static final Object ALERT_LOCK = new Object();
+    private static final long ALERT_MEMORY_MS = 36L * 60L * 60L * 1000L;
     private static final java.util.concurrent.ConcurrentHashMap<String, Long> recentAlerts = new java.util.concurrent.ConcurrentHashMap<>();
     private static final ExecutorService EXEC = Executors.newSingleThreadExecutor();
     private static volatile boolean watching = false;
@@ -50,7 +54,7 @@ public class NotifyWatchService extends Service {
     private static final String THEME_PREFS = "lperson_ui_theme";
     private static final int ONGOING_ID = 71001;
     private static final int KICK_REQ = 7701;
-    private static final long POLL_MS = 8000L;
+    private static final long POLL_MS = 3000L;
     static final String API_KEY = "AIzaSyDjWLbIB00JTBjvcq1sZtFVeT7JbsWAF6c";
     private static final String DOC_ROOT =
             "https://firestore.googleapis.com/v1/projects/lperson/databases/(default)/documents/";
@@ -61,6 +65,8 @@ public class NotifyWatchService extends Service {
         if (context == null) return;
         watching = true;
         Context app = context.getApplicationContext();
+        appCtx = app;
+        ensureAlertedLoaded(app);
         cancelLeftoverOngoing(app);
         cancelAllKicks(app);
         ensureAlertChannel(app);
@@ -156,7 +162,8 @@ public class NotifyWatchService extends Service {
         String role = str(me, "role");
         String companyId = str(me, "companyId");
         String myName = str(me, "name");
-        muteTrayBecauseFcm = false;
+        // FCM token varsa giriş/çıkış tepsiyi Watch basmasın (FCM zaten basar → çift bildirim)
+        muteTrayBecauseFcm = !str(me, "fcmToken").isEmpty();
         if (companyId.isEmpty() || (!"patron".equals(role) && !"calisan".equals(role))) return;
 
         SharedPreferences prefs = ctx.getSharedPreferences("lperson_notify_watch", Context.MODE_PRIVATE);
@@ -180,6 +187,7 @@ public class NotifyWatchService extends Service {
         if ("patron".equals(role)) pollPatron(ctx, companyId, primed, clock, req);
         else pollWorker(ctx, uid, myName, primed, req, currency);
         pollShiftNotifs(ctx, me, primed);
+        pollTrayNotifs(ctx, uid, primed);
 
         prefs.edit().putString("uid", uid).putBoolean("primed", true)
                 .putString("clock", clock.toString())
@@ -190,48 +198,22 @@ public class NotifyWatchService extends Service {
     private static void pollPatron(Context ctx, String companyId, boolean primed, JSONObject clock, JSONObject req) throws Exception {
         JSONObject company = getFields("companies/" + enc(companyId) + "?mask.fieldPaths=settings");
         JSONObject settings = mapFields(company == null ? null : company.optJSONObject("settings"));
-        boolean allowClock = bool(settings, "notifyPatronOnClockIn", true);
         String currency = str(settings, "currency");
         if (currency.isEmpty()) currency = "₺";
 
         JSONArray users = runQuery(selectQuery("users", "companyId", companyId, 80,
                 new String[]{"role", "name", "companyId", "terminatedAt"}));
         JSONObject names = new JSONObject();
-        String today = todayKey();
-        if (allowClock) {
-            for (int i = 0; i < users.length(); i++) {
-                JSONObject doc = users.optJSONObject(i);
-                if (doc == null) continue;
-                JSONObject fields = doc.optJSONObject("fields");
-                if (fields == null || !"calisan".equals(str(fields, "role")) || isTerminated(fields)) continue;
-                String wid = docId(doc);
-                if (wid.isEmpty()) continue;
-                String name = str(fields, "name");
-                if (name.isEmpty()) name = "Çalışan";
-                names.put(wid, name);
-                JSONObject rec = getFields("records/" + enc(wid) + "?mask.fieldPaths=data_");
-                JSONObject data = mapFields(rec == null ? null : rec.optJSONObject("data_"));
-                JSONObject day = mapFields(data.optJSONObject(today));
-                int[] st = shiftStats(day);
-                String prev = clock.optString(wid, "");
-                String now = st[0] + "," + st[1];
-                if (primed && !prev.isEmpty()) {
-                    String[] p = prev.split(",");
-                    int oldS = p.length > 0 ? parseInt(p[0]) : 0;
-                    int oldC = p.length > 1 ? parseInt(p[1]) : 0;
-                    if (st[0] > oldS) {
-                        String tIn = fallback(lastTime(day, false), "?");
-                        alert(ctx, "ct-patron-in-" + wid + "-" + today + "-" + tIn,
-                                "İşyeri · Giriş", name + " giriş yaptı — " + tIn);
-                    }
-                    if (st[1] > oldC) {
-                        String tOut = fallback(lastTime(day, true), "?");
-                        alert(ctx, "ct-patron-out-" + wid + "-" + today + "-" + tOut,
-                                "İşyeri · Çıkış", name + " çıkış yaptı — " + tOut);
-                    }
-                }
-                clock.put(wid, now);
-            }
+        for (int i = 0; i < users.length(); i++) {
+            JSONObject doc = users.optJSONObject(i);
+            if (doc == null) continue;
+            JSONObject fields = doc.optJSONObject("fields");
+            if (fields == null || !"calisan".equals(str(fields, "role")) || isTerminated(fields)) continue;
+            String wid = docId(doc);
+            if (wid.isEmpty()) continue;
+            String name = str(fields, "name");
+            if (name.isEmpty()) name = "Çalışan";
+            names.put(wid, name);
         }
 
         JSONArray reqs = runQuery(selectQuery("requests", "companyId", companyId, 120,
@@ -282,10 +264,17 @@ public class NotifyWatchService extends Service {
     }
 
     static boolean recentlyAlerted(String tag) {
-        if (tag == null) return false;
+        synchronized (ALERT_LOCK) {
+            if (appCtx != null) ensureAlertedLoaded(appCtx);
+            return recentlyAlertedLocked(tag);
+        }
+    }
+
+    private static boolean recentlyAlertedLocked(String tag) {
+        if (tag == null || tag.isEmpty()) return false;
         long now = System.currentTimeMillis();
         Long t = recentAlerts.get(tag);
-        if (t != null && now - t < 120000L) return true;
+        if (t != null && now - t < ALERT_MEMORY_MS) return true;
         String fam = alertFamily(tag);
         if (!fam.isEmpty() && !fam.equals(tag)) {
             Long f = recentAlerts.get(fam);
@@ -294,10 +283,41 @@ public class NotifyWatchService extends Service {
         return false;
     }
 
+    private static void ensureAlertedLoaded(Context ctx) {
+        if (alertedLoaded || ctx == null) return;
+        alertedLoaded = true;
+        try {
+            SharedPreferences prefs = ctx.getSharedPreferences("lperson_notify_watch", Context.MODE_PRIVATE);
+            JSONObject raw = new JSONObject(prefs.getString("alerted", "{}"));
+            JSONObject kept = new JSONObject();
+            long now = System.currentTimeMillis();
+            Iterator<String> it = raw.keys();
+            while (it.hasNext()) {
+                String k = it.next();
+                long t = raw.optLong(k, 0L);
+                if (t > 0 && now - t < ALERT_MEMORY_MS) {
+                    recentAlerts.put(k, t);
+                    kept.put(k, t);
+                }
+            }
+            prefs.edit().putString("alerted", kept.toString()).apply();
+        } catch (Exception ignored) {}
+    }
+
+    private static void persistAlerted(Context ctx, String tag, String family, long now) {
+        if (ctx == null) return;
+        try {
+            SharedPreferences prefs = ctx.getSharedPreferences("lperson_notify_watch", Context.MODE_PRIVATE);
+            JSONObject raw = new JSONObject(prefs.getString("alerted", "{}"));
+            if (tag != null && !tag.isEmpty()) raw.put(tag, now);
+            if (family != null && !family.isEmpty()) raw.put(family, now);
+            prefs.edit().putString("alerted", raw.toString()).apply();
+        } catch (Exception ignored) {}
+    }
+
     private static boolean watchHandlesTag(String tag) {
         if (tag == null) return false;
-        return tag.startsWith("ct-patron-in-") || tag.startsWith("ct-patron-out-")
-                || tag.startsWith("ct-req-") || tag.startsWith("ct-myreq-")
+        return tag.startsWith("ct-req-") || tag.startsWith("ct-myreq-")
                 || tag.startsWith("ct-swap-peer-");
     }
 
@@ -353,6 +373,7 @@ public class NotifyWatchService extends Service {
     }
 
     static void notifyFromJs(Context ctx, String title, String body, String tag) {
+        if (ctx != null) appCtx = ctx.getApplicationContext();
         alert(ctx, tag, title, body, true, true);
     }
 
@@ -362,23 +383,83 @@ public class NotifyWatchService extends Service {
         JSONObject seen;
         try { seen = new JSONObject(prefs.getString("shiftSeen", "{}")); } catch (Exception e) { seen = new JSONObject(); }
         JSONObject nowSeen = new JSONObject();
+        // Önceki görülenleri koru (kuyruk kısalınca yeniden basılmasın)
+        Iterator<String> keep = seen.keys();
+        while (keep.hasNext()) {
+            String k = keep.next();
+            try { nowSeen.put(k, "1"); } catch (Exception ignored) {}
+        }
         JSONArray arr = arrayValues(me.optJSONObject("recentShiftNotifs"));
-        if (arr == null) return;
+        if (arr == null) {
+            prefs.edit().putString("shiftSeen", nowSeen.toString()).apply();
+            return;
+        }
         for (int i = 0; i < arr.length(); i++) {
             JSONObject item = mapFields(arr.optJSONObject(i));
             String id = str(item, "id");
             if (id.isEmpty()) continue;
-            try { nowSeen.put(id, "1"); } catch (Exception ignored) {}
-            if (primed && !seen.has(id)) {
-                String title = str(item, "title");
-                String body = str(item, "body");
-                String tag = str(item, "tag");
-                if (tag.isEmpty()) tag = "ct-myshift-" + id;
-                if (watchHandlesTag(tag)) continue;
-                alert(ctx, tag, title, body, true);
+            String title = str(item, "title");
+            String body = str(item, "body");
+            String tag = str(item, "tag");
+            if (tag.isEmpty()) tag = "ct-myshift-" + id;
+            if (primed && !seen.has(id) && !watchHandlesTag(tag)) {
+                boolean clockTag = tag.startsWith("ct-patron-in-") || tag.startsWith("ct-patron-out-")
+                        || tag.startsWith("ct-mgr-clock-");
+                // Saat bildirimleri FCM varken Watch'tan basılmaz
+                if (!appInForeground) alert(ctx, tag, title, body, !clockTag);
             }
+            try { nowSeen.put(id, "1"); } catch (Exception ignored) {}
         }
         prefs.edit().putString("shiftSeen", nowSeen.toString()).apply();
+    }
+
+    private static void pollTrayNotifs(Context ctx, String uid, boolean primed) {
+        if (uid == null || uid.isEmpty()) return;
+        SharedPreferences prefs = ctx.getSharedPreferences("lperson_notify_watch", Context.MODE_PRIVATE);
+        JSONObject seen;
+        try { seen = new JSONObject(prefs.getString("traySeen", "{}")); } catch (Exception e) { seen = new JSONObject(); }
+        JSONObject nowSeen = new JSONObject();
+        Iterator<String> keep = seen.keys();
+        while (keep.hasNext()) {
+            String k = keep.next();
+            try { nowSeen.put(k, "1"); } catch (Exception ignored) {}
+        }
+        JSONArray docs;
+        try {
+            docs = runQuery(selectQuery("trayNotifs", "userId", uid, 40,
+                    new String[]{"title", "body", "tag", "kind", "t", "userId"}));
+        } catch (Exception e) {
+            return;
+        }
+        for (int i = 0; i < docs.length(); i++) {
+            JSONObject doc = docs.optJSONObject(i);
+            if (doc == null) continue;
+            JSONObject f = doc.optJSONObject("fields");
+            if (f == null) continue;
+            String id = docId(doc);
+            if (id.isEmpty()) continue;
+            String title = str(f, "title");
+            String body = str(f, "body");
+            String tag = str(f, "tag");
+            if (tag.isEmpty()) tag = "ct-myshift-" + id;
+            if (primed && !seen.has(id) && !watchHandlesTag(tag) && !appInForeground) {
+                alert(ctx, tag, title, body, true);
+            }
+            try { nowSeen.put(id, "1"); } catch (Exception ignored) {}
+        }
+        // Çok büyümesin
+        if (nowSeen.length() > 120) {
+            JSONObject trimmed = new JSONObject();
+            int n = 0;
+            Iterator<String> it = nowSeen.keys();
+            while (it.hasNext()) {
+                String k = it.next();
+                if (n++ >= 80) break;
+                try { trimmed.put(k, "1"); } catch (Exception ignored) {}
+            }
+            nowSeen = trimmed;
+        }
+        prefs.edit().putString("traySeen", nowSeen.toString()).apply();
     }
 
     private static void alert(Context ctx, String tag, String title, String body) {
@@ -390,37 +471,49 @@ public class NotifyWatchService extends Service {
     }
 
     private static void alert(Context ctx, String tag, String title, String body, boolean bypassFcmMute, boolean fromJs) {
-        if (muteTrayBecauseFcm && !bypassFcmMute && !fromJs) return;
-        if (appInForeground && !fromJs) return;
-        if (title == null) title = "";
-        if (body == null) body = "";
-        title = title.trim();
-        body = body.trim();
-        if (title.isEmpty() || body.isEmpty()) return;
-        String family = alertFamily(tag);
-        if (recentlyAlerted(tag) || recentlyAlerted(family)) return;
-        long nowMs = System.currentTimeMillis();
-        recentAlerts.put(tag == null ? "" : tag, nowMs);
-        if (!family.isEmpty()) recentAlerts.put(family, nowMs);
-        NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
-        if (nm == null) return;
-        Intent open = new Intent(ctx, MainActivity.class);
-        open.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pi = PendingIntent.getActivity(ctx, notifId(tag), open, piFlags());
-        int accent = alertColor(ctx, tag);
-        NotificationCompat.Builder b = new NotificationCompat.Builder(ctx, CH_ALERT)
-                .setSmallIcon(R.drawable.ic_stat_lperson)
-                .setColor(accent)
-                .setContentTitle(title)
-                .setContentText(body)
-                .setStyle(new NotificationCompat.BigTextStyle().bigText(body))
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setCategory(NotificationCompat.CATEGORY_MESSAGE)
-                .setOnlyAlertOnce(true)
-                .setAutoCancel(true)
-                .setContentIntent(pi);
-        Notification n = b.build();
-        try { nm.notify(notifId(tag), n); } catch (Exception ignored) {}
+        Notification n = null;
+        int id = 0;
+        NotificationManager nm = null;
+        synchronized (ALERT_LOCK) {
+            if (ctx != null) appCtx = ctx.getApplicationContext();
+            ensureAlertedLoaded(ctx != null ? ctx : appCtx);
+            if (muteTrayBecauseFcm && !bypassFcmMute && !fromJs) return;
+            if (appInForeground && !fromJs) return;
+            if (title == null) title = "";
+            if (body == null) body = "";
+            title = title.trim();
+            body = body.trim();
+            if (title.isEmpty() || body.isEmpty() || ctx == null) return;
+            String family = alertFamily(tag);
+            if (recentlyAlertedLocked(tag) || recentlyAlertedLocked(family)) return;
+            long nowMs = System.currentTimeMillis();
+            String key = tag == null ? "" : tag;
+            recentAlerts.put(key, nowMs);
+            if (!family.isEmpty()) recentAlerts.put(family, nowMs);
+            persistAlerted(ctx, key, family, nowMs);
+            nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (nm == null) return;
+            Intent open = new Intent(ctx, MainActivity.class);
+            open.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            id = notifId(tag);
+            PendingIntent pi = PendingIntent.getActivity(ctx, id, open, piFlags());
+            int accent = alertColor(ctx, tag);
+            n = new NotificationCompat.Builder(ctx, CH_ALERT)
+                    .setSmallIcon(R.drawable.ic_stat_lperson)
+                    .setColor(accent)
+                    .setContentTitle(title)
+                    .setContentText(body)
+                    .setStyle(new NotificationCompat.BigTextStyle().bigText(body))
+                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+                    .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+                    .setOnlyAlertOnce(true)
+                    .setAutoCancel(true)
+                    .setContentIntent(pi)
+                    .build();
+        }
+        if (n != null && nm != null) {
+            try { nm.notify(id, n); } catch (Exception ignored) {}
+        }
     }
 
     private static void cancelLeftoverOngoing(Context ctx) {
@@ -455,9 +548,18 @@ public class NotifyWatchService extends Service {
         AlarmManager am = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
         if (am == null) return;
         long when = SystemClock.elapsedRealtime() + POLL_MS;
+        PendingIntent pi = kickBroadcast(ctx);
         try {
-            am.setAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, when, kickBroadcast(ctx));
-        } catch (Exception ignored) {}
+            if (Build.VERSION.SDK_INT >= 23) {
+                am.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, when, pi);
+            } else {
+                am.setAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, when, pi);
+            }
+        } catch (Exception e) {
+            try {
+                am.setAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, when, pi);
+            } catch (Exception ignored) {}
+        }
     }
 
     private static void cancelAllKicks(Context ctx) {

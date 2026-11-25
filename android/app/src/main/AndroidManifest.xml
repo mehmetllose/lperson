@@ -89,6 +89,14 @@
             </intent-filter>
         </receiver>
 
+        <receiver
+            android:name=".UpdateInstallReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.calismatakip.app.UPDATE_INSTALL" />
+            </intent-filter>
+        </receiver>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -99,6 +107,16 @@
                 android:resource="@xml/file_paths"></meta-data>
         </provider>
     </application>
+
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:mimeType="application/vnd.android.package-archive" />
+        </intent>
+        <package android:name="com.android.packageinstaller" />
+        <package android:name="com.google.android.packageinstaller" />
+        <package android:name="com.samsung.android.packageinstaller" />
+    </queries>
 
     <!-- Permissions -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />

@@ -243,6 +243,35 @@ exports.onRecordWritePush = onDocumentWritten("records/{workerId}", async (event
   }
 });
 
+/** Vardiya planı / tray kuyruğu → personel FCM (uygulama kapalıyken anlık) */
+exports.onTrayNotifCreatePush = onDocumentWritten("trayNotifs/{notifId}", async (event) => {
+  if (!event.data.after.exists) return;
+  if (event.data.before.exists) return; // yalnızca yeni
+  const after = event.data.after.data() || {};
+  const userId = after.userId;
+  if (!userId) return;
+  const u = await getUser(userId);
+  if (!u) return;
+  const token = u.fcmToken;
+  if (!token || typeof token !== "string") {
+    console.warn("onTrayNotifCreatePush: fcmToken yok", userId);
+    return;
+  }
+  const title = after.title || "Bildirim";
+  const body = after.body || "";
+  if (!body) return;
+  await sendToToken(token, {
+    title,
+    body,
+    data: {
+      ct: after.kind || "shift_plan",
+      tag: after.tag || "",
+      notifId: event.params.notifId,
+      userId: String(userId),
+    },
+  });
+});
+
 exports.onRequestWritePush = onDocumentWritten("requests/{requestId}", async (event) => {
   const requestId = event.params.requestId;
   const beforeSnap = event.data.before;

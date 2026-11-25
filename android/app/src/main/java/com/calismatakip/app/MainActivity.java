@@ -22,6 +22,8 @@ import androidx.core.content.ContextCompat;
 import androidx.core.splashscreen.SplashScreen;
 import com.getcapacitor.BridgeActivity;
 
+import java.lang.ref.WeakReference;
+
 /**
  * Android 13+ requires a runtime POST_NOTIFICATIONS grant before the WebView
  * {@code Notification.requestPermission()} flow can succeed reliably.
@@ -32,7 +34,24 @@ public class MainActivity extends BridgeActivity {
     public static final int REQ_CAMERA = 9912;
     public static final String EXTRA_WIDGET_QR = "lperson_widget_qr";
 
+    private static WeakReference<MainActivity> liveRef;
+
     private boolean openedFromWidgetQr = false;
+
+    /** PackageInstaller onay ekranını Activity üstünden aç (toast için). */
+    public static boolean launchUpdateConfirm(Intent confirm) {
+        MainActivity a = liveRef != null ? liveRef.get() : null;
+        if (a == null || confirm == null) return false;
+        a.runOnUiThread(() -> {
+            try {
+                Toast.makeText(a, "Güncelle'ye bas", Toast.LENGTH_LONG).show();
+                a.startActivity(confirm);
+            } catch (Exception e) {
+                Toast.makeText(a, "Yükleme onayı açılamadı", Toast.LENGTH_LONG).show();
+            }
+        });
+        return true;
+    }
 
     static boolean isQrWidgetIntent(Intent intent) {
         if (intent == null) return false;
@@ -56,6 +75,7 @@ public class MainActivity extends BridgeActivity {
             splash.setKeepOnScreenCondition(() -> SystemClock.uptimeMillis() - splashAt < 800);
         }
         super.onCreate(savedInstanceState);
+        liveRef = new WeakReference<>(this);
         ensureShiftNotificationChannel();
         WebView wv = getBridge().getWebView();
         try {
@@ -135,10 +155,41 @@ public class MainActivity extends BridgeActivity {
     @Override
     public void onResume() {
         super.onResume();
+        liveRef = new WeakReference<>(this);
         NotifyWatchService.appInForeground = true;
         try {
             NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
             if (nm != null) nm.cancel(71001);
+        } catch (Exception ignored) {}
+        tryNotifyUpdateInstalled();
+    }
+
+    @Override
+    public void onDestroy() {
+        MainActivity cur = liveRef != null ? liveRef.get() : null;
+        if (cur == this) liveRef = null;
+        super.onDestroy();
+    }
+
+    private void tryNotifyUpdateInstalled() {
+        try {
+            android.content.SharedPreferences p =
+                    getSharedPreferences(UpdateInstallReceiver.PREFS, MODE_PRIVATE);
+            if (!p.getBoolean(UpdateInstallReceiver.KEY_JUST_INSTALLED, false)) return;
+            WebView wv = getBridge() != null ? getBridge().getWebView() : null;
+            if (wv == null) return;
+            // Prefs'i JS consumeUpdateSuccess temizler; sayfa hazır olana kadar birkaç kez dene.
+            Runnable ping = new Runnable() {
+                int left = 8;
+                @Override public void run() {
+                    if (left-- <= 0) return;
+                    wv.evaluateJavascript(
+                            "(function(){try{if(window.consumeNativeUpdateSuccessSoon)window.consumeNativeUpdateSuccessSoon();}catch(e){}})()",
+                            null);
+                    wv.postDelayed(this, 700);
+                }
+            };
+            wv.postDelayed(ping, 600);
         } catch (Exception ignored) {}
     }
 

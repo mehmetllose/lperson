@@ -19,7 +19,13 @@ $gradle = Join-Path $root "android\app\build.gradle"
 $txt = [IO.File]::ReadAllText($gradle)
 $code = [int]([regex]::Match($txt, 'versionCode\s+(\d+)').Groups[1].Value)
 $name = [regex]::Match($txt, 'versionName\s+"([^"]+)"').Groups[1].Value
-$parts = $name.Split('.'); $parts[-1] = [string]([int]$parts[-1] + 1); $newName = $parts -join '.'
+$parts = @($name.Split('.'))
+while ($parts.Count -lt 3) { $parts += "0" }
+$major = [int]$parts[0]
+$minor = [int]$parts[1]
+$patch = [int]$parts[2] + 1
+if ($patch -ge 100) { $minor += 1; $patch = 0 }
+$newName = "$major.$minor.$patch"
 $newCode = $code + 1
 $txt = [regex]::Replace($txt, 'versionCode\s+\d+', "versionCode $newCode")
 $txt = [regex]::Replace($txt, 'versionName\s+"[^"]+"', "versionName `"$newName`"")

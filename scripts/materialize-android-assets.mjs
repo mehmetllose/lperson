@@ -33,4 +33,12 @@ if (!fs.existsSync(ASSETS_PUBLIC)) {
 const indexPath = path.join(ASSETS_PUBLIC, "index.html");
 materializeFile(indexPath);
 walk(ASSETS_PUBLIC);
+// Hosting-only / yedek dosyalar uygulamaya gömülmesin (APK şişmesin).
+let stripped = 0;
+for (const name of fs.readdirSync(ASSETS_PUBLIC)) {
+  if (!/\.apk$/i.test(name) && !/\.bak($|-|\.)/i.test(name) && !/\.bak-/i.test(name)) continue;
+  fs.unlinkSync(path.join(ASSETS_PUBLIC, name));
+  stripped++;
+}
+if (stripped) console.log("materialize-android-assets: assets'ten " + stripped + " gereksiz dosya çıkarıldı.");
 console.log("materialize-android-assets: dosyalar yerel kopya olarak yazıldı.");
