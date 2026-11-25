@@ -1,6 +1,6 @@
 {
-    "version": "1.1.29",
+    "version": "1.1.30",
     "apkUrl": "https://lperson.web.app/lperson-latest.apk",
-    "notes": "## Herkes\n- Performans sayfası yenilendi; günlük puan ve nedeni görünüyor.\n- Vardiyadan önce giriş için süre sınırı eklendi.\n- Vardiya dışında QR ile \"Yardıma geldim\" seçeneği.\n- Mobilde vardiya takası (sürükle-bırak) düzeltildi.\n\n## Patron\n- Personele artı/eksi puan verme.\n- Personele özel giriş ayarları.\n",
-    "publishedAt": "2026-11-25T16:42:57.287Z"
+    "notes": "## Patron\n- Takas geri alma düğmesi eklendi.\n- Performans kuralları açıklamalı; derece adları düzenlenebilir.\n- Yardım puanı ayarı, yardım süresi ve analizi.\n- Yazı kalınlığı düzeltildi.\n",
+    "publishedAt": "2026-11-25T17:06:19.608Z"
 }
